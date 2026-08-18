@@ -1,0 +1,74 @@
+name: Auto Update Reject Rules
+
+on:
+  push:
+    branches: [ "main", "master" ]
+    paths-ignore:
+      - 'reject_rules.json'
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Sing-box Compiler
+        run: |
+          SING_BOX_VERSION="1.10.1"
+          curl -sSL "https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz" -o sing-box.tar.gz
+          tar -xzf sing-box.tar.gz
+          sudo find . -maxdepth 2 -name "sing-box" -type f -exec mv {} /usr/local/bin/ \;
+          sudo chmod +x /usr/local/bin/sing-box
+          rm -rf sing-box.tar.gz sing-box-*
+          sing-box version
+
+      - name: Fix JSON Syntax Automatically
+        shell: python
+        run: |
+          import json
+          import re
+          import os
+
+          file_path = "My_rules_RUS.json"
+          if os.path.exists(file_path):
+              try:
+                  with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                      content = f.read()
+                  
+                  content = re.sub(r'[\u200b\u200c\u200d\ufeff\u200e\u200f\u00ad]', '', content)
+                  content = content.replace('“', '"').replace('”', '"')
+                  
+                  data = json.loads(content)
+                  
+                  with open(file_path, "w", encoding="utf-8") as f:
+                      json.dump(data, f, indent=2, ensure_ascii=False)
+                  print("JSON clean and fixed!")
+              except Exception as e:
+                  print(f"Skipping or error: {e}")
+
+      - name: Run Build Script
+        run: python build.py
+
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add reject_rules.json
+          if git diff --staged --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Auto-update reject_rules.json [skip ci]"
+            git push
+          fi
