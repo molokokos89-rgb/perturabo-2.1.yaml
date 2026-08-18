@@ -66,14 +66,12 @@ jobs:
       - name: Run Build Script
         run: python build.py
 
-      - name: Commit and Push changes
+      - name: Install Sing-box Compiler
         run: |
-          git config --local user.email "41898282+github-actions[bot]@://github.com"
-          git config --local user.name "github-actions[bot]"
-          git add reject_rules.json My_rules_RUS.json my_rules_proxy.json karing_logs.txt
-          if git diff --staged --quiet; then
-            echo "No changes."
-          else
-            git commit -m "Auto-parse logs and update rulesets [skip ci]"
-            git push
-          fi
+          SING_BOX_VERSION="1.10.1"
+          curl -sSL "https://github.com{SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz" -o sing-box.tar.gz
+          tar -xzf sing-box.tar.gz
+          sudo find . -maxdepth 2 -name "sing-box" -type f -exec mv {} /usr/local/bin/ \;
+          sudo chmod +x /usr/local/bin/sing-box
+          rm -rf sing-box.tar.gz sing-box-*
+          sing-box version
