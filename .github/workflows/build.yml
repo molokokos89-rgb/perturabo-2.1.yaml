@@ -5,6 +5,8 @@ on:
     branches: [ "main", "master" ]
     paths-ignore:
       - 'reject_rules.json'
+      - 'My_rules_RUS.json'
+      - 'my_rules_proxy.json'
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
@@ -27,12 +29,18 @@ jobs:
       - name: Install Sing-box Compiler
         run: |
           SING_BOX_VERSION="1.10.1"
-          curl -sSL "https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz" -o sing-box.tar.gz
+          curl -sSL "https://github.com{SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz" -o sing-box.tar.gz
           tar -xzf sing-box.tar.gz
           sudo find . -maxdepth 2 -name "sing-box" -type f -exec mv {} /usr/local/bin/ \;
           sudo chmod +x /usr/local/bin/sing-box
           rm -rf sing-box.tar.gz sing-box-*
           sing-box version
+
+      - name: Parse and Sort Karing Logs
+        run: |
+          if [ -f karing_logs.txt ]; then
+            python parse_logs.py
+          fi
 
       - name: Fix JSON Syntax Automatically
         shell: python
@@ -41,34 +49,31 @@ jobs:
           import re
           import os
 
-          file_path = "My_rules_RUS.json"
-          if os.path.exists(file_path):
-              try:
-                  with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                      content = f.read()
-                  
-                  content = re.sub(r'[\u200b\u200c\u200d\ufeff\u200e\u200f\u00ad]', '', content)
-                  content = content.replace('“', '"').replace('”', '"')
-                  
-                  data = json.loads(content)
-                  
-                  with open(file_path, "w", encoding="utf-8") as f:
-                      json.dump(data, f, indent=2, ensure_ascii=False)
-                  print("JSON clean and fixed!")
-              except Exception as e:
-                  print(f"Skipping or error: {e}")
+          for file_path in ["My_rules_RUS.json", "reject_rules.json", "my_rules_proxy.json"]:
+              if os.path.exists(file_path):
+                  try:
+                      with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                          content = f.read()
+                      content = re.sub(r'[\u200b\u200c\u200d\ufeff\u200e\u200f\u00ad]', '', content)
+                      content = content.replace('“', '"').replace('”', '"')
+                      data = json.loads(content)
+                      with open(file_path, "w", encoding="utf-8") as f:
+                          json.dump(data, f, indent=2, ensure_ascii=False)
+                      print(f"{file_path} syntax verified and formatting fixed!")
+                  except Exception as e:
+                      print(f"Skipping format for {file_path}: {e}")
 
       - name: Run Build Script
         run: python build.py
 
       - name: Commit and Push changes
         run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.email "41898282+github-actions[bot]@://github.com"
           git config --local user.name "github-actions[bot]"
-          git add reject_rules.json
+          git add reject_rules.json My_rules_RUS.json my_rules_proxy.json karing_logs.txt
           if git diff --staged --quiet; then
             echo "No changes."
           else
-            git commit -m "Auto-update reject_rules.json [skip ci]"
+            git commit -m "Auto-parse logs and update rulesets [skip ci]"
             git push
           fi
