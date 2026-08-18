@@ -26,21 +26,9 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Sing-box Compiler
+      - name: Parse and Sort Karing Logs from Dropbox
         run: |
-          SING_BOX_VERSION="1.10.1"
-          curl -sSL "https://github.com{SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz" -o sing-box.tar.gz
-          tar -xzf sing-box.tar.gz
-          sudo find . -maxdepth 2 -name "sing-box" -type f -exec mv {} /usr/local/bin/ \;
-          sudo chmod +x /usr/local/bin/sing-box
-          rm -rf sing-box.tar.gz sing-box-*
-          sing-box version
-
-      - name: Parse and Sort Karing Logs
-        run: |
-          if [ -f karing_logs.txt ]; then
-            python parse_logs.py
-          fi
+          find . -name "parse_logs.py" -exec python {} \;
 
       - name: Fix JSON Syntax Automatically
         shell: python
@@ -49,29 +37,30 @@ jobs:
           import re
           import os
 
-          for file_path in ["My_rules_RUS.json", "reject_rules.json", "my_rules_proxy.json"]:
-              if os.path.exists(file_path):
-                  try:
-                      with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                          content = f.read()
-                      content = re.sub(r'[\u200b\u200c\u200d\ufeff\u200e\u200f\u00ad]', '', content)
-                      content = content.replace('“', '"').replace('”', '"')
-                      data = json.loads(content)
-                      with open(file_path, "w", encoding="utf-8") as f:
-                          json.dump(data, f, indent=2, ensure_ascii=False)
-                      print(f"{file_path} syntax verified and formatting fixed!")
-                  except Exception as e:
-                      print(f"Skipping format for {file_path}: {e}")
+          for file_name in ["My_rules_RUS.json", "reject_rules.json", "my_rules_proxy.json"]:
+              for root, dirs, files in os.walk("."):
+                  if file_name in files:
+                      file_path = os.path.join(root, file_name)
+                      try:
+                          with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                              content = f.read()
+                          content = re.sub(r'[\u200b\u200c\u200d\ufeff\u200e\u200f\u00ad]', '', content)
+                          content = content.replace('“', '"').replace('”', '"')
+                          data = json.loads(content)
+                          with open(file_path, "w", encoding="utf-8") as f:
+                              json.dump(data, f, indent=2, ensure_ascii=False)
+                          print(f"{file_name} syntax verified and formatting fixed!")
+                      except Exception as e:
+                          print(f"Skipping format for {file_name}: {e}")
 
-      - name: Run Build Script
-        run: python build.py
-
-      - name: Install Sing-box Compiler
+      - name: Commit and Push changes
         run: |
-          SING_BOX_VERSION="1.10.1"
-          curl -sSL "https://github.com{SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz" -o sing-box.tar.gz
-          tar -xzf sing-box.tar.gz
-          sudo find . -maxdepth 2 -name "sing-box" -type f -exec mv {} /usr/local/bin/ \;
-          sudo chmod +x /usr/local/bin/sing-box
-          rm -rf sing-box.tar.gz sing-box-*
-          sing-box version
+          git config --local user.email "41898282+github-actions[bot]@://github.com"
+          git config --local user.name "github-actions[bot]"
+          git add reject_rules.json My_rules_RUS.json my_rules_proxy.json || true
+          if git diff --staged --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Auto-parse logs from Dropbox [skip ci]"
+            git push
+          fi
