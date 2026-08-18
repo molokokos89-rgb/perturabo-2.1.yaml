@@ -3,7 +3,7 @@ import re
 import urllib.request
 import os
 
-LOG_FILE = "karing_logs.txt"
+LOG_FILE = "https://www.dropbox.com/scl/fi/759t1a2us3y0kblgat0xr/log-for-reject.txt?rlkey=zr2uqv81lx89rdl6q55geyucy&st=8lc13ygu&dl=0"
 RUS_JSON = "My_rules_RUS.json"
 REJECT_JSON = "reject_rules.json"
 PROXY_JSON = "my_rules_proxy.json"
