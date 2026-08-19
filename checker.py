@@ -48,13 +48,12 @@ def is_russian_proxy(line_str):
     return any(ru_kw in line_lower for ru_kw in RU_KEYWORDS)
 
 def get_rkn_banned_list():
-    """Загружает динамический список блокировок в память для ускорения проверки"""
     rkn_url = "https://raw.githubusercontent.com/roskomkod/ru-blocked-domains/main/domains.txt"
     try:
         req = urllib.request.Request(rkn_url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=15) as response:
             content = response.read().decode('utf-8', errors='ignore')
-            return set(line.strip().lower() for line in content.splitlines() if line.strip())
+            return set(line.strip().lower() for line in content.splitlines() if line.strip() and not line.startswith("#"))
     except Exception:
         return set()
 
@@ -211,24 +210,20 @@ def main():
 
     ru_nodes = unique_ru_lines
 
-    domains_to_test = load_domains_from_sources()
     rkn_domains = get_rkn_banned_list()
+    domains_to_test = load_domains_from_sources()
     
-    proxy_rules = []
+    proxy_rules = list(rkn_domains)
     rus_rules = []
     
     for domain in domains_to_test:
-        d_clean = domain.
-        
-        if d_clean in rkn_domains or any(d_clean.endswith("." + rkn_d) for rkn_d in rkn_domains):
-            proxy_rules.append(domain)
-            continue
-            
-        if test_domain_via_ru_proxy(domain, ru_nodes):
-            proxy_rules.append(domain)
-        else:
-            rus_rules.append(domain)
-            
+        d_clean = domain.lower()
+        if d_clean not in rkn_domains and not any(d_clean.endswith("." + rkn_d) for rkn_d in rkn_domains):
+            if test_domain_via_ru_proxy(domain, ru_nodes):
+                proxy_rules.append(domain)
+            else:
+                rus_rules.append(domain)
+
     with open("my_rules_proxy.json", "w", encoding="utf-8") as f:
         json.dump({"version": 1, "rules": [{"domain": sorted(list(set(proxy_rules)))}]}, f, indent=2)
 
