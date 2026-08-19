@@ -225,10 +225,10 @@ def main():
                 rus_rules.append(domain)
 
     with open("my_rules_proxy.json", "w", encoding="utf-8") as f:
-        json.dump({"version": 1, "rules": [{"domain": sorted(list(set(proxy_rules)))}]}, f, indent=2)
+        json.dump({"version": 1, "rules": [{"domain": sorted(list(set(proxy_rules)))}]}, f, separators=(',', ':'))
 
     with open("My_rules_RUS.json", "w", encoding="utf-8") as f:
-        json.dump({"version": 1, "rules": [{"domain": sorted(list(set(rus_rules)))}]}, f, indent=2)
+        json.dump({"version": 1, "rules": [{"domain": sorted(list(set(rus_rules)))}]}, f, separators=(',', ':'))
 
 if __name__ == "__main__":
     main()
