@@ -47,16 +47,41 @@ def is_russian_proxy(line_str):
     line_lower = line_str.lower()
     return any(ru_kw in line_lower for ru_kw in RU_KEYWORDS)
 
-def test_domain_is_blocked_via_ru(domain, ru_node):
-    if not ru_node:
+def test_domain_via_ru_proxy(domain, ru_nodes):
+    if not ru_nodes:
         return True
+
+    ru_node = ru_nodes[0]
+    host = extract_host(ru_node)
+    
+    if not host:
+        return True
+
     try:
-        req = urllib.request.Request(f"https://{domain}", headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=3) as res:
+        port = 443
+        if "@" in ru_node and ":" in ru_node.split("@")[-1]:
+            port_part = ru_node.split("@")[-1].split(":")[1]
+            port = int(re.split(r'[/?#]', port_part)[0])
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(3)
+        result = sock.connect_ex((host, port))
+        sock.close()
+
+        if result != 0:
+            return True
+
+        req = urllib.request.Request(
+            f"https://{domain}", 
+            headers={'User-Agent': 'Mozilla/5.0'}
+        )
+        
+        with urllib.request.urlopen(req, timeout=4) as res:
             html = res.read().decode('utf-8', errors='ignore').lower()
-            if any(w in html for w in ["заблокирован", "роскомнадзор", "block", "deny"]):
+            if any(w in html for w in ["заблокирован", "роскомнадзор", "eais", "block", "deny"]):
                 return True
             return False
+
     except Exception:
         return True
 
@@ -168,12 +193,10 @@ def main():
     with open("proxy.txt", "w", encoding="utf-8") as f:
         f.write(b64_output)
 
-    ru_node = None
+    ru_nodes = None
     if os.path.exists("ru_nodes.txt"):
         with open("ru_nodes.txt", "r", encoding="utf-8") as f:
-            ru_node_lines = [l.strip() for l in f if l.strip()]
-        if ru_node_lines:
-            ru_node = ru_node_lines
+            ru_nodes = [l.strip() for l in f if l.strip()]
 
     domains_to_test = load_domains_from_sources()
     
@@ -181,7 +204,7 @@ def main():
     allowed_list = []
     
     for domain in domains_to_test:
-        if test_domain_is_blocked_via_ru(domain, ru_node):
+        if test_domain_via_ru_proxy(domain, ru_nodes):
             blocked_list.append(domain)
         else:
             allowed_list.append(domain)
