@@ -1,1 +1,0 @@
-vless://0f85a64b-55f4-4166-b217-7563d221cd4a@ruh.omvpn.info:8443?encryption=none&flow=xtls-rprx-vision&type=tcp&security=reality&sni=vk.com&fp=qq&pbk=cD8mVX41lqyVGCuPz0-tQWcNqkMxiPZxU7JJsyyNAEI#%F0%9F%87%B7%F0%9F%87%BA%20Russia%2C%20Udomlya%20%7C%20%5BBL%5D
