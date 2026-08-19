@@ -1,1 +1,15 @@
-{"version":1,"rules":[{"domain":[]}]}
+{
+  "version": 1,
+  "rules": [
+    {
+      "domain_suffix": [
+        "api.browser.yandex.ru",
+        "icmp0.ru",
+        "mangabuff.ru",
+        "verify.yandex.ru",
+        "wss10.mangabuff.ru",
+        "ymou53hpwq.ru"
+      ]
+    }
+  ]
+}
