@@ -9,7 +9,6 @@ import subprocess
 import os
 
 RU_KEYWORDS = ["russia", "moscow", "spb", "россия", "sankt-peterburg", "🇷🇺"]
-BAD_KEYWORDS = ["anycast", "fixnet", "fixcord", "cloudflare", "warp", "cf-"]
 
 def safe_b64decode(data):
     data = data.strip()
@@ -43,9 +42,25 @@ def extract_host(line):
         return None
     return None
 
+def is_russian_ip(host):
+    try:
+        ip = socket.gethostbyname(host)
+        url = f"http://ip-api.com/json/{ip}?fields=countryCode"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=3) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            return data.get("countryCode") == "RU"
+    except Exception:
+        return False
+
 def is_russian_proxy(line_str):
     line_lower = line_str.lower()
-    return any(ru_kw in line_lower for ru_kw in RU_KEYWORDS)
+    if any(ru_kw in line_lower for ru_kw in RU_KEYWORDS):
+        return True
+    host = extract_host(line_str)
+    if host:
+        return is_russian_ip(host)
+    return False
 
 def get_rkn_banned_list():
     rkn_url = "https://raw.githubusercontent.com/roskomkod/ru-blocked-domains/main/domains.txt"
@@ -56,47 +71,6 @@ def get_rkn_banned_list():
             return set(line.strip().lower() for line in content.splitlines() if line.strip() and not line.startswith("#"))
     except Exception:
         return set()
-
-def test_domain_via_ru_proxy(domain, ru_nodes):
-    if not ru_nodes:
-        return True
-
-    ru_node = ru_nodes[0]
-    host = extract_host(ru_node)
-    if not host:
-        return True
-
-    try:
-        port = 443
-        if "@" in ru_node and ":" in ru_node.split("@")[-1]:
-            port_part = ru_node.split("@")[-1].split(":")[1]
-            port = int(re.split(r'[/?#]', port_part)[0])
-
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(3)
-        result = sock.connect_ex((host, port))
-        sock.close()
-
-        if result != 0:
-            return True
-
-        proxy_url = f"http://{host}:{port}"
-        proxy_support = urllib.request.ProxyHandler({'http': proxy_url, 'https': proxy_url})
-        opener = urllib.request.build_opener(proxy_support)
-        
-        req = urllib.request.Request(
-            f"https://{domain}", 
-            headers={'User-Agent': 'Mozilla/5.0'}
-        )
-        
-        with opener.open(req, timeout=4) as res:
-            html = res.read().decode('utf-8', errors='ignore').lower()
-            if any(w in html for w in ["заблокирован", "роскомнадзор", "eais", "block", "deny"]):
-                return True
-            return False
-
-    except Exception:
-        return True
 
 def load_domains_from_sources():
     if not os.path.exists("urls.txt"):
@@ -175,20 +149,16 @@ def main():
 
     for line in lines:
         line_str = line.strip()
-        if not line_str or line_str.startswith("vless://"):
+        if not line_str:
             continue
             
-        if is_russian_proxy(line_str):
-            host = extract_host(line_str)
-            if host:
-                ru_lines.append(line_str)
-            continue
-
-        if any(bad in line_str.lower() for bad in BAD_KEYWORDS):
-            continue
-
         host = extract_host(line_str)
-        if host:
+        if not host:
+            continue
+
+        if is_russian_proxy(line_str):
+            ru_lines.append(line_str)
+        else:
             clean_lines.append(line_str)
 
     unique_ru_lines = sorted(list(set(ru_lines)))
@@ -208,27 +178,42 @@ def main():
     with open("proxy.txt", "w", encoding="utf-8") as f:
         f.write(b64_output)
 
-    ru_nodes = unique_ru_lines
-
     rkn_domains = get_rkn_banned_list()
-    domains_to_test = load_domains_from_sources()
-    
-    proxy_rules = list(rkn_domains)
-    rus_rules = []
-    
-    for domain in domains_to_test:
-        d_clean = domain.lower()
-        if d_clean not in rkn_domains and not any(d_clean.endswith("." + rkn_d) for rkn_d in rkn_domains):
-            if test_domain_via_ru_proxy(domain, ru_nodes):
-                proxy_rules.append(domain)
-            else:
-                rus_rules.append(domain)
+    user_domains = load_domains_from_sources()
+
+    proxy_domains = set(rkn_domains)
+    rus_domains = set()
+
+    for d in user_domains:
+        d_clean = d.lower().strip()
+        if d_clean in rkn_domains or any(d_clean.endswith("." + rkn) for rkn in rkn_domains):
+            proxy_domains.add(d_clean)
+        else:
+            rus_domains.add(d_clean)
+
+    proxy_payload = {
+        "version": 1,
+        "rules": [
+            {
+                "domain_suffix": sorted(list(proxy_domains))
+            }
+        ]
+    }
+
+    rus_payload = {
+        "version": 1,
+        "rules": [
+            {
+                "domain_suffix": sorted(list(rus_domains))
+            }
+        ]
+    }
 
     with open("my_rules_proxy.json", "w", encoding="utf-8") as f:
-        json.dump({"version": 1, "rules": [{"domain": sorted(list(set(proxy_rules)))}]}, f, separators=(',', ':'))
+        json.dump(proxy_payload, f, ensure_ascii=False, separators=(',', ':'))
 
     with open("My_rules_RUS.json", "w", encoding="utf-8") as f:
-        json.dump({"version": 1, "rules": [{"domain": sorted(list(set(rus_rules)))}]}, f, separators=(',', ':'))
+        json.dump(rus_payload, f, ensure_ascii=False, separators=(',', ':'))
 
 if __name__ == "__main__":
     main()
