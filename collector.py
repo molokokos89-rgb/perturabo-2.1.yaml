@@ -1,171 +1,55 @@
-import sys
-import re
-import json
-import base64
-import socket
 import urllib.request
-import urllib.parse
-import subprocess
-import os
+import base64
+import re
+import socket
+import json
 
-BAD_KEYWORDS = ["russia", "anycast", "fixnet", "fixcord", "cloudflare", "warp", "cf-"]
+SOURCES = [
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2Ball_RUS.txt",
+    "https://raw.githubusercontent.com/sevcator/5ubscript10n/main/protocols/hy2.txt",
+    "https://raw.githubusercontent.com/yebekhe/TelegramV2rayCollector/main/sub/normal/mix",
+    "https://raw.githubusercontent.com/freefq/free/master/v2ray",
+    "https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/All_Configs_Sub.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt"
+]
 
-def safe_b64decode(data):
-    data = data.strip()
-    missing_padding = len(data) % 4
-    if missing_padding:
-        data += '=' * (4 - missing_padding)
-    return base64.b64decode(data).decode('utf-8', errors='ignore')
+PROTOCOLS = ["ss://", "vmess://", "trojan://", "hy2://", "hysteria2://", "vless://"]
 
-def extract_host(line):
-    line = line.strip()
-    if not line:
-        return None
+def fetch_url(url):
     try:
-        if line.startswith("ss://"):
-            part = line.split("://")[1].split("#")[0]
-            if "@" in part:
-                host_port = part.split("@")[1]
-            else:
-                decoded = safe_b64decode(part)
-                host_port = decoded.split("@")[1]
-            return host_port.split(":")[0]
-        elif line.startswith(("trojan://", "hy2://", "hysteria2://", "vless://")):
-            part = line.split("://")[1].split("@")[1]
-            return part.split(":")[0].split("?")[0]
-        elif line.startswith("vmess://"):
-            b64_str = line.split("://")[1]
-            decoded = safe_b64decode(b64_str)
-            data = json.loads(decoded)
-            return data.get("add")
+        req = urllib.request.Request(
+            url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            content = response.read().decode('utf-8', errors='ignore')
+            if not any(proto in content for proto in PROTOCOLS):
+                try:
+                    clean_content = content.strip().replace("\n", "").replace("\r", "")
+                    missing_padding = len(clean_content) % 4
+                    if missing_padding:
+                        clean_content += '=' * (4 - missing_padding)
+                    decoded = base64.b64decode(clean_content).decode('utf-8', errors='ignore')
+                    if any(proto in decoded for proto in PROTOCOLS):
+                        content = decoded
+                except Exception:
+                    pass
+            return content.splitlines()
     except Exception:
-        return None
-    return None
-
-def test_domain_is_blocked_via_ru(domain, ru_node):
-    if not ru_node:
-        return True
-    try:
-        req = urllib.request.Request(f"https://{domain}", headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=3) as res:
-            html = res.read().decode('utf-8', errors='ignore').lower()
-            if any(w in html for w in ["заблокирован", "роскомнадзор", "block", "deny"]):
-                return True
-            return False
-    except Exception:
-        return True
-
-def load_domains_from_sources():
-    if not os.path.exists("urls.txt"):
         return []
-    
-    with open("urls.txt", "r", encoding="utf-8") as f:
-        urls = [line.strip() for line in f if line.strip()]
-        
-    all_extracted = []
-    for index, url in enumerate(urls):
-        if url.endswith(".json"):
-            try:
-                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla'})
-                with urllib.request.urlopen(req, timeout=10) as response:
-                    data = json.loads(response.read().decode('utf-8'))
-                    if "payload" in data:
-                        all_extracted.extend(data["payload"])
-                    if "rules" in data:
-                        for rule in data["rules"]:
-                            if "domain" in rule: all_extracted.extend(rule["domain"])
-                            if "domain_suffix" in rule: all_extracted.extend(rule["domain_suffix"])
-            except:
-                pass
-        elif url.endswith(".txt"):
-            try:
-                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla'})
-                with urllib.request.urlopen(req, timeout=10) as response:
-                    for line in response.read().decode('utf-8', errors='ignore').splitlines():
-                        line = line.strip()
-                        if line and not line.startswith("#"):
-                            domain = line.split(",")[-1] if "," in line else line
-                            all_extracted.append(domain)
-            except:
-                pass
-        elif url.endswith(".srs"):
-            srs_file = f"temp_{index}.srs"
-            json_file = f"temp_{index}.json"
-            try:
-                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla'})
-                with urllib.request.urlopen(req, timeout=10) as response:
-                    with open(srs_file, "wb") as out:
-                        out.write(response.read())
-                subprocess.run(["sing-box", "rule-set", "decompile", srs_file, "--output", json_file], check=True)
-                with open(json_file, "r", encoding="utf-8") as jf:
-                    data = json.load(jf)
-                    for rule in data.get("rules", []):
-                        if "domain" in rule: all_extracted.extend(rule["domain"])
-                        if "domain_suffix" in rule: all_extracted.extend(rule["domain_suffix"])
-            except:
-                pass
-            finally:
-                if os.path.exists(srs_file): os.remove(srs_file)
-                if os.path.exists(json_file): os.remove(json_file)
-            
-    clean_domains = []
-    for d in all_extracted:
-        d_clean = d.strip().split(",")[-1] if "," in d else d.strip()
-        if d_clean and not d_clean.startswith("+."): 
-            clean_domains.append(d_clean)
-            
-    return list(set(clean_domains))
 
 def main():
-    try:
-        with open("raw_combined.txt", "r", encoding="utf-8", errors="ignore") as f:
-            lines = f.readlines()
-    except Exception:
-        lines = []
+    all_proxies = []
+    for url in SOURCES:
+        lines = fetch_url(url)
+        for line in lines:
+            line = line.strip()
+            if line and any(line.startswith(proto) for proto in PROTOCOLS):
+                all_proxies.append(line)
 
-    clean_lines = []
-    for line in lines:
-        line_str = line.strip()
-        if not line_str:
-            continue
-        if line_str.startswith("vless://"):
-            continue
-        if any(bad in line_str.lower() for bad in BAD_KEYWORDS):
-            continue
-        host = extract_host(line_str)
-        if host:
-            clean_lines.append(line_str)
+    unique_proxies = sorted(list(set(all_proxies)))
 
-    unique_lines = sorted(list(set(clean_lines)))
-    raw_text = "\n".join(unique_lines)
-    b64_output = base64.b64encode(raw_text.encode('utf-8')).decode('utf-8')
-
-    with open("proxy.txt", "w", encoding="utf-8") as f:
-        f.write(b64_output)
-
-    ru_node = None
-    if os.path.exists("ru_nodes.txt"):
-        with open("ru_nodes.txt", "r", encoding="utf-8") as f:
-            ru_lines = [l.strip() for l in f if l.strip()]
-        if ru_lines:
-            ru_node = ru_lines
-
-    domains_to_test = load_domains_from_sources()
-    
-    blocked_list = []
-    allowed_list = []
-    
-    for domain in domains_to_test:
-        if test_domain_is_blocked_via_ru(domain, ru_node):
-            blocked_list.append(domain)
-        else:
-            allowed_list.append(domain)
-            
-    with open("blocked.json", "w", encoding="utf-8") as f:
-        json.dump({"version": 1, "rules": [{"domain": blocked_list}]}, f, indent=2)
-
-    with open("allowed.json", "w", encoding="utf-8") as f:
-        json.dump({"version": 1, "rules": [{"domain": allowed_list}]}, f, indent=2)
+    with open("raw_combined.txt", "w", encoding="utf-8") as f:
+        f.write("\n".join(unique_proxies))
 
 if __name__ == "__main__":
     main()
