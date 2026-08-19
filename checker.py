@@ -53,7 +53,6 @@ def test_domain_via_ru_proxy(domain, ru_nodes):
 
     ru_node = ru_nodes[0]
     host = extract_host(ru_node)
-    
     if not host:
         return True
 
@@ -71,12 +70,16 @@ def test_domain_via_ru_proxy(domain, ru_nodes):
         if result != 0:
             return True
 
+        proxy_url = f"http://{host}:{port}"
+        proxy_support = urllib.request.ProxyHandler({'http': proxy_url, 'https': proxy_url})
+        opener = urllib.request.build_opener(proxy_support)
+        
         req = urllib.request.Request(
             f"https://{domain}", 
             headers={'User-Agent': 'Mozilla/5.0'}
         )
         
-        with urllib.request.urlopen(req, timeout=4) as res:
+        with opener.open(req, timeout=4) as res:
             html = res.read().decode('utf-8', errors='ignore').lower()
             if any(w in html for w in ["заблокирован", "роскомнадзор", "eais", "block", "deny"]):
                 return True
@@ -96,7 +99,7 @@ def load_domains_from_sources():
     for index, url in enumerate(urls):
         if url.endswith(".json"):
             try:
-                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla'})
+                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
                 with urllib.request.urlopen(req, timeout=10) as response:
                     data = json.loads(response.read().decode('utf-8'))
                     if "payload" in data:
@@ -109,7 +112,7 @@ def load_domains_from_sources():
                 pass
         elif url.endswith(".txt"):
             try:
-                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla'})
+                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
                 with urllib.request.urlopen(req, timeout=10) as response:
                     for line in response.read().decode('utf-8', errors='ignore').splitlines():
                         line = line.strip()
@@ -122,7 +125,7 @@ def load_domains_from_sources():
             srs_file = f"temp_{index}.srs"
             json_file = f"temp_{index}.json"
             try:
-                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla'})
+                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
                 with urllib.request.urlopen(req, timeout=10) as response:
                     with open(srs_file, "wb") as out:
                         out.write(response.read())
@@ -147,20 +150,21 @@ def load_domains_from_sources():
     return list(set(clean_domains))
 
 def main():
-    try:
+    for name in ["proxy.txt", "ru_nodes.txt", "ru_proxies.txt", "blocked.json", "allowed.json"]:
+        if not os.path.exists(name):
+            open(name, "a", encoding="utf-8").close()
+
+    lines = []
+    if os.path.exists("raw_combined.txt"):
         with open("raw_combined.txt", "r", encoding="utf-8", errors="ignore") as f:
             lines = f.readlines()
-    except Exception:
-        lines = []
 
     clean_lines = []
     ru_lines = []
 
     for line in lines:
         line_str = line.strip()
-        if not line_str:
-            continue
-        if line_str.startswith("vless://"):
+        if not line_str or line_str.startswith("vless://"):
             continue
             
         if is_russian_proxy(line_str):
@@ -178,7 +182,7 @@ def main():
 
     unique_ru_lines = sorted(list(set(ru_lines)))
     ru_raw_text = "\n".join(unique_ru_lines)
-    ru_b64_output = base64.b64encode(ru_raw_text.encode('utf-8')).decode('utf-8')
+    ru_b64_output = base64.b64encode(ru_raw_text.encode('utf-8')).decode('utf-8') if ru_raw_text else ""
 
     with open("ru_proxies.txt", "w", encoding="utf-8") as f:
         f.write(ru_b64_output)
@@ -188,15 +192,12 @@ def main():
 
     unique_lines = sorted(list(set(clean_lines)))
     raw_text = "\n".join(unique_lines)
-    b64_output = base64.b64encode(raw_text.encode('utf-8')).decode('utf-8')
+    b64_output = base64.b64encode(raw_text.encode('utf-8')).decode('utf-8') if raw_text else ""
 
     with open("proxy.txt", "w", encoding="utf-8") as f:
         f.write(b64_output)
 
-    ru_nodes = None
-    if os.path.exists("ru_nodes.txt"):
-        with open("ru_nodes.txt", "r", encoding="utf-8") as f:
-            ru_nodes = [l.strip() for l in f if l.strip()]
+    ru_nodes = unique_ru_lines
 
     domains_to_test = load_domains_from_sources()
     
