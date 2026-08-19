@@ -34,14 +34,13 @@ jobs:
       - name: Filter and generate clean proxy list
         run: |
           python checker.py
-          rm -f proxy_test.txt checker_test.py
 
       - name: Commit and Push changes
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           
-          git rm -f proxy_test.txt checker_test.py || true
-          git add proxy.txt ru_proxies.txt ru_nodes.txt raw_combined.txt blocked.json allowed.json urls.txt My_rules_RUS.json my_rules_proxy.json reject_rules.json || true
-          git commit -m "auto-update clean proxies and rulesets [skip ci]" || echo "Nothing to commit"
+          git add -A
+          git status
+          git commit -m "auto-update clean proxies and rulesets [skip ci]" || echo "No changes detected"
           git push origin HEAD:${{ github.ref_name }}
