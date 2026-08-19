@@ -21,6 +21,12 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Install sing-box
+        run: |
+          RELEASE_URL=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | grep "browser_download_url.*linux-amd64.tar.gz" | cut -d '"' -f 4)
+          curl -sL $RELEASE_URL | tar -xz --strip-components=1
+          sudo mv sing-box /usr/local/bin/
+
       - name: Collect Raw Proxies
         run: |
           python collector.py
@@ -29,22 +35,13 @@ jobs:
         run: |
           python checker.py
           rm -f proxy_test.txt checker_test.py
-      - name: Commit and Push changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-          git rm -f proxy_test.txt checker_test.py || true
-          git add proxy.txt ru_proxies.txt ru_nodes.txt raw_combined.txt blocked.json allowed.json urls.txt || true
-          git commit -m "auto-update clean proxies and rulesets [skip ci]" || echo "Nothing to commit"
-          git push origin HEAD:${{ github.ref_name }}
 
       - name: Commit and Push changes
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.email "41898282+github-actions[bot]"
           
           git rm -f proxy_test.txt checker_test.py || true
-          git add proxy.txt ru_proxies.txt ru_nodes.txt My_rules_RUS.json reject_rules.json my_rules_proxy.json || true
+          git add proxy.txt ru_proxies.txt ru_nodes.txt raw_combined.txt blocked.json allowed.json urls.txt My_rules_RUS.json my_rules_proxy.json reject_rules.json || true
           git commit -m "auto-update clean proxies and rulesets [skip ci]" || echo "Nothing to commit"
           git push origin HEAD:${{ github.ref_name }}
