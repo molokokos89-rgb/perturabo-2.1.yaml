@@ -47,6 +47,17 @@ def is_russian_proxy(line_str):
     line_lower = line_str.lower()
     return any(ru_kw in line_lower for ru_kw in RU_KEYWORDS)
 
+def get_rkn_banned_list():
+    """Загружает динамический список блокировок в память для ускорения проверки"""
+    rkn_url = "https://raw.githubusercontent.com/roskomkod/ru-blocked-domains/main/domains.txt"
+    try:
+        req = urllib.request.Request(rkn_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=10) as response:
+            content = response.read().decode('utf-8', errors='ignore')
+            return set(line.strip().lower() for line in content.splitlines() if line.strip())
+    except Exception:
+        return set()
+
 def test_domain_via_ru_proxy(domain, ru_nodes):
     if not ru_nodes:
         return True
@@ -150,7 +161,8 @@ def load_domains_from_sources():
     return list(set(clean_domains))
 
 def main():
-    for name in ["proxy.txt", "ru_nodes.txt", "ru_proxies.txt", "blocked.json", "allowed.json"]:
+    target_files = ["proxy.txt", "ru_nodes.txt", "ru_proxies.txt", "My_rules_RUS.json", "my_rules_proxy.json", "reject_rules.json"]
+    for name in target_files:
         if not os.path.exists(name):
             open(name, "a", encoding="utf-8").close()
 
@@ -200,21 +212,28 @@ def main():
     ru_nodes = unique_ru_lines
 
     domains_to_test = load_domains_from_sources()
+    rkn_domains = get_rkn_banned_list()
     
-    blocked_list = []
-    allowed_list = []
+    proxy_rules = []
+    rus_rules = []
     
     for domain in domains_to_test:
-        if test_domain_via_ru_proxy(domain, ru_nodes):
-            blocked_list.append(domain)
-        else:
-            allowed_list.append(domain)
+        d_clean = domain.
+        
+        if d_clean in rkn_domains or any(d_clean.endswith("." + rkn_d) for rkn_d in rkn_domains):
+            proxy_rules.append(domain)
+            continue
             
-    with open("blocked.json", "w", encoding="utf-8") as f:
-        json.dump({"version": 1, "rules": [{"domain": blocked_list}]}, f, indent=2)
+        if test_domain_via_ru_proxy(domain, ru_nodes):
+            proxy_rules.append(domain)
+        else:
+            rus_rules.append(domain)
+            
+    with open("my_rules_proxy.json", "w", encoding="utf-8") as f:
+        json.dump({"version": 1, "rules": [{"domain": sorted(list(set(proxy_rules)))}]}, f, indent=2)
 
-    with open("allowed.json", "w", encoding="utf-8") as f:
-        json.dump({"version": 1, "rules": [{"domain": allowed_list}]}, f, indent=2)
+    with open("My_rules_RUS.json", "w", encoding="utf-8") as f:
+        json.dump({"version": 1, "rules": [{"domain": sorted(list(set(rus_rules)))}]}, f, indent=2)
 
 if __name__ == "__main__":
     main()
