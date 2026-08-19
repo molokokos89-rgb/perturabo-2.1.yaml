@@ -62,15 +62,32 @@ def is_russian_proxy(line_str):
         return is_russian_ip(host)
     return False
 
+def clean_domain(domain):
+    domain = domain.strip().lower()
+    if "," in domain:
+        domain = domain.split(",")[-1]
+    domain = re.sub(r'^[.+]+', '', domain)
+    domain = re.sub(r'^[a-zA-Z0-9]+://', '', domain)
+    domain = domain.split('/')[0].split(':')[0]
+    if domain and not domain.startswith("-") and "." in domain:
+        return domain
+    return None
+
 def get_rkn_banned_list():
     rkn_url = "https://raw.githubusercontent.com/roskomkod/ru-blocked-domains/main/domains.txt"
+    domains = set()
     try:
         req = urllib.request.Request(rkn_url, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req, timeout=15) as response:
             content = response.read().decode('utf-8', errors='ignore')
-            return set(line.strip().lower() for line in content.splitlines() if line.strip() and not line.startswith("#"))
+            for line in content.splitlines():
+                if line.strip() and not line.startswith("#"):
+                    cleaned = clean_domain(line)
+                    if cleaned:
+                        domains.add(cleaned)
     except Exception:
-        return set()
+        pass
+    return domains
 
 def load_domains_from_sources():
     if not os.path.exists("urls.txt"):
@@ -99,10 +116,8 @@ def load_domains_from_sources():
                 req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
                 with urllib.request.urlopen(req, timeout=10) as response:
                     for line in response.read().decode('utf-8', errors='ignore').splitlines():
-                        line = line.strip()
-                        if line and not line.startswith("#"):
-                            domain = line.split(",")[-1] if "," in line else line
-                            all_extracted.append(domain)
+                        if line.strip() and not line.startswith("#"):
+                            all_extracted.append(line)
             except Exception:
                 pass
         elif url.endswith(".srs"):
@@ -127,13 +142,15 @@ def load_domains_from_sources():
             
     clean_domains = []
     for d in all_extracted:
-        d_clean = d.strip().split(",")[-1] if "," in d else d.strip()
-        if d_clean and not d_clean.startswith("+."): 
-            clean_domains.append(d_clean)
+        cd = clean_domain(d)
+        if cd:
+            clean_domains.append(cd)
             
     return list(set(clean_domains))
 
 def main():
+    os.makedirs("rules", exist_ok=True)
+    
     target_files = ["proxy.txt", "ru_nodes.txt", "ru_proxies.txt", "My_rules_RUS.json", "my_rules_proxy.json", "reject_rules.json"]
     for name in target_files:
         if not os.path.exists(name):
@@ -185,20 +202,38 @@ def main():
     rus_domains = set()
 
     for d in user_domains:
-        d_clean = d.lower().strip()
-        if d_clean in rkn_domains or any(d_clean.endswith("." + rkn) for rkn in rkn_domains):
-            proxy_domains.add(d_clean)
+        if d in rkn_domains or any(d.endswith("." + rkn) for rkn in rkn_domains):
+            proxy_domains.add(d)
         else:
-            rus_domains.add(d_clean)
+            rus_domains.add(d)
 
-    proxy_payload = {
+    sorted_proxy_domains = sorted(list(proxy_domains))
+    chunk_size = 2000
+    chunks = [sorted_proxy_domains[i:i + chunk_size] for i in range(0, len(sorted_proxy_domains), chunk_size)]
+
+    for idx, chunk in enumerate(chunks, 1):
+        filename = f"rules/block{idx}.json"
+        payload = {
+            "version": 1,
+            "rules": [
+                {
+                    "domain_suffix": chunk
+                }
+            ]
+        }
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, separators=(',', ':'))
+
+    main_proxy_payload = {
         "version": 1,
         "rules": [
             {
-                "domain_suffix": sorted(list(proxy_domains))
+                "domain_suffix": sorted_proxy_domains
             }
         ]
     }
+    with open("my_rules_proxy.json", "w", encoding="utf-8") as f:
+        json.dump(main_proxy_payload, f, ensure_ascii=False, separators=(',', ':'))
 
     rus_payload = {
         "version": 1,
@@ -208,10 +243,6 @@ def main():
             }
         ]
     }
-
-    with open("my_rules_proxy.json", "w", encoding="utf-8") as f:
-        json.dump(proxy_payload, f, ensure_ascii=False, separators=(',', ':'))
-
     with open("My_rules_RUS.json", "w", encoding="utf-8") as f:
         json.dump(rus_payload, f, ensure_ascii=False, separators=(',', ':'))
 
