@@ -105,7 +105,7 @@ proxy-groups:
 rule-providers:
   my-reject-rules:
     type: http
-    behavior: classical
+    behavior: domain
     url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/main/reject_rules.json"
     path: ./rules/reject.json
     interval: 43200
@@ -114,19 +114,19 @@ rule-providers:
     type: http
     behavior: domain
     url: "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/gfw.txt"
-    path: ./rules/nsfw.yaml
+    path: ./rules/nsfw.txt
     interval: 43200
 
   my-proxy-rules:
     type: http
-    behavior: classical
+    behavior: domain
     url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/main/my_rules_proxy.json"
     path: ./rules/proxy.json
     interval: 43200
 
   my-direct-rules:
     type: http
-    behavior: classical
+    behavior: domain
     url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/main/My_rules_RUS.json"
     path: ./rules/direct.json
     interval: 43200
