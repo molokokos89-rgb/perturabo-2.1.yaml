@@ -1,0 +1,188 @@
+port: 0
+socks-port: 0
+redir-port: 0
+tproxy-port: 0
+mixed-port: 7890
+allow-lan: false
+bind-address: '*'
+mode: rule
+log-level: error
+ipv6: false
+global-client-fingerprint: chrome
+keep-alive-idle: 15
+keep-alive-interval: 15
+tcp-concurrent: true
+
+sniffing:
+  enable: true
+  override-destination: true
+  sniff:
+    TLS:
+      ports: [443, 8443]
+    HTTP:
+      ports: [80, 8080]
+
+dns:
+  enable: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  respect-rules: false
+  ipv6: false
+  
+  nameserver:
+    - https://dns.google/dns-query
+    - https://dns.quad9.net/dns-query
+
+  direct-nameserver:
+    - 77.88.8.8
+    - 77.88.8.1
+
+  proxy-server-nameserver:
+    - https://dns.google/dns-query
+    - tls://8.8.8.8
+
+  fake-ip-filter:
+    - '*.nalog.ru'
+    - '*.nalog.gov.ru'
+    - '*.boosty.to'
+    - '*.max.ru'
+    - '*.bitrix24.ru'
+    - '*.bitrix24.net'
+    - '*.bitrix24.com'
+    - '*.b24.ru'
+    - '*.b24.net'
+    - '*.gosuslugi.ru'
+    - '*.pgu.mos.ru'
+    - '*.rostelecom.ru'
+    - '*.rt.ru'
+    - '*.edu.ru'
+    - '*.vk.com'
+    - '*.vk.ru'
+    - '*.vk.me'
+    - '*.vk.net'
+    - '*.vk.org'
+    - '*.vk-cdn.net'
+    - '*.yandex.ru'
+    - '*.yandex.net'
+    - '*.yandex.com'
+    - '*.yandex.org'
+    - '*.dzen.ru'
+    - '*.yoomoney.ru'
+    - '*.mail.ru'
+    - '*.ok.ru'
+    - '*.ru'
+    - '*.su'
+    - '*.xn--p1ai'
+    - '*.by'
+    - '*.org.ru'
+    - '*.net.ru'
+    - '*.pp.ru'
+    - '*.pool.ntp.org'
+    - '*.ntp.org'
+    
+proxy-providers:
+  vless-sub-1:
+    type: http
+    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/main/proxy.txt"
+    interval: 3600
+    path: ./vless_sub_1.txt
+    ua: "clash"
+    health-check:
+      enable: false
+
+proxy-groups:
+  - name: VLESS-Auto
+    type: urltest
+    url: http://www.gstatic.com/generate_204
+    interval: 600
+    timeout: 5000
+    lazy: false
+    tolerance: 300
+    idle-timeout: 1800
+    proxies:
+      - vless-sub-1
+
+rule-providers:
+  my-reject-rules:
+    type: http
+    behavior: classical
+    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/main/reject_rules.json"
+    path: ./rules/reject.json
+    interval: 43200
+
+  nsfw-rules:
+    type: http
+    behavior: domain
+    url: "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/gfw.txt"
+    path: ./rules/nsfw.yaml
+    interval: 43200
+
+  my-proxy-rules:
+    type: http
+    behavior: classical
+    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/main/my_rules_proxy.json"
+    path: ./rules/proxy.json
+    interval: 43200
+
+  my-direct-rules:
+    type: http
+    behavior: classical
+    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/main/My_rules_RUS.json"
+    path: ./rules/direct.json
+    interval: 43200
+
+rules:
+  - AND,((CONN-ANT,UDP),(DST-PORT,443),(DOMAIN-KEYWORD,cloudflare)),REJECT
+  - AND,((CONN-ANT,UDP),(DST-PORT,80), (DOMAIN-KEYWORD,cloudflare)),REJECT
+  - DOMAIN-KEYWORD,cloudflare,VLESS-Auto
+  - DOMAIN-SUFFIX,cloudflare.com,VLESS-Auto
+  - DOMAIN-SUFFIX,cloudflare-dns.com,VLESS-Auto
+  - DOMAIN-SUFFIX,browserleaks.com,VLESS-Auto
+  - DOMAIN,gemini.google.com,VLESS-Auto
+  - DOMAIN,aistudio.google.com,VLESS-Auto
+  - DOMAIN,generativelanguage.googleapis.com,VLESS-Auto
+  - DOMAIN,alkalimining-pa.googleapis.com,VLESS-Auto
+  - DOMAIN,proactivebackend-pa.googleapis.com,VLESS-Auto
+  - DOMAIN-SUFFIX,browserleaks.com,VLESS-Auto
+  - DOMAIN-SUFFIX,telegram.org,VLESS-Auto
+  - DOMAIN-SUFFIX,telegram.dog,VLESS-Auto
+  - DOMAIN-SUFFIX,telegram.me,VLESS-Auto
+  - DOMAIN-SUFFIX,t.me,VLESS-Auto
+  - DOMAIN-SUFFIX,tdesktop.com,VLESS-Auto
+  - IP-CIDR,149.154.160.0/20,VLESS-Auto
+  - IP-CIDR,149.154.164.0/22,VLESS-Auto
+  - IP-CIDR,149.154.172.0/22,VLESS-Auto
+  - IP-CIDR,91.108.4.0/22,VLESS-Auto
+  - IP-CIDR,91.108.8.0/22,VLESS-Auto
+  - IP-CIDR,91.108.12.0/22,VLESS-Auto
+  - IP-CIDR,91.108.16.0/22,VLESS-Auto
+  - IP-CIDR,91.108.20.0/22,VLESS-Auto
+  - IP-CIDR,91.108.36.0/23,VLESS-Auto
+  - IP-CIDR,91.108.38.0/23,VLESS-Auto
+  - IP-CIDR,91.108.56.0/22,VLESS-Auto
+  - DOMAIN-SUFFIX,whatsapp.net,VLESS-Auto
+  - DOMAIN-SUFFIX,whatsapp.com,VLESS-Auto
+  - DOMAIN-SUFFIX,whatsapp.biz,VLESS-Auto
+  - DOMAIN-SUFFIX,viber.com,VLESS-Auto
+  - DOMAIN-SUFFIX,signal.org,VLESS-Auto
+  - DOMAIN-SUFFIX,whispersystems.org,VLESS-Auto
+  - IP-CIDR,157.240.0.0/16,VLESS-Auto
+  - IP-CIDR,31.13.0.0/16,VLESS-Auto
+  - IP-CIDR,18.244.0.0/15,VLESS-Auto
+  - DOMAIN-SUFFIX,apple.com,DIRECT
+  - DOMAIN-SUFFIX,icloud.com,DIRECT
+  - DOMAIN-SUFFIX,mzstatic.com,DIRECT
+  - IP-CIDR,17.0.0.0/8,DIRECT
+  - DOMAIN-SUFFIX,nspk.ru,DIRECT
+  - DOMAIN-SUFFIX,sbp.ru,DIRECT
+  - DOMAIN-KEYWORD,sbp,DIRECT
+  - DOMAIN-SUFFIX,xn--p1ai,DIRECT
+  - DOMAIN-SUFFIX,ru,DIRECT
+  - DOMAIN-SUFFIX,su,DIRECT
+  - DOMAIN-SUFFIX,org,DIRECT
+  - RULE-SET,my-reject-rules,REJECT
+  - RULE-SET,my-proxy-rules,VLESS-Auto
+  - RULE-SET,nsfw-rules,VLESS-Auto
+  - RULE-SET,my-direct-rules,DIRECT
+  - DOMAIN-SUFFIX,xn--p1ai,DIRECT
+  - MATCH,VLESS-Auto
