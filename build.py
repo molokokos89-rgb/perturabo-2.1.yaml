@@ -1,8 +1,8 @@
-import json
-import re
 import urllib.request
+import re
+import json
 import os
-import ipaddress
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 RUS_JSON = "My_rules_RUS.json"
 REJECT_JSON = "reject_rules.json"
@@ -30,118 +30,158 @@ TIKTOK_KEYWORDS = ["tiktok", "byteoversea", "ibytedtos", "musically", "bytegecko
 YOUTUBE_KEYWORDS = ["youtube", "ytimg", "ggpht", "googlevideo"]
 TELEGRAM_KEYWORDS = ["telegram", "t.me", "tdesktop", "tx.me"]
 
+WHITELIST_EXACT = [
+    "tiktok.com", "facebook.com", "rutube.ru", "youtube.com", "vk.com",
+    "t.me", "telegram.org", "instagram.com"
+]
+
+WHITELIST_PATTERNS = [
+    r"^([^.]+\.)*tiktok\.com$",
+    r"^([^.]+\.)*facebook\.com$",
+    r"^([^.]+\.)*rutube\.ru$",
+    r"^([^.]+\.)*googlevideo\.com$"
+]
+
+ALLOWED_AD_SUBDOMAINS = [
+    "analytics", "ads", "pixel", "metrics", "telemetry", "tracker",
+    "://tiktokcdn.com", "bdtone.com", "mon.pangle.io"
+]
+
+PROXY_JSON = "my_rules_proxy.json"
+
+def is_dangerous_block(domain):
+    if domain in WHITELIST_EXACT:
+        return True
+    for pattern in WHITELIST_PATTERNS:
+        if re.match(pattern, domain):
+            if any(sub in domain for sub in ALLOWED_AD_SUBDOMAINS):
+                return False
+            return True
+    return False
+
+def clean_domain(line):
+    line = line.strip().lower()
+    if not line or line.startswith(("#", "!", ";", "//")):
+        return None
+    line = re.sub(r'^(127\.0\.0\.1|0\.0\.0\.0)\s+', '', line)
+    if "#" in line:
+        line = line.split("#")[0]
+    line = line.strip()
+    if line.startswith("||"):
+        line = line[2:]
+    if line.endswith("^"):
+        line = line[:-1]
+    line = line.replace("*.", "")
+    if re.match(r'^[a-z0-9.-]+\.[a-z]{2,6}$', line):
+        return line
+    return None
+
 def download_text(url):
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=30) as response:
             return response.read().decode('utf-8', errors='ignore')
     except Exception:
         return ""
 
-def load_remote_json(url):
-    try:
-        content = download_text(url)
-        if content:
-            return json.loads(content)
-    except Exception:
-        pass
-    return {"version": 1, "rules": []}
-
-def extract_domains_from_json(data):
+def load_existing_proxy_domains():
     domains = set()
-    for rule in data.get("rules", []):
-        if "domain_suffix" in rule:
-            for d in rule["domain_suffix"]:
-                domains.add(d.lower().strip())
+    if os.path.exists(PROXY_JSON):
+        try:
+            with open(PROXY_JSON, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                for rule in data.get("rules", []):
+                    if "domain_suffix" in rule:
+                        for d in rule["domain_suffix"]:
+                            domains.add(d.lower().strip())
+        except Exception:
+            pass
     return domains
 
-def is_ip(item):
+def test_single_domain(domain):
     try:
-        ipaddress.ip_address(item)
-        return True
-    except ValueError:
-        pass
-    try:
-        ipaddress.ip_network(item, strict=False)
-        return True
-    except ValueError:
-        pass
-    return False
+        req = urllib.request.Request(f"https://{domain}", headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=3) as res:
+            html = res.read().decode('utf-8', errors='ignore').lower()
+            if any(w in html for w in ["заблокирован", "роскомнадзор", "block", "deny"]):
+                return domain, True
+            return domain, False
+    except Exception:
+        return domain, True
 
-def clean_item(item):
-    item = item.lower().strip().replace("`", "").replace("*.", "")
-    if item.startswith("."):
-        item = item[1:]
-    return item
-
-def check_against_sources(item, cache):
-    for key, url in RULE_SOURCES.items():
-        if key not in cache:
-            cache[key] = download_text(url).lower()
-        if item in cache[key]:
-            return key
-    return None
-
-def save_json_file(file_path, domains):
-    output = {
-        "version": 1,
-        "rules": [{"domain_suffix": sorted(list(domains))}]
-    }
-    with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(output, f, indent=2, ensure_ascii=False)
+def check_domains_availability(domains_set):
+    blocked = []
+    allowed = []
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        futures = {executor.submit(test_single_domain, d): d for d in domains_set}
+        for future in as_completed(futures):
+            domain, is_blocked = future.result()
+            if is_blocked:
+                blocked.append(domain)
+            else:
+                allowed.append(domain)
+    return sorted(blocked), sorted(allowed)
 
 def main():
-    sources_cache = {}
+    rejected_domains = set()
     
-    rus_domains = extract_domains_from_json(load_remote_json(MAIN_REPO_RULES["rus"]))
-    proxy_domains = extract_domains_from_json(load_remote_json(MAIN_REPO_RULES["proxy"]))
-    reject_domains = extract_domains_from_json(load_remote_json(MAIN_REPO_RULES["reject"]))
-    
+    if os.path.exists("reject_rules.json"):
+        try:
+            with open("reject_rules.json", "r", encoding="utf-8") as f:
+                old_data = json.load(f)
+                for rule in old_data.get("rules", []):
+                    for d in rule.get("domain_suffix", []):
+                        rejected_domains.add(d.lower().strip())
+        except Exception:
+            pass
+
+    for url in AD_SOURCES:
+        content = download_text(url)
+        if content:
+            for line in content.splitlines():
+                domain = clean_domain(line)
+                if domain and not is_dangerous_block(domain):
+                    rejected_domains.add(domain)
+
     dropbox_content = download_text(DROPBOX_URL)
-    if not dropbox_content:
-        return
+    if dropbox_content:
+        pattern = re.compile(r'([a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})')
+        for line in dropbox_content.splitlines():
+            for match in pattern.finditer(line):
+                item = match.group(0).lower().strip().replace("`", "").replace("*.", "")
+                if len(item) > 3 and "." in item and not item.startswith("-") and not item.endswith("-"):
+                    if not item.startswith(("127.", "0.", "192.168.", "10.")):
+                        if not is_dangerous_block(item):
+                            rejected_domains.add(item)
 
-    pattern = re.compile(r'([a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})')
-    
-    for line in dropbox_content.splitlines():
-        line = line.strip()
-        if not line or line.startswith(("#", "!", ";")):
-            continue
+    existing_proxies = load_existing_proxy_domains()
+    for d in existing_proxies:
+        rejected_domains.discard(d)
+
+    with open("reject_rules.json", "w", encoding="utf-8") as f:
+        json.dump({"version": 1, "rules": [{"domain_suffix": sorted(list(rejected_domains))}]}, f, indent=2, ensure_ascii=False)
+
+    collected_heavy = set()
+    domain_pattern = re.compile(r'^([a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?\.)+[a-z]{2,6}$')
+
+    for url in HEAVY_SOURCES:
+        content = download_text(url)
+        if content:
+            for line in content.splitlines():
+                rd = clean_domain(line)
+                if rd and domain_pattern.match(rd) and len(rd) > 3:
+                    if rd not in existing_proxies:
+                        if not any(rd.endswith(zone) for zone in [".ru", ".su", ".by", ".xn--p1ai"]):
+                            collected_heavy.add(rd)
+
+    if collected_heavy:
+        blocked_list, allowed_list = check_domains_availability(collected_heavy)
         
-        matches = pattern.finditer(line)
-        for match in matches:
-            item = clean_item(match.group(0))
-            if len(item) <= 3 or not "." in item or item.startswith("-") or item.endswith("-"):
-                continue
-            if item.startswith(("127.", "0.", "192.168.", "10.")):
-                continue
-            if is_ip(item):
-                continue
-
-            if any(kw in item for kw in TELEGRAM_KEYWORDS) or any(kw in item for kw in YOUTUBE_KEYWORDS) or any(kw in item for kw in TIKTOK_KEYWORDS):
-                proxy_domains.add(item)
-                continue
-
-            matched_source = check_against_sources(item, sources_cache)
+        with open("blocked.json", "w", encoding="utf-8") as f:
+            json.dump({"version": 1, "rules": [{"domain_suffix": blocked_list}]}, f, indent=2, ensure_ascii=False)
             
-            if matched_source == "reject":
-                reject_domains.add(item)
-            elif matched_source in ["telegram", "google", "apple", "youtube", "tiktok", "proxy_media"]:
-                proxy_domains.add(item)
-            else:
-                if any(item.endswith(zone) for zone in [".ru", ".su", ".by", ".xn--p1ai"]):
-                    rus_domains.add(item)
-                else:
-                    proxy_domains.add(item)
-
-    for d in proxy_domains:
-        reject_domains.discard(d)
-    for d in rus_domains:
-        reject_domains.discard(d)
-
-    save_json_file(RUS_JSON, rus_domains)
-    save_json_file(PROXY_JSON, proxy_domains)
-    save_json_file(REJECT_JSON, reject_domains)
+        with open("allowed.json", "w", encoding="utf-8") as f:
+            json.dump({"version": 1, "rules": [{"domain_suffix": allowed_list}]}, f, indent=2, ensure_ascii=False)
 
 if __name__ == "__main__":
     main()
