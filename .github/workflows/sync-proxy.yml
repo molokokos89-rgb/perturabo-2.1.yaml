@@ -30,6 +30,9 @@ jobs:
 
     - name: Run Log Parser
       run: python parse_logs.py
+      
+    - name: Run RKN Parser
+      run: python rkn_parser.py
 
     - name: Run Build AdBlock
       run: python build.py
