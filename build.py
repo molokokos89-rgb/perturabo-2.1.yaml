@@ -11,99 +11,92 @@ EXTERNAL_REJECT_URLS = [
     "https://github.com/KaringX/karing-ruleset/raw/refs/heads/sing/russia/runetfreedom/sing-box/rule-set-geosite/geosite-adblockplus.srs"
 ]
 
-def load_json(file_path):
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception as e:
-        print(f"Error reading {file_path}: {e}")
-        return {"version": 1, "rules": []}
+]
 
-def load_json(file_path):
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception as e:
-        print(f"Error reading {file_path}: {e}")
-        return {"version": 1, "rules": []}
+WHITELIST_EXACT = [
+    "tiktok.com", "facebook.com", "rutube.ru", "youtube.com", "vk.com",
+    "t.me", "telegram.org", "instagram.com"
+]
 
-def fetch_external_domains(url):
-    domains = set()
-    try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=15) as response:
-            if url.endswith(".json"):
-                data = json.loads(response.read().decode('utf-8'))
-                for rule in data.get("rules", []):
-                    if "domain" in rule: domains.update(rule["domain"])
-                    if "domain_suffix" in rule: domains.update(rule["domain_suffix"])
-            else:
-                content = response.read().decode('utf-8', errors='ignore')
-                for line in content.splitlines():
-                    line = line.strip()
-                    if not line or line.startswith('#') or line.startswith('!'):
-                        continue
-                    cleaned = re.sub(r'^[|]*', '', line)
-                    cleaned = cleaned.split('$')[0].split('^')[0].split('/')[0].strip()
-                    if cleaned and '.' in cleaned and not cleaned.startswith('127.') and not cleaned.startswith('0.'):
-                        domains.add(cleaned)
-    except Exception as e:
-        print(f"Error loading {url}: {e}")
-    return domains
+WHITELIST_PATTERNS = [
+    r"^([^.]+\.)*tiktok\.com$",
+    r"^([^.]+\.)*facebook\.com$",
+    r"^([^.]+\.)*rutube\.ru$",
+    r"^([^.]+\.)*googlevideo\.com$"
+]
 
-data = load_json('reject_rules.json')
+ALLOWED_AD_SUBDOMAINS = [
+    "analytics", "ads", "pixel", "metrics", "telemetry", "tracker",
+    "://tiktokcdn.com", "bdtone.com", "mon.pangle.io"
+]
 
-external_items = set()
-for url in EXTERNAL_REJECT_URLS:
-    external_items.update(fetch_external_domains(url))
+def is_dangerous_block(domain):
+    if domain in WHITELIST_EXACT:
+        return True
+    
+    for pattern in WHITELIST_PATTERNS:
+        if re.match(pattern, domain):
+            if any(sub in domain for sub in ALLOWED_AD_SUBDOMAINS):
+                return False
+            return True
+            
+    return False
 
-final_domains = set()
-final_ips = set()
+def clean_domain(line):
+    line = line.strip().lower()
+    if not line or line.startswith(("#", "!", ";")):
+        return None
+    
+    line = re.sub(r'^(127\.0\.0\.1|0\.0\.0\.0)\s+', '', line)
+    line = line.split("#")[0].strip()
+    
+    if line.startswith("||"):
+        line = line[2:]
+    if line.endswith("^"):
+        line = line[:-1]
+        
+    line = line.replace("*.", "")
+    
+    if re.match(r'^[a-z0-9.-]+\.[a-z]{2,6}$', line):
+        return line
+    return None
 
-ip_pattern = re.compile(r'^(\d{1,3}\.){3}\d{1,3}$')
+def main():
+    rejected_domains = set()
+    
+    for url in AD_SOURCES:
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=15) as response:
+                for line in response.read().decode('utf-8', errors='ignore').splitlines():
+                    domain = clean_domain(line)
+                    if domain:
+                        if not is_dangerous_block(domain):
+                            rejected_domains.add(domain)
+        except Exception:
+            pass
 
-for item in external_items:
-    item_clean = item.strip().replace("`", "").replace("*.", "")
-    if ip_pattern.match(item_clean):
-        final_ips.add(f"{item_clean}/32")
-    else:
-        final_domains.add(item_clean)
+    if os.path.exists("my_rules_proxy.json"):
+        try:
+            with open("my_rules_proxy.json", "r", encoding="utf-8") as f:
+                proxy_data = json.load(f)
+                for rule in proxy_data.get("rules", []):
+                    for d in rule.get("domain_suffix", []):
+                        rejected_domains.discard(d.lower().strip())
+        except Exception:
+            pass
 
-if 'rules' in data and data['rules']:
-    for rule in data['rules']:
-        if 'domain_suffix' in rule:
-            for item in rule['domain_suffix']:
-                item_clean = item.strip().replace("`", "").replace("*.", "")
-                if item not in external_items:
-                    if ip_pattern.match(item_clean):
-                        final_ips.add(f"{item_clean}/32")
-                    else:
-                        final_domains.add(item_clean)
-        if 'ip_cidr' in rule:
-            for item in rule['ip_cidr']:
-                item_clean = item.strip().replace("`", "")
-                if '/' in item_clean:
-                    final_ips.add(item_clean)
-                elif ip_pattern.match(item_clean):
-                    final_ips.add(f"{item_clean}/32")
+    output_data = {
+        "version": 1,
+        "rules": [
+            {
+                "domain_suffix": sorted(list(rejected_domains))
+            }
+        ]
+    }
+    
+    with open("reject_rules.json", "w", encoding="utf-8") as f:
+        json.dump(output_data, f, indent=2, ensure_ascii=False)
 
-vetted_domains = set()
-for d in final_domains:
-    if not isinstance(d, str): continue
-    d_clean = d.strip().replace("`", "").replace("*.", "")
-    if len(d_clean) > 3 and "." in d_clean and not d_clean.startswith("-") and not d_clean.endswith("-"):
-        vetted_domains.add(d_clean.lower())
-
-rule_list = []
-if vetted_domains:
-    rule_list.append({"domain_suffix": sorted(list(vetted_domains))})
-if final_ips:
-    rule_list.append({"ip_cidr": sorted(list(final_ips))})
-
-data['version'] = 1
-data['rules'] = rule_list
-
-with open('reject_rules.json', 'w', encoding='utf-8') as f:
-    json.dump(data, f, indent=2, ensure_ascii=False)
-
-print(f"reject_rules.json updated successfully in version 1!")
+if __name__ == "__main__":
+    main()
