@@ -11,8 +11,6 @@ EXTERNAL_REJECT_URLS = [
     "https://github.com/KaringX/karing-ruleset/raw/refs/heads/sing/russia/runetfreedom/sing-box/rule-set-geosite/geosite-adblockplus.srs"
 ]
 
-]
-
 WHITELIST_EXACT = [
     "tiktok.com", "facebook.com", "rutube.ru", "youtube.com", "vk.com",
     "t.me", "telegram.org", "instagram.com"
