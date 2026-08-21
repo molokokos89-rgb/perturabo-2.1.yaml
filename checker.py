@@ -21,16 +21,22 @@ def extract_host(line):
         return None
     try:
         if line.startswith("ss://"):
-            part = line.split("://")[1].split("#")[0]
-            host_port = part.split("@")[1] if "@" in part else safe_b64decode(part).split("@")[1]
-            return host_port.split(":")[0]
+            clean = line.split("://")[1].split("#")[0]
+            if "@" in clean:
+                return clean.split("@")[1].split(":")[0]
+            else:
+                decoded = safe_b64decode(clean)
+                if "@" in decoded:
+                    return decoded.split("@")[1].split(":")[0]
+                return decoded.split(":")[0]
         elif line.startswith(("trojan://", "hy2://", "hysteria2://", "vless://")):
-            part = line.split("://")[1].split("@")[1]
-            return part.split(":")[0].split("?")[0]
+            clean = line.split("://")[1]
+            server_part = clean.split("@")[1] if "@" in clean else clean
+            return re.split(r'[:/?#]', server_part)[0]
         elif line.startswith("vmess://"):
             b64_str = line.split("://")[1]
             data = json.loads(safe_b64decode(b64_str))
-            return data.get("add")
+            return data.get("add", "").strip()
     except Exception:
         return None
     return None
@@ -54,6 +60,8 @@ def load_domains_from_sources():
     
     all_extracted = []
     for index, url in enumerate(urls):
+        srs_file = f"temp_{index}.srs"
+        json_file = f"temp_{index}.json"
         try:
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
             with urllib.request.urlopen(req, timeout=10) as response:
@@ -71,8 +79,6 @@ def load_domains_from_sources():
                         if line and not line.startswith("#"):
                             all_extracted.append(line.split(",")[-1] if "," in line else line)
                 elif url.endswith(".srs"):
-                    srs_file = f"temp_{index}.srs"
-                    json_file = f"temp_{index}.json"
                     with open(srs_file, "wb") as out: out.write(content)
                     subprocess.run(["sing-box", "rule-set", "decompile", srs_file, "--output", json_file], check=True)
                     with open(json_file, "r", encoding="utf-8") as jf:
@@ -80,10 +86,11 @@ def load_domains_from_sources():
                     for rule in data.get("rules", []):
                         if "domain" in rule: all_extracted.extend(rule["domain"])
                         if "domain_suffix" in rule: all_extracted.extend(rule["domain_suffix"])
-                    if os.path.exists(srs_file): os.remove(srs_file)
-                    if os.path.exists(json_file): os.remove(json_file)
         except Exception:
             pass
+        finally:
+            if os.path.exists(srs_file): os.remove(srs_file)
+            if os.path.exists(json_file): os.remove(json_file)
 
     clean_domains = []
     for d in all_extracted:
