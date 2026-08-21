@@ -83,7 +83,7 @@ dns:
 proxy-providers:
   vless-sub-1:
     type: http
-    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/main/proxy.txt"
+    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/main/proxy.txt"
     interval: 3600
     path: ./vless_sub_1.txt
     ua: "clash"
