@@ -29,7 +29,7 @@ def extract_ip_or_domain(proxy_link):
         if proxy_link.startswith("vmess://"):
             b64_str = proxy_link.split("://")[1]
             decoded = json.loads(safe_b64decode(b64_str))
-            return decoded.get("add").strip()
+            return decoded.get("add", "").strip()
         clean_link = re.sub(r'^[a-zA-Z0-9\-\.]+://', '', proxy_link)
         server_part = clean_link.split('@')[-1] if '@' in clean_link else clean_link
         return re.split(r'[:/?#]', server_part)[0].strip()
