@@ -21,8 +21,8 @@ def extract_host(line):
         return None
     try:
         if line.startswith("ss://"):
-            parts = line.split("://")
-            clean = parts[1].split("#")[0]
+            parts = line.split("://")[1]
+            clean = parts.split("#")[0]
             if "@" in clean:
                 return clean.split("@")[1].split(":")[0]
             else:
@@ -31,8 +31,8 @@ def extract_host(line):
                     return decoded.split("@")[1].split(":")[0]
                 return decoded.split(":")[0]
         elif line.startswith(("trojan://", "hy2://", "hysteria2://", "vless://")):
-            parts = line.split("://")
-            server_part = parts[1].split("@")[1] if "@" in parts[1] else parts[1]
+            parts = line.split("://")[1]
+            server_part = parts.split("@")[1] if "@" in parts else parts
             return re.split(r'[:/?#]', server_part)[0]
         elif line.startswith("vmess://"):
             b64_str = line.split("://")[1]
