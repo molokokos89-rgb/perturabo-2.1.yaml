@@ -23,16 +23,22 @@ RULE_SOURCES = {
     "youtube": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/youtube.txt",
     "tiktok": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/tiktok.txt",
     "proxy_media": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/proxy.txt",
-    "reject": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt"
+    "reject": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt",
+    "adguard_dns": "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/DNSFilter/sections/adservers.txt",
+    "adguard_trackers": "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/DNSFilter/sections/spyware.txt",
+    "oisd_small": "https://small.oisd.nl/domainswild",
+    "stevenblack": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
 }
 
 HEAVY_SOURCES = [
     "https://raw.githubusercontent.com/roskomkod/ru-blocked-domains/main/domains.txt"
 ]
 
-TIKTOK_KEYWORDS = ["tiktok", "byteoversea", "ibytedtos", "musically", "bytegecko"]
-YOUTUBE_KEYWORDS = ["youtube", "ytimg", "ggpht", "googlevideo"]
-TELEGRAM_KEYWORDS = ["telegram", "t.me", "tdesktop", "tx.me"]
+AD_TRACKER_KEYWORDS = [
+    "analytics", "ads", "pixel", "metrics", "telemetry", "tracker",
+    "tracking", "adservice", "adsystem", "banner", "counter", "pangle",
+    "bdtone", "doubleclick", "app-measurement", "adjust", "appsflyer"
+]
 
 WHITELIST_EXACT = [
     "tiktok.com", "facebook.com", "rutube.ru", "youtube.com", "vk.com",
@@ -46,17 +52,16 @@ WHITELIST_PATTERNS = [
     r"^([^.]+\.)*googlevideo\.com$"
 ]
 
-ALLOWED_AD_SUBDOMAINS = [
-    "analytics", "ads", "pixel", "metrics", "telemetry", "tracker",
-    "://tiktokcdn.com", "bdtone.com", "mon.pangle.io"
-]
+def is_ad_or_tracker(domain):
+    domain_lower = domain.lower()
+    return any(keyword in domain_lower for keyword in AD_TRACKER_KEYWORDS)
 
 def is_dangerous_block(domain):
     if domain in WHITELIST_EXACT:
         return True
     for pattern in WHITELIST_PATTERNS:
         if re.match(pattern, domain):
-            if any(sub in domain for sub in ALLOWED_AD_SUBDOMAINS):
+            if is_ad_or_tracker(domain):
                 return False
             return True
     return False
@@ -106,7 +111,7 @@ def load_existing_proxy_domains():
                     if "domain_suffix" in rule:
                         for d in rule["domain_suffix"]:
                             cleaned = clean_domain(d)
-                            if cleaned:
+                            if cleaned and not is_ad_or_tracker(cleaned):
                                 domains.add(cleaned)
         except Exception:
             pass
@@ -156,16 +161,16 @@ def main():
         if content:
             for line in content.splitlines():
                 domain = clean_domain(line)
-                if domain and not is_dangerous_block(domain):
-                    rejected_domains.add(domain)
+                if domain:
+                    if key == "reject" or is_ad_or_tracker(domain):
+                        rejected_domains.add(domain)
 
     dropbox_content = download_text(DROPBOX_URL)
     if dropbox_content:
         for line in dropbox_content.splitlines():
             cd = clean_domain(line)
             if cd and not cd.startswith(("127.", "0.", "192.168.", "10.")):
-                if not is_dangerous_block(cd):
-                    rejected_domains.add(cd)
+                rejected_domains.add(cd)
 
     existing_proxies = load_existing_proxy_domains()
     for d in existing_proxies:
@@ -182,9 +187,15 @@ def main():
             for line in content.splitlines():
                 rd = clean_domain(line)
                 if rd and len(rd) > 3:
-                    if rd not in existing_proxies:
+                    if is_ad_or_tracker(rd):
+                        rejected_domains.add(rd)
+                        continue
+                    if rd not in existing_proxies and rd not in rejected_domains:
                         if not any(rd.endswith(zone) for zone in [".ru", ".su", ".by", ".xn--p1ai"]):
                             collected_heavy.add(rd)
+
+    with open("reject_rules.json", "w", encoding="utf-8") as f:
+        json.dump({"version": 1, "rules": [{"domain_suffix": sorted(list(rejected_domains))}]}, f, indent=2, ensure_ascii=False)
 
     if collected_heavy:
         blocked_list, allowed_list = check_domains_availability(collected_heavy)
