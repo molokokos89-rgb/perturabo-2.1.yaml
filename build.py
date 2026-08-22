@@ -15,10 +15,18 @@ PROXY_JSON = "my_rules_proxy.json"
 DROPBOX_URL = "https://www.dropbox.com/scl/fi/759t1a2us3y0kblgat0xr/log-for-reject.txt?rlkey=zr2uqv81lx89rdl6q55geyucy&st=8lc13ygu&dl=1"
 
 # Ссылки на основные файлы репозитория
-MAIN_REPO_RULES = {
-    "rus": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/refs/heads/main/My_rules_RUS.json",
-    "proxy": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/refs/heads/main/my_rules_proxy.json",
-    "reject": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/refs/heads/main/reject_rules.json"
+RULE_SOURCES = {
+    "telegram": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/telegramcidr.txt",
+    "google": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/google.txt",
+    "apple": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/apple.txt",
+    "youtube": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/youtube.txt",
+    "tiktok": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/tiktok.txt",
+    "proxy_media": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/proxy.txt",
+    "reject": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt",
+    "adguard_dns": "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/DNSFilter/sections/adservers.txt",
+    "adguard_trackers": "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/DNSFilter/sections/spyware.txt",
+    "oisd_small": "https://small.oisd.nl/domainswild",
+    "stevenblack": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
 }
 
 # Источники категорий правил (Loyalsoldier и др.)
