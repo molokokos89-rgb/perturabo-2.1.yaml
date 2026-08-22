@@ -22,6 +22,8 @@ DROPBOX_URL = "https://www.dropbox.com/scl/fi/759t1a2us3y0kblgat0xr/log-for-reje
 PROXY_SOURCES = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2Ball_RUS.txt",
     "https://raw.githubusercontent.com/sevcator/5ubscript10n/main/protocols/hy2.txt",
+    "https://raw.githubusercontent.com/sevcator/5ubscript10n/main/protocols/ss.txt",
+    "https://raw.githubusercontent.com/sevcator/5ubscript10n/main/protocols/trojan.txt",
     "https://raw.githubusercontent.com/yebekhe/TelegramV2rayCollector/main/sub/normal/mix",
     "https://raw.githubusercontent.com/freefq/free/master/v2ray",
     "https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/All_Configs_Sub.txt",
@@ -178,12 +180,20 @@ def load_json_domains(filename):
             pass
     return domains
 
-def save_rules_file(filename, domain_list):
-    sorted_domains = sorted(list(set(domain_list)))
+def save_mixed_rules_file(filename, domains, cidrs):
+    sorted_domains = sorted(list(set(domains)))
+    sorted_cidrs = sorted(list(set(cidrs)))
+    
+    rule_obj = {}
+    if sorted_domains:
+        rule_obj["domain_suffix"] = sorted_domains
+    if sorted_cidrs:
+        rule_obj["ip_cidr"] = sorted_cidrs
+
     data = {
         "version": 1,
-        "payload": sorted_domains,
-        "rules": [{"domain_suffix": sorted_domains}]
+        "payload": sorted_domains + sorted_cidrs,
+        "rules": [rule_obj] if rule_obj else []
     }
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
@@ -195,21 +205,44 @@ def save_rules_file(filename, domain_list):
 def step_collect_proxies():
     print("\n--- 1. СБОР И ТЕСТИРОВАНИЕ ПРОКСИ-УЗЛОВ (ВСЕ ПРОТОКОЛЫ) ---")
     raw_nodes = []
+    
     for source in PROXY_SOURCES:
         content = download_text(source, timeout=10)
-        if content:
-            if not any(proto in content for proto in PROTOCOLS):
+        if not content:
+            continue
+            
+        lines = []
+        if not any(proto in content for proto in PROTOCOLS):
+            try:
+                b64_data = content.strip().replace('\n', '').replace('\r', '')
+                missing_padding = len(b64_data) % 4
+                if missing_padding:
+                    b64_data += '=' * (4 - missing_padding)
+                decoded = base64.b64decode(b64_data).decode('utf-8', errors='ignore')
+                lines = decoded.splitlines()
+            except Exception:
+                lines = content.splitlines()
+        else:
+            lines = content.splitlines()
+
+        for line in lines:
+            line = line.strip()
+            if not any(line.startswith(proto) for proto in PROTOCOLS) and len(line) > 30:
                 try:
-                    missing_padding = len(content.strip()) % 4
-                    data = content.strip() + ('=' * (4 - missing_padding) if missing_padding else '')
-                    content = base64.b64decode(data).decode('utf-8', errors='ignore')
+                    missing_padding = len(line) % 4
+                    if missing_padding:
+                        line_b64 = line + ('=' * (4 - missing_padding))
+                    else:
+                        line_b64 = line
+                    dec_line = base64.b64decode(line_b64).decode('utf-8', errors='ignore').strip()
+                    if any(dec_line.startswith(proto) for proto in PROTOCOLS):
+                        line = dec_line
                 except Exception:
                     pass
-            for line in content.splitlines():
-                line = line.strip()
-                if any(line.startswith(proto) for proto in PROTOCOLS):
-                    if not any(bad in line.lower() for bad in BAD_KEYWORDS):
-                        raw_nodes.append(line)
+
+            if any(line.startswith(proto) for proto in PROTOCOLS):
+                if not any(bad in line.lower() for bad in BAD_KEYWORDS):
+                    raw_nodes.append(line)
 
     unique_nodes = list(set(raw_nodes))
     print(f"Собрано {len(unique_nodes)} уникальных нод. Проверка TCP в 30 потоков...")
@@ -241,29 +274,44 @@ def step_collect_proxies():
 
     if foreign_nodes:
         b64_proxy = base64.b64encode("\n".join(foreign_nodes).encode('utf-8')).decode('utf-8')
-        with open("proxy.txt", "w", encoding="utf-8") as f: f.write(b64_proxy)
+        with open("proxy.txt", "w", encoding="utf-8") as f: 
+            f.write(b64_proxy)
     
     if ru_nodes:
         b64_ru = base64.b64encode("\n".join(ru_nodes).encode('utf-8')).decode('utf-8')
-        with open("ru_proxies.txt", "w", encoding="utf-8") as f: f.write(b64_ru)
+        with open("ru_proxies.txt", "w", encoding="utf-8") as f: 
+            f.write(b64_ru)
 
     print(f"Готово! Записано: proxy.txt ({len(foreign_nodes)} нод), ru_proxies.txt ({len(ru_nodes)} нод)")
 
 def step_parse_rules_and_logs():
     print("\n--- 2. СБОР ПРАВИЛ REJECT, PROXY И ЛОГОВ (DROPBOX) ---")
     rejected_domains = load_json_domains(REJECT_JSON)
+    rejected_cidrs = set()
+    
     proxy_domains = load_json_domains(PROXY_JSON)
+    proxy_cidrs = set()
+    
     rus_domains = load_json_domains(RUS_JSON)
+    rus_cidrs = set()
 
-    # Принудительно заносим основные Telegram домены в proxy
     for tg_dom in TELEGRAM_DOMAINS:
         proxy_domains.add(tg_dom)
 
-    # 1. Скачивание базовых списков
     for key, url in RULE_SOURCES.items():
         content = download_text(url)
         if content:
             for line in content.splitlines():
+                line = line.strip()
+                if not line or line.startswith(("#", "!", ";", "//")):
+                    continue
+                
+                if "/" in line or re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', line.split(',')[0].strip()):
+                    clean_ip = line.split(",")[-1].strip()
+                    if key in ["telegram"]:
+                        proxy_cidrs.add(clean_ip)
+                    continue
+
                 d = clean_domain(line)
                 if d:
                     if is_telegram_domain(d):
@@ -273,10 +321,14 @@ def step_parse_rules_and_logs():
                     elif key in ["telegram", "youtube", "tiktok", "proxy_media", "google", "apple"]:
                         proxy_domains.add(d)
 
-    # 2. Персональный лог с Dropbox
     dropbox_content = download_text(DROPBOX_URL)
     if dropbox_content:
         for line in dropbox_content.splitlines():
+            line = line.strip()
+            if "/" in line or re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', line):
+                proxy_cidrs.add(line)
+                continue
+            
             d = clean_domain(line)
             if d:
                 if is_telegram_domain(d):
@@ -286,9 +338,9 @@ def step_parse_rules_and_logs():
                 else:
                     rejected_domains.add(d)
 
-    save_rules_file(REJECT_JSON, rejected_domains)
-    save_rules_file(PROXY_JSON, proxy_domains)
-    save_rules_file(RUS_JSON, rus_domains)
+    save_mixed_rules_file(REJECT_JSON, rejected_domains, rejected_cidrs)
+    save_mixed_rules_file(PROXY_JSON, proxy_domains, proxy_cidrs)
+    save_mixed_rules_file(RUS_JSON, rus_domains, rus_cidrs)
 
 def step_check_heavy_rkn():
     print("\n--- 3. ПРОВЕРКА БАЗ РКН И URLS.TXT В 20 ПОТОКОВ ---")
@@ -358,8 +410,8 @@ def step_check_heavy_rkn():
                 if is_blocked: blocked.append(d)
                 else: allowed.append(d)
 
-    save_rules_file("blocked.json", blocked)
-    save_rules_file("allowed.json", allowed)
+    save_mixed_rules_file("blocked.json", blocked, set())
+    save_mixed_rules_file("allowed.json", allowed, set())
     print(f"Проверка РКН завершена: {len(blocked)} заблокировано, {len(allowed)} доступно.")
 
 def step_global_cleaner():
@@ -368,7 +420,6 @@ def step_global_cleaner():
     rus_set = load_json_domains(RUS_JSON)
     reject_set = load_json_domains(REJECT_JSON)
 
-    # Защищаем Telegram
     for tg_dom in TELEGRAM_DOMAINS:
         proxy_set.add(tg_dom)
 
@@ -388,9 +439,9 @@ def step_global_cleaner():
     for d in rus_set:
         reject_set.discard(d)
 
-    save_rules_file(PROXY_JSON, proxy_clean)
-    save_rules_file(RUS_JSON, rus_set)
-    save_rules_file(REJECT_JSON, reject_set)
+    save_mixed_rules_file(PROXY_JSON, proxy_clean, set())
+    save_mixed_rules_file(RUS_JSON, rus_set, set())
+    save_mixed_rules_file(REJECT_JSON, reject_set, set())
     print("Идеальный баланс правил достигнут. Telegram защищен в PROXY.")
 
 def step_compile_srs():
