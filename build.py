@@ -135,7 +135,7 @@ def main():
         except Exception:
             pass
 
-    for url in AD_SOURCES:
+    for url in RULE_SOURCES:
         content = download_text(url)
         if content:
             for line in content.splitlines():
