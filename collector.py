@@ -3,6 +3,7 @@ import base64
 import re
 import socket
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 SOURCES = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2Ball_RUS.txt",
@@ -24,31 +25,39 @@ def safe_b64decode(data):
         data += '=' * (4 - missing_padding)
     return base64.b64decode(data).decode('utf-8', errors='ignore')
 
-def extract_ip_or_domain(proxy_link):
+def extract_host_and_port(proxy_link):
+    """Извлекает Host и Port из любой прокси-ссылки"""
     try:
         if proxy_link.startswith("vmess://"):
             b64_str = proxy_link.split("://")[1]
             decoded = json.loads(safe_b64decode(b64_str))
-            return decoded.get("add", "").strip()
+            return decoded.get("add", "").strip(), int(decoded.get("port", 443))
+        
         clean_link = re.sub(r'^[a-zA-Z0-9\-\.]+://', '', proxy_link)
         server_part = clean_link.split('@')[-1] if '@' in clean_link else clean_link
-        return re.split(r'[:/?#]', server_part)[0].strip()
+        host_port = re.split(r'[/?#]', server_part)[0].strip()
+        
+        if ':' in host_port:
+            host, port = host_port.rsplit(':', 1)
+            return host.strip("[]"), int(port)
+        return host_port.strip("[]"), 443
     except Exception:
-        return None
+        return None, None
 
-def is_valid_reality(proxy_link):
-    if not proxy_link.startswith("vless://"):
-        return True
-    if "security=reality" not in proxy_link.lower() or "pbk=" not in proxy_link.lower():
-        return False
-    sni_match = re.search(r'[?&]sni=([^&]+)', proxy_link, re.IGNORECASE)
-    if sni_match:
-        sni = sni_match.group(1).split('#')[0].lower()
-        if any(kw in sni for kw in ["google", "netflix", "facebook", "instagram", "twitter", "youtube"]):
-            return False
-    return True
+def ping_tcp_node(proxy_link):
+    """Быстро проверяет, открыт ли сетевой порт ноды"""
+    host, port = extract_host_and_port(proxy_link)
+    if not host or not port:
+        return proxy_link, False, host
+    
+    try:
+        with socket.create_connection((host, port), timeout=2.5):
+            return proxy_link, True, host
+    except Exception:
+        return proxy_link, False, host
 
 def check_is_russia(node_line, host):
+    """Проверка страны IP (исправлен слэш в URL)"""
     if not host:
         return False
     if any(marker in node_line.lower() for marker in RU_MARKERS) or host.lower().endswith('.ru'):
@@ -59,8 +68,9 @@ def check_is_russia(node_line, host):
             ip = host
         except socket.error:
             ip = socket.gethostbyname(host)
-        req = urllib.request.Request(f"http://ip-api.com{ip}?fields=countryCode", headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=3) as response:
+            
+        req = urllib.request.Request(f"http://ip-api.com/json/{ip}?fields=countryCode", headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=2) as response:
             data = json.loads(response.read().decode('utf-8'))
             return data.get("countryCode") == "RU"
     except Exception:
@@ -75,10 +85,7 @@ def fetch_url(url):
             if not any(proto in content for proto in PROTOCOLS):
                 try:
                     clean_content = content.strip().replace("\n", "").replace("\r", "")
-                    missing_padding = len(clean_content) % 4
-                    if missing_padding:
-                        clean_content += '=' * (4 - missing_padding)
-                    content = base64.b64decode(clean_content).decode('utf-8', errors='ignore')
+                    content = safe_b64decode(clean_content)
                 except Exception:
                     pass
             return content
@@ -86,6 +93,7 @@ def fetch_url(url):
         return ""
 
 def main():
+    print("=== ЗАПУСК COLLECTOR.PY ===")
     raw_nodes = []
     for source in SOURCES:
         data = fetch_url(source)
@@ -97,22 +105,39 @@ def main():
                         raw_nodes.append(line)
                         
     unique_nodes = list(set(raw_nodes))
+    print(f"Собрано {len(unique_nodes)} уникальных нод из источников. Проверка портов в 30 потоков...")
+
+    # Проверка отклика порта у собранных нод
+    alive_nodes = []
+    with ThreadPoolExecutor(max_workers=30) as executor:
+        futures = {executor.submit(ping_tcp_node, node): node for node in unique_nodes}
+        for future in as_completed(futures):
+            node, is_alive, host = future.result()
+            if is_alive:
+                alive_nodes.append((node, host))
+
+    print(f"Живых нод (прошли TCP ping): {len(alive_nodes)}")
+
     foreign_nodes = []
     ru_nodes = []
 
-    for node in unique_nodes:
-        if not is_valid_reality(node):
-            continue
-        host = extract_ip_or_domain(node)
+    for node, host in alive_nodes:
         if check_is_russia(node, host):
             ru_nodes.append(node)
         else:
             foreign_nodes.append(node)
 
+    # Запись результатов в файлы
     with open("raw_combined.txt", "w", encoding="utf-8") as f:
         f.write("\n".join(foreign_nodes) + "\n")
+        
+    with open("proxy.txt", "w", encoding="utf-8") as f:
+        f.write("\n".join(foreign_nodes) + "\n")
+        
     with open("ru_nodes.txt", "w", encoding="utf-8") as f:
         f.write("\n".join(ru_nodes) + "\n")
+
+    print(f"Завершено! В proxy.txt сохранено {len(foreign_nodes)} зарубежных рабочих серверов.")
 
 if __name__ == "__main__":
     main()
