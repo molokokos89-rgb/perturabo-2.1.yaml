@@ -14,7 +14,7 @@ PROXY_JSON = "my_rules_proxy.json"
 # Внешняя ссылка на личный лог блокировок
 DROPBOX_URL = "https://www.dropbox.com/scl/fi/759t1a2us3y0kblgat0xr/log-for-reject.txt?rlkey=zr2uqv81lx89rdl6q55geyucy&st=8lc13ygu&dl=1"
 
-# Ссылки на основные файлы репозитория
+# Источники категорий правил (Все твои ссылки сохранены)
 RULE_SOURCES = {
     "telegram": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/telegramcidr.txt",
     "google": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/google.txt",
@@ -29,17 +29,6 @@ RULE_SOURCES = {
     "stevenblack": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
 }
 
-# Источники категорий правил (Loyalsoldier и др.)
-RULE_SOURCES = {
-    "telegram": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/telegramcidr.txt",
-    "google": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/google.txt",
-    "apple": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/apple.txt",
-    "youtube": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/youtube.txt",
-    "tiktok": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/tiktok.txt",
-    "proxy_media": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/proxy.txt",
-    "reject": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt"
-}
-
 # Тяжелая база заблокированных доменов (Роскомсвобода / Роскомкод)
 HEAVY_SOURCES = [
     "https://raw.githubusercontent.com/roskomkod/ru-blocked-domains/main/domains.txt"
@@ -50,6 +39,12 @@ AD_TRACKER_KEYWORDS = [
     "analytics", "ads", "pixel", "metrics", "telemetry", "tracker",
     "tracking", "adservice", "adsystem", "banner", "counter", "pangle",
     "bdtone", "doubleclick", "app-measurement", "adjust", "appsflyer"
+]
+
+# Домены РФ и Яндекса, которые НЕ ДОЛЖНЫ быть в прокси
+DOMESTIC_EXCLUSIONS = [
+    "yandex", "ya.ru", "yastatic", "kinopoisk", "dzen", "vk.com", 
+    "vk.ru", "mail.ru", "ok.ru", "rutube", "gosuslugi", "sberbank", "tbank", "tinkoff"
 ]
 
 # Белый список доменов (их нельзя отправлять в reject целиком)
@@ -70,6 +65,15 @@ WHITELIST_PATTERNS = [
 # 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ФИЛЬТРАЦИИ
 # ==========================================
 
+def is_domestic_service(domain):
+    """Проверяет, является ли домен Яндексом или российским сервисом"""
+    domain_lower = domain.lower()
+    if any(dom in domain_lower for dom in DOMESTIC_EXCLUSIONS):
+        return True
+    if any(domain_lower.endswith(zone) for zone in [".ru", ".su", ".xn--p1ai"]):
+        return True
+    return False
+
 def is_ad_or_tracker(domain):
     """Проверяет, содержит ли домен рекламные ключевые слова"""
     domain_lower = domain.lower()
@@ -81,14 +85,13 @@ def is_dangerous_block(domain):
         return True
     for pattern in WHITELIST_PATTERNS:
         if re.match(pattern, domain):
-            # Если это рекламный поддомен в важном сервисе — блокировать можно
             if is_ad_or_tracker(domain):
                 return False
             return True
     return False
 
 def clean_domain(line):
-    """Универсальная очистка доменов от комментариев, IP-адресов и AdGuard-синтаксиса"""
+    """Универсальная очистка доменов с фильтрацией .js, .css, base64-мусора и Яндекса"""
     line = line.strip().lower()
     if not line or line.startswith(("#", "!", ";", "//")):
         return None
@@ -112,6 +115,14 @@ def clean_domain(line):
         line = line[:-1]
         
     line = line.strip(".-")
+
+    # 1. ОТСЕКАЕМ JS, CSS, PNG И ДРУГИЕ ВЕБ-ФАЙЛЫ
+    if re.search(r'\.(js|css|png|jpg|jpeg|svg|gif|woff|woff2|json)$', line):
+        return None
+
+    # 2. ОТСЕКАЕМ ДЛИННЫЕ BASE64 СТРОКИ И ХЭШИ
+    if len(line) > 65:
+        return None
     
     # Проверка на валидность имени домена
     domain_regex = r'^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$'
@@ -130,13 +141,12 @@ def download_text(url):
         return ""
 
 def load_existing_proxy_domains():
-    """Загружает уже имеющиеся прокси-домены из my_rules_proxy.json"""
+    """Загружает уже имеющиеся прокси-домены из my_rules_proxy.json (без JS и Яндекса)"""
     domains = set()
     if os.path.exists(PROXY_JSON):
         try:
             with open(PROXY_JSON, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                # Поддержка стандартной структуры payload и классической rules
                 items = data.get("payload", [])
                 if not items and "rules" in data:
                     for rule in data.get("rules", []):
@@ -144,10 +154,15 @@ def load_existing_proxy_domains():
                 
                 for d in items:
                     cleaned = clean_domain(d)
-                    if cleaned and not is_ad_or_tracker(cleaned):
+                    # Жесткая очистка Яндекса и рекламных трекеров из прокси!
+                    if cleaned and not is_ad_or_tracker(cleaned) and not is_domestic_service(cleaned):
                         domains.add(cleaned)
         except Exception:
             pass
+            
+    # Пересохраняем очищенный от мусора my_rules_proxy.json
+    cleaned_list = sorted(list(domains))
+    save_rules_file(PROXY_JSON, cleaned_list)
     return domains
 
 # ==========================================
@@ -164,7 +179,6 @@ def test_single_domain(domain):
                 return domain, True
             return domain, False
     except Exception:
-        # Если соединение сброшено или таймаут — считаем заблокированным
         return domain, True
 
 def check_domains_availability(domains_set):
@@ -215,14 +229,14 @@ def main():
         except Exception:
             pass
 
-    # 2. Скачивание основных списков (Telegram, Google, YouTube, Reject)
+    # 2. Скачивание основных списков (Telegram, Google, YouTube, Reject, AdGuard, OISD, StevenBlack)
     for key, url in RULE_SOURCES.items():
         content = download_text(url)
         if content:
             for line in content.splitlines():
                 domain = clean_domain(line)
                 if domain:
-                    if key == "reject" or is_ad_or_tracker(domain):
+                    if key in ["reject", "adguard_dns", "adguard_trackers", "oisd_small", "stevenblack"] or is_ad_or_tracker(domain):
                         rejected_domains.add(domain)
 
     # 3. Скачивание персонального лога с Dropbox
@@ -254,7 +268,7 @@ def main():
                         continue
                     if rd not in existing_proxies and rd not in rejected_domains:
                         # Не проверяем российские и СНГ доменные зоны
-                        if not any(rd.endswith(zone) for zone in [".ru", ".su", ".by", ".xn--p1ai"]):
+                        if not is_domestic_service(rd):
                             collected_heavy.add(rd)
 
     # Пересохраняем обновленный reject_rules.json после обработки тяжелых баз
