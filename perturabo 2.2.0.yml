@@ -79,7 +79,7 @@ dns:
     - '*.pp.ru'
     - '*.pool.ntp.org'
     - '*.ntp.org'
-    
+
 proxy-providers:
   vless-sub-1:
     type: http
@@ -99,6 +99,14 @@ proxy-groups:
     lazy: false
     tolerance: 300
     idle-timeout: 1800
+    proxies:
+      - vless-sub-1
+
+  - name: Gemini-Group
+    type: fallback
+    url: http://www.gstatic.com/generate_204
+    interval: 1200
+    timeout: 5000
     proxies:
       - vless-sub-1
 
@@ -134,15 +142,17 @@ rule-providers:
 rules:
   - AND,((CONN-ANT,UDP),(DST-PORT,443),(DOMAIN-KEYWORD,cloudflare)),REJECT
   - AND,((CONN-ANT,UDP),(DST-PORT,80), (DOMAIN-KEYWORD,cloudflare)),REJECT
+  - DOMAIN,gemini.google.com,Gemini-Group
+  - DOMAIN,aistudio.google.com,Gemini-Group
+  - DOMAIN,generativelanguage.googleapis.com,Gemini-Group
+  - DOMAIN,alkalimining-pa.googleapis.com,Gemini-Group
+  - DOMAIN,proactivebackend-pa.googleapis.com,Gemini-Group
+  - DOMAIN-KEYWORD,alkalimakersuite,Gemini-Group
+  - DOMAIN-SUFFIX,bard.google.com,Gemini-Group
+
   - DOMAIN-KEYWORD,cloudflare,VLESS-Auto
   - DOMAIN-SUFFIX,cloudflare.com,VLESS-Auto
   - DOMAIN-SUFFIX,cloudflare-dns.com,VLESS-Auto
-  - DOMAIN-SUFFIX,browserleaks.com,VLESS-Auto
-  - DOMAIN,gemini.google.com,VLESS-Auto
-  - DOMAIN,aistudio.google.com,VLESS-Auto
-  - DOMAIN,generativelanguage.googleapis.com,VLESS-Auto
-  - DOMAIN,alkalimining-pa.googleapis.com,VLESS-Auto
-  - DOMAIN,proactivebackend-pa.googleapis.com,VLESS-Auto
   - DOMAIN-SUFFIX,browserleaks.com,VLESS-Auto
   - DOMAIN-SUFFIX,telegram.org,VLESS-Auto
   - DOMAIN-SUFFIX,telegram.dog,VLESS-Auto
@@ -184,5 +194,4 @@ rules:
   - RULE-SET,my-proxy-rules,VLESS-Auto
   - RULE-SET,nsfw-rules,VLESS-Auto
   - RULE-SET,my-direct-rules,DIRECT
-  - DOMAIN-SUFFIX,xn--p1ai,DIRECT
   - MATCH,VLESS-Auto
