@@ -1,12 +1,9 @@
 {
   "version": 1,
+  "payload": [],
   "rules": [
     {
-      "domain_suffix": [
-        "5z-r.lk",
-        "h.zqh",
-        "wh.whi"
-      ]
+      "domain_suffix": []
     }
   ]
 }
