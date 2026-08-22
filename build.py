@@ -1,20 +1,33 @@
-import urllib.request
+import os
+import sys
 import re
 import json
-import os
+import socket
+import base64
+import urllib.request
+import urllib.parse
+import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ==========================================
-# 1. ПУТИ К ИТОГОВЫМ JSON-ФАЙЛАМ
+# 1. КОНФИГУРАЦИЯ И ФАЙЛЫ
 # ==========================================
 RUS_JSON = "My_rules_RUS.json"
 REJECT_JSON = "reject_rules.json"
 PROXY_JSON = "my_rules_proxy.json"
+URLS_FILE = "urls.txt"
 
-# Внешняя ссылка на личный лог блокировок
 DROPBOX_URL = "https://www.dropbox.com/scl/fi/759t1a2us3y0kblgat0xr/log-for-reject.txt?rlkey=zr2uqv81lx89rdl6q55geyucy&st=8lc13ygu&dl=1"
 
-# Источники категорий правил (Все твои ссылки сохранены)
+PROXY_SOURCES = [
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2Ball_RUS.txt",
+    "https://raw.githubusercontent.com/sevcator/5ubscript10n/main/protocols/hy2.txt",
+    "https://raw.githubusercontent.com/yebekhe/TelegramV2rayCollector/main/sub/normal/mix",
+    "https://raw.githubusercontent.com/freefq/free/master/v2ray",
+    "https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/All_Configs_Sub.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt"
+]
+
 RULE_SOURCES = {
     "telegram": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/telegramcidr.txt",
     "google": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/google.txt",
@@ -29,261 +42,337 @@ RULE_SOURCES = {
     "stevenblack": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
 }
 
-# Тяжелая база заблокированных доменов (Роскомсвобода / Роскомкод)
 HEAVY_SOURCES = [
     "https://raw.githubusercontent.com/roskomkod/ru-blocked-domains/main/domains.txt"
 ]
 
-# Ключевые слова для мгновенного определения рекламных доменов и трекеров
+PROTOCOLS = ["ss://", "vmess://", "trojan://", "hy2://", "hysteria2://", "vless://"]
+BAD_KEYWORDS = ["anycast", "fixnet", "fixcord", "cloudflare", "warp", "cf-"]
+RU_MARKERS = ["russia", "moscow", "spb", "россия", ".ru"]
+
 AD_TRACKER_KEYWORDS = [
     "analytics", "ads", "pixel", "metrics", "telemetry", "tracker",
     "tracking", "adservice", "adsystem", "banner", "counter", "pangle",
     "bdtone", "doubleclick", "app-measurement", "adjust", "appsflyer"
 ]
 
-# Домены РФ и Яндекса, которые НЕ ДОЛЖНЫ быть в прокси
 DOMESTIC_EXCLUSIONS = [
     "yandex", "ya.ru", "yastatic", "kinopoisk", "dzen", "vk.com", 
     "vk.ru", "mail.ru", "ok.ru", "rutube", "gosuslugi", "sberbank", "tbank", "tinkoff"
 ]
 
-# Белый список доменов (их нельзя отправлять в reject целиком)
 WHITELIST_EXACT = [
     "tiktok.com", "facebook.com", "rutube.ru", "youtube.com", "vk.com",
     "t.me", "telegram.org", "instagram.com"
 ]
 
-# Регулярные выражения белого списка
-WHITELIST_PATTERNS = [
-    r"^([^.]+\.)*tiktok\.com$",
-    r"^([^.]+\.)*facebook\.com$",
-    r"^([^.]+\.)*rutube\.ru$",
-    r"^([^.]+\.)*googlevideo\.com$"
-]
-
 # ==========================================
-# 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ФИЛЬТРАЦИИ
+# 2. УНИВЕРСАЛЬНЫЕ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 # ==========================================
 
-def is_domestic_service(domain):
-    """Проверяет, является ли домен Яндексом или российским сервисом"""
-    domain_lower = domain.lower()
-    if any(dom in domain_lower for dom in DOMESTIC_EXCLUSIONS):
-        return True
-    if any(domain_lower.endswith(zone) for zone in [".ru", ".su", ".xn--p1ai"]):
-        return True
-    return False
-
-def is_ad_or_tracker(domain):
-    """Проверяет, содержит ли домен рекламные ключевые слова"""
-    domain_lower = domain.lower()
-    return any(keyword in domain_lower for keyword in AD_TRACKER_KEYWORDS)
-
-def is_dangerous_block(domain):
-    """Проверяет, не входит ли домен в белый список важных сервисов"""
-    if domain in WHITELIST_EXACT:
-        return True
-    for pattern in WHITELIST_PATTERNS:
-        if re.match(pattern, domain):
-            if is_ad_or_tracker(domain):
-                return False
-            return True
-    return False
-
-def clean_domain(line):
-    """Универсальная очистка доменов с фильтрацией .js, .css, base64-мусора и Яндекса"""
-    line = line.strip().lower()
-    if not line or line.startswith(("#", "!", ";", "//")):
-        return None
-    
-    # Очищаем от формата hosts (127.0.0.1 или 0.0.0.0)
-    line = re.sub(r'^(127\.0\.0\.1|0\.0\.0\.0)\s+', '', line)
-    
-    # Отрезаем комментарии в конце строки
-    if "#" in line:
-        line = line.split("#")[0]
-    line = line.strip()
-    
-    # Убираем протоколы, пути и порты
-    line = re.sub(r'^[a-z0-9]+://', '', line)
-    line = line.split('/')[0].split('?')[0].split(':')[0]
-    
-    # Очищаем спецсимволы AdGuard/uBlock (|| domain.com ^)
-    if line.startswith("||"):
-        line = line[2:]
-    if line.endswith("^"):
-        line = line[:-1]
-        
-    line = line.strip(".-")
-
-    # 1. ОТСЕКАЕМ JS, CSS, PNG И ДРУГИЕ ВЕБ-ФАЙЛЫ
-    if re.search(r'\.(js|css|png|jpg|jpeg|svg|gif|woff|woff2|json)$', line):
-        return None
-
-    # 2. ОТСЕКАЕМ ДЛИННЫЕ BASE64 СТРОКИ И ХЭШИ
-    if len(line) > 65:
-        return None
-    
-    # Проверка на валидность имени домена
-    domain_regex = r'^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$'
-    if re.match(domain_regex, line):
-        return line
-        
-    return None
-
-def download_text(url):
-    """Безопасно скачивает текстовый файл по URL"""
+def download_text(url, timeout=15):
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=30) as response:
+        with urllib.request.urlopen(req, timeout=timeout) as response:
             return response.read().decode('utf-8', errors='ignore')
     except Exception:
         return ""
 
-def load_existing_proxy_domains():
-    """Загружает уже имеющиеся прокси-домены из my_rules_proxy.json (без JS и Яндекса)"""
+def clean_domain(line):
+    if not line:
+        return None
+    line = line.strip().lower()
+    if not line or line.startswith(("#", "!", ";", "//")):
+        return None
+    
+    line = re.sub(r'^(127\.0\.0\.1|0\.0\.0\.0)\s+', '', line)
+    if "#" in line:
+        line = line.split("#")[0]
+    line = line.strip()
+    
+    line = re.sub(r'^[a-z0-9]+://', '', line)
+    line = line.split('/')[0].split('?')[0].split(':')[0]
+    
+    if line.startswith("||"): line = line[2:]
+    if line.endswith("^"): line = line[:-1]
+    line = line.strip(".-").replace("*.", "")
+
+    if re.search(r'\.(js|css|png|jpg|jpeg|svg|gif|woff|woff2|json)$', line):
+        return None
+
+    if len(line) > 65:
+        return None
+    
+    domain_regex = r'^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$'
+    if re.match(domain_regex, line):
+        if not any(line.startswith(ip) for ip in ["127.", "0.", "192.168.", "10."]):
+            return line
+    return None
+
+def is_domestic_service(domain):
+    domain_lower = domain.lower()
+    if any(dom in domain_lower for dom in DOMESTIC_EXCLUSIONS):
+        return True
+    if any(domain_lower.endswith(zone) for zone in [".ru", ".su", ".by", ".xn--p1ai"]):
+        return True
+    return False
+
+def is_ad_or_tracker(domain):
+    return any(keyword in domain.lower() for keyword in AD_TRACKER_KEYWORDS)
+
+def load_json_domains(filename):
     domains = set()
-    if os.path.exists(PROXY_JSON):
+    if os.path.exists(filename):
         try:
-            with open(PROXY_JSON, "r", encoding="utf-8") as f:
+            with open(filename, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 items = data.get("payload", [])
                 if not items and "rules" in data:
                     for rule in data.get("rules", []):
                         items.extend(rule.get("domain_suffix", []))
-                
+                        items.extend(rule.get("domain", []))
                 for d in items:
-                    cleaned = clean_domain(d)
-                    # Жесткая очистка Яндекса и рекламных трекеров из прокси!
-                    if cleaned and not is_ad_or_tracker(cleaned) and not is_domestic_service(cleaned):
-                        domains.add(cleaned)
+                    cd = clean_domain(d)
+                    if cd: domains.add(cd)
         except Exception:
             pass
-            
-    # Пересохраняем очищенный от мусора my_rules_proxy.json
-    cleaned_list = sorted(list(domains))
-    save_rules_file(PROXY_JSON, cleaned_list)
     return domains
 
-# ==========================================
-# 3. ПРОВЕРКА ДОСТУПНОСТИ ДОМЕНОВ (МНОГОПОТОЧНОСТЬ)
-# ==========================================
-
-def test_single_domain(domain):
-    """Проверяет доступность одного домена (ищет заглушки блокировок РКН)"""
-    try:
-        req = urllib.request.Request(f"https://{domain}", headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=3) as res:
-            html = res.read().decode('utf-8', errors='ignore').lower()
-            if any(w in html for w in ["заблокирован", "роскомнадзор", "block", "deny"]):
-                return domain, True
-            return domain, False
-    except Exception:
-        return domain, True
-
-def check_domains_availability(domains_set):
-    """Проверяет массив доменов в 20 параллельных потоков"""
-    blocked = []
-    allowed = []
-    with ThreadPoolExecutor(max_workers=20) as executor:
-        futures = {executor.submit(test_single_domain, d): d for d in domains_set}
-        for future in as_completed(futures):
-            domain, is_blocked = future.result()
-            if is_blocked:
-                blocked.append(domain)
-            else:
-                allowed.append(domain)
-    return sorted(blocked), sorted(allowed)
-
-# ==========================================
-# 4. ОСНОВНОЙ ПРОЦЕСС СБОРКИ
-# ==========================================
-
 def save_rules_file(filename, domain_list):
-    """Сохраняет итоговый список с поддержкой обоих форматов (payload и rules)"""
+    sorted_domains = sorted(list(set(domain_list)))
     data = {
         "version": 1,
-        "payload": domain_list,
-        "rules": [{"domain_suffix": domain_list}]
+        "payload": sorted_domains,
+        "rules": [{"domain_suffix": sorted_domains}]
     }
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
-def main():
-    print("=== ЗАПУСК СБОРКИ ПРАВИЛ REJECT И ПРОВЕРКИ РКН ===")
-    rejected_domains = set()
-    
-    # 1. Загрузка старых правил из reject_rules.json
-    if os.path.exists("reject_rules.json"):
-        try:
-            with open("reject_rules.json", "r", encoding="utf-8") as f:
-                old_data = json.load(f)
-                items = old_data.get("payload", [])
-                if not items and "rules" in old_data:
-                    for rule in old_data.get("rules", []):
-                        items.extend(rule.get("domain_suffix", []))
-                for d in items:
-                    cd = clean_domain(d)
-                    if cd:
-                        rejected_domains.add(cd)
-        except Exception:
-            pass
+# ==========================================
+# 3. ЭТАПЫ СБОРКИ
+# ==========================================
 
-    # 2. Скачивание основных списков (Telegram, Google, YouTube, Reject, AdGuard, OISD, StevenBlack)
+def step_collect_proxies():
+    print("\n--- 1. СБОР И ТЕСТИРОВАНИЕ ПРОКСИ-УЗЛОВ ---")
+    raw_nodes = []
+    for source in PROXY_SOURCES:
+        content = download_text(source, timeout=10)
+        if content:
+            if not any(proto in content for proto in PROTOCOLS):
+                try:
+                    missing_padding = len(content.strip()) % 4
+                    data = content.strip() + ('=' * (4 - missing_padding) if missing_padding else '')
+                    content = base64.b64decode(data).decode('utf-8', errors='ignore')
+                except Exception:
+                    pass
+            for line in content.splitlines():
+                line = line.strip()
+                if any(line.startswith(proto) for proto in PROTOCOLS):
+                    if not any(bad in line.lower() for bad in BAD_KEYWORDS):
+                        raw_nodes.append(line)
+
+    unique_nodes = list(set(raw_nodes))
+    print(f"Собрано {len(unique_nodes)} уникальных нод. Проверка TCP в 30 потоков...")
+
+    def ping_node(node):
+        try:
+            clean = re.sub(r'^[a-zA-Z0-9\-\.]+://', '', node)
+            server_part = clean.split('@')[-1] if '@' in clean else clean
+            host_port = re.split(r'[/?#]', server_part)[0].strip()
+            host, port = (host_port.rsplit(':', 1) if ':' in host_port else (host_port, 443))
+            host = host.strip("[]")
+            with socket.create_connection((host, int(port)), timeout=2.5):
+                return node, True, host
+        except Exception:
+            return node, False, None
+
+    alive_nodes = []
+    with ThreadPoolExecutor(max_workers=30) as executor:
+        futures = {executor.submit(ping_node, node): node for node in unique_nodes}
+        for future in as_completed(futures):
+            node, is_alive, host = future.result()
+            if is_alive:
+                alive_nodes.append((node, host))
+
+    foreign_nodes, ru_nodes = [], []
+    for node, host in alive_nodes:
+        if host and (any(m in node.lower() for m in RU_MARKERS) or host.lower().endswith('.ru')):
+            ru_nodes.append(node)
+        else:
+            foreign_nodes.append(node)
+
+    if foreign_nodes:
+        b64_proxy = base64.b64encode("\n".join(foreign_nodes).encode('utf-8')).decode('utf-8')
+        with open("proxy.txt", "w", encoding="utf-8") as f: f.write(b64_proxy)
+    
+    if ru_nodes:
+        b64_ru = base64.b64encode("\n".join(ru_nodes).encode('utf-8')).decode('utf-8')
+        with open("ru_proxies.txt", "w", encoding="utf-8") as f: f.write(b64_ru)
+
+    print(f"Готово! Записано: proxy.txt ({len(foreign_nodes)} нод), ru_proxies.txt ({len(ru_nodes)} нод)")
+
+def step_parse_rules_and_logs():
+    print("\n--- 2. СБОР ПРАВИЛ REJECT И ЛОГОВ (DROPBOX) ---")
+    rejected_domains = load_json_domains(REJECT_JSON)
+    proxy_domains = load_json_domains(PROXY_JSON)
+    rus_domains = load_json_domains(RUS_JSON)
+
+    # 1. Скачивание базовых списков
     for key, url in RULE_SOURCES.items():
         content = download_text(url)
         if content:
             for line in content.splitlines():
-                domain = clean_domain(line)
-                if domain:
-                    if key in ["reject", "adguard_dns", "adguard_trackers", "oisd_small", "stevenblack"] or is_ad_or_tracker(domain):
-                        rejected_domains.add(domain)
+                d = clean_domain(line)
+                if d:
+                    if key in ["reject", "adguard_dns", "adguard_trackers", "oisd_small", "stevenblack"] or is_ad_or_tracker(d):
+                        rejected_domains.add(d)
+                    elif key in ["telegram", "youtube", "tiktok", "proxy_media", "google", "apple"]:
+                        proxy_domains.add(d)
 
-    # 3. Скачивание персонального лога с Dropbox
+    # 2. Персональный лог с Dropbox
     dropbox_content = download_text(DROPBOX_URL)
     if dropbox_content:
         for line in dropbox_content.splitlines():
-            cd = clean_domain(line)
-            if cd and not cd.startswith(("127.", "0.", "192.168.", "10.")):
-                rejected_domains.add(cd)
+            d = clean_domain(line)
+            if d:
+                if is_domestic_service(d):
+                    rus_domains.add(d)
+                else:
+                    rejected_domains.add(d)
 
-    # 4. Исключаем из reject те домены, которые должны идти через прокси
-    existing_proxies = load_existing_proxy_domains()
-    for d in existing_proxies:
-        rejected_domains.discard(d)
+    save_rules_file(REJECT_JSON, rejected_domains)
+    save_rules_file(PROXY_JSON, proxy_domains)
+    save_rules_file(RUS_JSON, rus_domains)
 
-    # Сохраняем промежуточный результат reject_rules.json
-    save_rules_file("reject_rules.json", sorted(list(rejected_domains)))
+def step_check_heavy_rkn():
+    print("\n--- 3. ПРОВЕРКА БАЗ РКН И URLS.TXT В 20 ПОТОКОВ ---")
+    existing_proxies = load_json_domains(PROXY_JSON)
+    existing_rejects = load_json_domains(REJECT_JSON)
+    
+    heavy_domains = set()
 
-    # 5. Обработка тяжелых баз РКН (roskomkod)
-    collected_heavy = set()
+    # 1. Загрузка из HEAVY_SOURCES
     for url in HEAVY_SOURCES:
         content = download_text(url)
         if content:
             for line in content.splitlines():
-                rd = clean_domain(line)
-                if rd and len(rd) > 3:
-                    if is_ad_or_tracker(rd):
-                        rejected_domains.add(rd)
-                        continue
-                    if rd not in existing_proxies and rd not in rejected_domains:
-                        # Не проверяем российские и СНГ доменные зоны
-                        if not is_domestic_service(rd):
-                            collected_heavy.add(rd)
+                d = clean_domain(line)
+                if d and not is_domestic_service(d):
+                    if d not in existing_proxies and d not in existing_rejects:
+                        heavy_domains.add(d)
 
-    # Пересохраняем обновленный reject_rules.json после обработки тяжелых баз
-    save_rules_file("reject_rules.json", sorted(list(rejected_domains)))
+    # 2. Обработка файла urls.txt (с декомпиляцией .srs при необходимости)
+    if os.path.exists(URLS_FILE):
+        with open(URLS_FILE, "r", encoding="utf-8") as f:
+            urls = [l.strip() for l in f if l.strip()]
+        for idx, url in enumerate(urls):
+            srs_file = f"temp_{idx}.srs"
+            json_file = f"temp_{idx}.json"
+            try:
+                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req, timeout=15) as res:
+                    content = res.read()
+                    if url.endswith(".srs"):
+                        with open(srs_file, "wb") as out: out.write(content)
+                        subprocess.run(["sing-box", "rule-set", "decompile", srs_file, "--output", json_file], check=True)
+                        with open(json_file, "r", encoding="utf-8") as jf:
+                            data = json.load(jf)
+                        for rule in data.get("rules", []):
+                            for key in ["domain", "domain_suffix"]:
+                                for d in rule.get(key, []):
+                                    cd = clean_domain(d)
+                                    if cd and not is_domestic_service(cd): heavy_domains.add(cd)
+                    else:
+                        for line in content.decode('utf-8', errors='ignore').splitlines():
+                            cd = clean_domain(line.split(",")[-1] if "," in line else line)
+                            if cd and not is_domestic_service(cd): heavy_domains.add(cd)
+            except Exception:
+                pass
+            finally:
+                if os.path.exists(srs_file): os.remove(srs_file)
+                if os.path.exists(json_file): os.remove(json_file)
 
-    # 6. Проверка доступности собранных доменов РКН в 20 потоков
-    if collected_heavy:
-        print(f"Проверка {len(collected_heavy)} доменов из баз РКН на доступность...")
-        blocked_list, allowed_list = check_domains_availability(collected_heavy)
-        
-        save_rules_file("blocked.json", blocked_list)
-        save_rules_file("allowed.json", allowed_list)
-        print(f"Завершено: {len(blocked_list)} заблокировано, {len(allowed_list)} доступно.")
+    print(f"Собрано {len(heavy_domains)} доменов РКН для онлайн-чека...")
 
-    print("=== СБОРКА И ПРОВЕРКА УСПЕШНО ЗАВЕРШЕНА ===")
+    def test_domain(domain):
+        try:
+            req = urllib.request.Request(f"https://{domain}", headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=3) as res:
+                html = res.read().decode('utf-8', errors='ignore').lower()
+                if any(w in html for w in ["заблокирован", "роскомнадзор", "block", "deny"]):
+                    return domain, True
+                return domain, False
+        except Exception:
+            return domain, True
+
+    blocked, allowed = [], []
+    if heavy_domains:
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            futures = {executor.submit(test_domain, d): d for d in heavy_domains}
+            for future in as_completed(futures):
+                d, is_blocked = future.result()
+                if is_blocked: blocked.append(d)
+                else: allowed.append(d)
+
+    save_rules_file("blocked.json", blocked)
+    save_rules_file("allowed.json", allowed)
+    print(f"Проверка РКН завершена: {len(blocked)} заблокировано, {len(allowed)} доступно.")
+
+def step_global_cleaner():
+    print("\n--- 4. ГЛОБАЛЬНАЯ ОЧИСТКА ПЕРЕСЕЧЕНИЙ (Proxy > Rus > Reject) ---")
+    proxy_set = load_json_domains(PROXY_JSON)
+    rus_set = load_json_domains(RUS_JSON)
+    reject_set = load_json_domains(REJECT_JSON)
+
+    # 1. Вычищаем из прокси все рекламы и Яндекс
+    proxy_clean = set()
+    for d in proxy_set:
+        if not is_domestic_service(d) and not is_ad_or_tracker(d):
+            proxy_clean.add(d)
+        elif is_domestic_service(d):
+            rus_set.add(d)
+
+    # 2. Приоритетное исключение
+    for d in proxy_clean:
+        reject_set.discard(d)
+        rus_set.discard(d)
+    
+    for d in rus_set:
+        reject_set.discard(d)
+
+    save_rules_file(PROXY_JSON, proxy_clean)
+    save_rules_file(RUS_JSON, rus_set)
+    save_rules_file(REJECT_JSON, reject_set)
+    print("Идеальный баланс правил достигнут.")
+
+def step_compile_srs():
+    print("\n--- 5. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
+    json_files = [f for f in os.listdir('.') if f.endswith('.json')]
+    for jf in json_files:
+        srs_file = jf.replace('.json', '.srs')
+        try:
+            subprocess.run(["sing-box", "rule-set", "compile", jf, "--output", srs_file], check=True)
+            print(f"Скомпилировано: {srs_file}")
+        except Exception as e:
+            print(f"Ошибка компиляции {jf}: {e}")
+
+# ==========================================
+# 4. ГЛАВНАЯ ТОЧКА ВХОДА
+# ==========================================
+def main():
+    print("==================================================")
+    print("=== ЗАПУСК ПОЛНОГО ЦИКЛА СБОРКИ ПРАВИЛ И НОД ===")
+    print("==================================================")
+    
+    step_collect_proxies()
+    step_parse_rules_and_logs()
+    step_check_heavy_rkn()
+    step_global_cleaner()
+    step_compile_srs()
+
+    print("\n==================================================")
+    print("=== ВСЕ ЭТАПЫ СБОРКИ УСПЕШНО ЗАВЕРШЕНЫ! ===")
+    print("==================================================")
 
 if __name__ == "__main__":
     main()
