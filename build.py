@@ -130,52 +130,82 @@ def is_ad_or_tracker(domain):
     return any(keyword in domain.lower() for keyword in AD_TRACKER_KEYWORDS)
 
 def safe_b64decode(data):
+    """Безопасное декодирование Base64 с учетом паддинга и URL-safe формата."""
     data = data.strip()
     missing_padding = len(data) % 4
     if missing_padding:
         data += '=' * (4 - missing_padding)
-    return base64.b64decode(data).decode('utf-8', errors='ignore')
+    # Универсальная обработка url-safe base64 (часто встречается в vmess/ss)
+    data = data.replace('-', '+').replace('_', '/')
+    try:
+        return base64.b64decode(data).decode('utf-8', errors='ignore')
+    except Exception:
+        return ""
 
 def extract_host_port(node):
     node = node.strip()
     if not node:
         return None, 443
     try:
-        if node.startswith("ss://"):
-            part = node.split("://")[1].split("#")[0]
+        # Убираем параметры и якоря для безопасного парсинга хоста
+        clean_node = node.split("#")[0]
+        
+        if clean_node.startswith("ss://"):
+            part = clean_node.split("://")[1]
             if "@" in part:
                 host_port = part.split("@")[1]
             else:
                 decoded = safe_b64decode(part)
-                host_port = decoded.split("@")[1]
+                if "@" in decoded:
+                    host_port = decoded.split("@")[1]
+                else:
+                    host_port = decoded
             hp = host_port.split("/")[0].split("?")[0]
             if ":" in hp:
                 h, p = hp.rsplit(":", 1)
                 return h.strip("[]"), int(p)
             return hp.strip("[]"), 443
 
-        elif node.startswith(("trojan://", "hy2://", "hysteria2://", "vless://", "tuic://")):
-            if "@" in node:
-                part = node.split("://")[1].split("@")[1]
+        elif clean_node.startswith(("trojan://", "hy2://", "hysteria2://", "vless://", "tuic://", "vmess://")):
+            # Для vmess внутри может быть base64 JSON, обрабатываем отдельно
+            if clean_node.startswith("vmess://"):
+                try:
+                    b64_str = clean_node.split("://")[1].split("?")[0]
+                    decoded = safe_b64decode(b64_str)
+                    if decoded:
+                        data = json.loads(decoded)
+                        h = data.get("add")
+                        p = data.get("port", 443)
+                        return str(h).strip("[]") if h else None, int(p)
+                except Exception:
+                    pass
+
+            # Общий парсинг для vless, trojan, hy2 и т.д.
+            part = clean_node.split("://")[1]
+            if "@" in part:
+                # Отрезаем всё до @ (там uuid/пароль), оставляем адрес@порт и параметры
+                host_part = part.split("@")[-1]
             else:
-                part = node.split("://")[1]
-            hp = part.split("/")[0].split("?")[0].split("#")[0]
+                host_part = part
+            
+            # Убираем параметры (?...) и пути (/...)
+            hp = host_part.split("/")[0].split("?")[0]
+            
             if ":" in hp:
-                h, p = hp.rsplit(":", 1)
-                return h.strip("[]"), int(p)
+                # Учитываем IPv6 в квадратных скобках [2001:db8::1]:443
+                if "]" in hp:
+                    h = hp.split("]")[0].strip("[")
+                    p = hp.split("]:")[1] if "]:" in hp else 443
+                    return h, int(p)
+                else:
+                    h, p = hp.rsplit(":", 1)
+                    return h.strip("[]"), int(p)
             return hp.strip("[]"), 443
 
-        elif node.startswith("vmess://"):
-            b64_str = node.split("://")[1]
-            decoded = safe_b64decode(b64_str)
-            data = json.loads(decoded)
-            h = data.get("add")
-            p = data.get("port", 443)
-            return str(h).strip("[]") if h else None, int(p)
-            
     except Exception:
         return None, 443
     return None, 443
+
 
 def load_json_domains(filename):
     domains = set()
@@ -233,6 +263,8 @@ def step_collect_proxies():
                 missing_padding = len(b64_data) % 4
                 if missing_padding:
                     b64_data += '=' * (4 - missing_padding)
+                # Учет url-safe base64 в подписках
+                b64_data = b64_data.replace('-', '+').replace('_', '/')
                 decoded = base64.b64decode(b64_data).decode('utf-8', errors='ignore')
                 lines = decoded.splitlines()
             except Exception:
@@ -249,6 +281,7 @@ def step_collect_proxies():
                         line_b64 = line + ('=' * (4 - missing_padding))
                     else:
                         line_b64 = line
+                    line_b64 = line_b64.replace('-', '+').replace('_', '/')
                     dec_line = base64.b64decode(line_b64).decode('utf-8', errors='ignore').strip()
                     if any(dec_line.startswith(proto) for proto in PROTOCOLS):
                         line = dec_line
