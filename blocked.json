@@ -2,7 +2,11 @@
   "version": 1,
   "rules": [
     {
-      "domain_suffix": []
+      "domain_suffix": [
+        "5z-r.lk",
+        "h.zqh",
+        "wh.whi"
+      ]
     }
   ]
 }
