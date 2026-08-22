@@ -50,6 +50,11 @@ PROTOCOLS = ["ss://", "vmess://", "trojan://", "hy2://", "hysteria2://", "vless:
 BAD_KEYWORDS = ["anycast", "fixnet", "fixcord", "cloudflare", "warp", "cf-"]
 RU_MARKERS = ["russia", "moscow", "spb", "россия", ".ru"]
 
+TELEGRAM_DOMAINS = [
+    "t.me", "telegram.org", "telegram.me", "tdesktop.com", "telegra.ph", 
+    "telegram.dog", "tx.me", "usercontent.dev"
+]
+
 AD_TRACKER_KEYWORDS = [
     "analytics", "ads", "pixel", "metrics", "telemetry", "tracker",
     "tracking", "adservice", "adsystem", "banner", "counter", "pangle",
@@ -59,11 +64,6 @@ AD_TRACKER_KEYWORDS = [
 DOMESTIC_EXCLUSIONS = [
     "yandex", "ya.ru", "yastatic", "kinopoisk", "dzen", "vk.com", 
     "vk.ru", "mail.ru", "ok.ru", "rutube", "gosuslugi", "sberbank", "tbank", "tinkoff"
-]
-
-WHITELIST_EXACT = [
-    "tiktok.com", "facebook.com", "rutube.ru", "youtube.com", "vk.com",
-    "t.me", "telegram.org", "instagram.com"
 ]
 
 # ==========================================
@@ -109,7 +109,12 @@ def clean_domain(line):
             return line
     return None
 
+def is_telegram_domain(domain):
+    return any(tg in domain.lower() for tg in TELEGRAM_DOMAINS) or "telegram" in domain.lower()
+
 def is_domestic_service(domain):
+    if is_telegram_domain(domain):
+        return False
     domain_lower = domain.lower()
     if any(dom in domain_lower for dom in DOMESTIC_EXCLUSIONS):
         return True
@@ -118,7 +123,42 @@ def is_domestic_service(domain):
     return False
 
 def is_ad_or_tracker(domain):
+    if is_telegram_domain(domain):
+        return False
     return any(keyword in domain.lower() for keyword in AD_TRACKER_KEYWORDS)
+
+def extract_host_port(node):
+    try:
+        if node.startswith("vmess://"):
+            b64_str = node.split("://", 1)[1]
+            missing_padding = len(b64_str) % 4
+            if missing_padding:
+                b64_str += '=' * (4 - missing_padding)
+            decoded = json.loads(base64.b64decode(b64_str).decode('utf-8', errors='ignore'))
+            return decoded.get("add", "").strip(), int(decoded.get("port", 443))
+        
+        clean = re.sub(r'^[a-zA-Z0-9\-\.]+://', '', node)
+        
+        if '@' not in clean and '#' in clean:
+            clean = clean.split('#')[0]
+        if '@' not in clean and '?' not in clean:
+            try:
+                missing_padding = len(clean) % 4
+                if missing_padding: clean += '=' * (4 - missing_padding)
+                decoded = base64.b64decode(clean).decode('utf-8', errors='ignore')
+                if '@' in decoded: clean = decoded
+            except Exception:
+                pass
+
+        clean = re.split(r'[?#]', clean)[0]
+        server_part = clean.split('@')[-1] if '@' in clean else clean
+        
+        if ':' in server_part:
+            host, port = server_part.rsplit(':', 1)
+            return host.strip("[]"), int(port)
+        return server_part.strip("[]"), 443
+    except Exception:
+        return None, None
 
 def load_json_domains(filename):
     domains = set()
@@ -153,7 +193,7 @@ def save_rules_file(filename, domain_list):
 # ==========================================
 
 def step_collect_proxies():
-    print("\n--- 1. СБОР И ТЕСТИРОВАНИЕ ПРОКСИ-УЗЛОВ ---")
+    print("\n--- 1. СБОР И ТЕСТИРОВАНИЕ ПРОКСИ-УЗЛОВ (ВСЕ ПРОТОКОЛЫ) ---")
     raw_nodes = []
     for source in PROXY_SOURCES:
         content = download_text(source, timeout=10)
@@ -175,13 +215,11 @@ def step_collect_proxies():
     print(f"Собрано {len(unique_nodes)} уникальных нод. Проверка TCP в 30 потоков...")
 
     def ping_node(node):
+        host, port = extract_host_port(node)
+        if not host or not port:
+            return node, False, None
         try:
-            clean = re.sub(r'^[a-zA-Z0-9\-\.]+://', '', node)
-            server_part = clean.split('@')[-1] if '@' in clean else clean
-            host_port = re.split(r'[/?#]', server_part)[0].strip()
-            host, port = (host_port.rsplit(':', 1) if ':' in host_port else (host_port, 443))
-            host = host.strip("[]")
-            with socket.create_connection((host, int(port)), timeout=2.5):
+            with socket.create_connection((host, port), timeout=2.5):
                 return node, True, host
         except Exception:
             return node, False, None
@@ -212,10 +250,14 @@ def step_collect_proxies():
     print(f"Готово! Записано: proxy.txt ({len(foreign_nodes)} нод), ru_proxies.txt ({len(ru_nodes)} нод)")
 
 def step_parse_rules_and_logs():
-    print("\n--- 2. СБОР ПРАВИЛ REJECT И ЛОГОВ (DROPBOX) ---")
+    print("\n--- 2. СБОР ПРАВИЛ REJECT, PROXY И ЛОГОВ (DROPBOX) ---")
     rejected_domains = load_json_domains(REJECT_JSON)
     proxy_domains = load_json_domains(PROXY_JSON)
     rus_domains = load_json_domains(RUS_JSON)
+
+    # Принудительно заносим основные Telegram домены в proxy
+    for tg_dom in TELEGRAM_DOMAINS:
+        proxy_domains.add(tg_dom)
 
     # 1. Скачивание базовых списков
     for key, url in RULE_SOURCES.items():
@@ -224,7 +266,9 @@ def step_parse_rules_and_logs():
             for line in content.splitlines():
                 d = clean_domain(line)
                 if d:
-                    if key in ["reject", "adguard_dns", "adguard_trackers", "oisd_small", "stevenblack"] or is_ad_or_tracker(d):
+                    if is_telegram_domain(d):
+                        proxy_domains.add(d)
+                    elif key in ["reject", "adguard_dns", "adguard_trackers", "oisd_small", "stevenblack"] or is_ad_or_tracker(d):
                         rejected_domains.add(d)
                     elif key in ["telegram", "youtube", "tiktok", "proxy_media", "google", "apple"]:
                         proxy_domains.add(d)
@@ -235,7 +279,9 @@ def step_parse_rules_and_logs():
         for line in dropbox_content.splitlines():
             d = clean_domain(line)
             if d:
-                if is_domestic_service(d):
+                if is_telegram_domain(d):
+                    proxy_domains.add(d)
+                elif is_domestic_service(d):
                     rus_domains.add(d)
                 else:
                     rejected_domains.add(d)
@@ -251,7 +297,6 @@ def step_check_heavy_rkn():
     
     heavy_domains = set()
 
-    # 1. Загрузка из HEAVY_SOURCES
     for url in HEAVY_SOURCES:
         content = download_text(url)
         if content:
@@ -261,7 +306,6 @@ def step_check_heavy_rkn():
                     if d not in existing_proxies and d not in existing_rejects:
                         heavy_domains.add(d)
 
-    # 2. Обработка файла urls.txt (с декомпиляцией .srs при необходимости)
     if os.path.exists(URLS_FILE):
         with open(URLS_FILE, "r", encoding="utf-8") as f:
             urls = [l.strip() for l in f if l.strip()]
@@ -324,15 +368,19 @@ def step_global_cleaner():
     rus_set = load_json_domains(RUS_JSON)
     reject_set = load_json_domains(REJECT_JSON)
 
-    # 1. Вычищаем из прокси все рекламы и Яндекс
+    # Защищаем Telegram
+    for tg_dom in TELEGRAM_DOMAINS:
+        proxy_set.add(tg_dom)
+
     proxy_clean = set()
     for d in proxy_set:
-        if not is_domestic_service(d) and not is_ad_or_tracker(d):
+        if is_telegram_domain(d):
+            proxy_clean.add(d)
+        elif not is_domestic_service(d) and not is_ad_or_tracker(d):
             proxy_clean.add(d)
         elif is_domestic_service(d):
             rus_set.add(d)
 
-    # 2. Приоритетное исключение
     for d in proxy_clean:
         reject_set.discard(d)
         rus_set.discard(d)
@@ -343,7 +391,7 @@ def step_global_cleaner():
     save_rules_file(PROXY_JSON, proxy_clean)
     save_rules_file(RUS_JSON, rus_set)
     save_rules_file(REJECT_JSON, reject_set)
-    print("Идеальный баланс правил достигнут.")
+    print("Идеальный баланс правил достигнут. Telegram защищен в PROXY.")
 
 def step_compile_srs():
     print("\n--- 5. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
