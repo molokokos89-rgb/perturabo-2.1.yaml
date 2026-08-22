@@ -129,38 +129,53 @@ def is_ad_or_tracker(domain):
         return False
     return any(keyword in domain.lower() for keyword in AD_TRACKER_KEYWORDS)
 
-def extract_host_port(node):
-    try:
-        if node.startswith("vmess://"):
-            b64_str = node.split("://", 1)[1]
-            missing_padding = len(b64_str) % 4
-            if missing_padding:
-                b64_str += '=' * (4 - missing_padding)
-            decoded = json.loads(base64.b64decode(b64_str).decode('utf-8', errors='ignore'))
-            return decoded.get("add", "").strip(), int(decoded.get("port", 443))
-        
-        clean = re.sub(r'^[a-zA-Z0-9\-\.]+://', '', node)
-        
-        if '@' not in clean and '#' in clean:
-            clean = clean.split('#')[0]
-        if '@' not in clean and '?' not in clean:
-            try:
-                missing_padding = len(clean) % 4
-                if missing_padding: clean += '=' * (4 - missing_padding)
-                decoded = base64.b64decode(clean).decode('utf-8', errors='ignore')
-                if '@' in decoded: clean = decoded
-            except Exception:
-                pass
+def safe_b64decode(data):
+    data = data.strip()
+    missing_padding = len(data) % 4
+    if missing_padding:
+        data += '=' * (4 - missing_padding)
+    return base64.b64decode(data).decode('utf-8', errors='ignore')
 
-        clean = re.split(r'[?#]', clean)[0]
-        server_part = clean.split('@')[-1] if '@' in clean else clean
-        
-        if ':' in server_part:
-            host, port = server_part.rsplit(':', 1)
-            return host.strip("[]"), int(port)
-        return server_part.strip("[]"), 443
+def extract_host_port(node):
+    node = node.strip()
+    if not node:
+        return None, 443
+    try:
+        if node.startswith("ss://"):
+            part = node.split("://")[1].split("#")[0]
+            if "@" in part:
+                host_port = part.split("@")[1]
+            else:
+                decoded = safe_b64decode(part)
+                host_port = decoded.split("@")[1]
+            hp = host_port.split("/")[0].split("?")[0]
+            if ":" in hp:
+                h, p = hp.rsplit(":", 1)
+                return h.strip("[]"), int(p)
+            return hp.strip("[]"), 443
+
+        elif node.startswith(("trojan://", "hy2://", "hysteria2://", "vless://", "tuic://")):
+            if "@" in node:
+                part = node.split("://")[1].split("@")[1]
+            else:
+                part = node.split("://")[1]
+            hp = part.split("/")[0].split("?")[0].split("#")[0]
+            if ":" in hp:
+                h, p = hp.rsplit(":", 1)
+                return h.strip("[]"), int(p)
+            return hp.strip("[]"), 443
+
+        elif node.startswith("vmess://"):
+            b64_str = node.split("://")[1]
+            decoded = safe_b64decode(b64_str)
+            data = json.loads(decoded)
+            h = data.get("add")
+            p = data.get("port", 443)
+            return str(h).strip("[]") if h else None, int(p)
+            
     except Exception:
-        return None, None
+        return None, 443
+    return None, 443
 
 def load_json_domains(filename):
     domains = set()
