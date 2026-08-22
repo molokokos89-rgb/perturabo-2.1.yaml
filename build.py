@@ -26,6 +26,10 @@ RULE_SOURCES = {
     "reject": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt"
 }
 
+HEAVY_SOURCES = [
+    "https://raw.githubusercontent.com/roskomkod/ru-blocked-domains/main/domains.txt"
+]
+
 TIKTOK_KEYWORDS = ["tiktok", "byteoversea", "ibytedtos", "musically", "bytegecko"]
 YOUTUBE_KEYWORDS = ["youtube", "ytimg", "ggpht", "googlevideo"]
 TELEGRAM_KEYWORDS = ["telegram", "t.me", "tdesktop", "tx.me"]
@@ -47,8 +51,6 @@ ALLOWED_AD_SUBDOMAINS = [
     "://tiktokcdn.com", "bdtone.com", "mon.pangle.io"
 ]
 
-PROXY_JSON = "my_rules_proxy.json"
-
 def is_dangerous_block(domain):
     if domain in WHITELIST_EXACT:
         return True
@@ -63,17 +65,27 @@ def clean_domain(line):
     line = line.strip().lower()
     if not line or line.startswith(("#", "!", ";", "//")):
         return None
+    
     line = re.sub(r'^(127\.0\.0\.1|0\.0\.0\.0)\s+', '', line)
+    
     if "#" in line:
         line = line.split("#")[0]
     line = line.strip()
+    
+    line = re.sub(r'^[a-z0-9]+://', '', line)
+    line = line.split('/')[0].split('?')[0].split(':')[0]
+    
     if line.startswith("||"):
         line = line[2:]
     if line.endswith("^"):
         line = line[:-1]
-    line = line.replace("*.", "")
-    if re.match(r'^[a-z0-9.-]+\.[a-z]{2,6}$', line):
+        
+    line = line.strip(".-")
+    
+    domain_regex = r'^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$'
+    if re.match(domain_regex, line):
         return line
+        
     return None
 
 def download_text(url):
@@ -93,7 +105,9 @@ def load_existing_proxy_domains():
                 for rule in data.get("rules", []):
                     if "domain_suffix" in rule:
                         for d in rule["domain_suffix"]:
-                            domains.add(d.lower().strip())
+                            cleaned = clean_domain(d)
+                            if cleaned:
+                                domains.add(cleaned)
         except Exception:
             pass
     return domains
@@ -131,11 +145,13 @@ def main():
                 old_data = json.load(f)
                 for rule in old_data.get("rules", []):
                     for d in rule.get("domain_suffix", []):
-                        rejected_domains.add(d.lower().strip())
+                        cd = clean_domain(d)
+                        if cd:
+                            rejected_domains.add(cd)
         except Exception:
             pass
 
-    for url in RULE_SOURCES:
+    for key, url in RULE_SOURCES.items():
         content = download_text(url)
         if content:
             for line in content.splitlines():
@@ -145,14 +161,11 @@ def main():
 
     dropbox_content = download_text(DROPBOX_URL)
     if dropbox_content:
-        pattern = re.compile(r'([a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})')
         for line in dropbox_content.splitlines():
-            for match in pattern.finditer(line):
-                item = match.group(0).lower().strip().replace("`", "").replace("*.", "")
-                if len(item) > 3 and "." in item and not item.startswith("-") and not item.endswith("-"):
-                    if not item.startswith(("127.", "0.", "192.168.", "10.")):
-                        if not is_dangerous_block(item):
-                            rejected_domains.add(item)
+            cd = clean_domain(line)
+            if cd and not cd.startswith(("127.", "0.", "192.168.", "10.")):
+                if not is_dangerous_block(cd):
+                    rejected_domains.add(cd)
 
     existing_proxies = load_existing_proxy_domains()
     for d in existing_proxies:
@@ -162,14 +175,13 @@ def main():
         json.dump({"version": 1, "rules": [{"domain_suffix": sorted(list(rejected_domains))}]}, f, indent=2, ensure_ascii=False)
 
     collected_heavy = set()
-    domain_pattern = re.compile(r'^([a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?\.)+[a-z]{2,6}$')
 
     for url in HEAVY_SOURCES:
         content = download_text(url)
         if content:
             for line in content.splitlines():
                 rd = clean_domain(line)
-                if rd and domain_pattern.match(rd) and len(rd) > 3:
+                if rd and len(rd) > 3:
                     if rd not in existing_proxies:
                         if not any(rd.endswith(zone) for zone in [".ru", ".su", ".by", ".xn--p1ai"]):
                             collected_heavy.add(rd)
