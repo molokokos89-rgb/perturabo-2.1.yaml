@@ -20,26 +20,20 @@ jobs:
 
     - name: Install Sing-Box
       run: |
-        sudo bash -c "$(curl -L https://boxex.rocks)"
+        sudo apt-get update
+        sudo apt-get install -y jq curl
+        LATEST_VERSION=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r .tag_name | sed 's/^v//')
+        ARCH=$(dpkg --print-architecture)
+        wget "https://github.com/SagerNet/sing-box/releases/download/v${LATEST_VERSION}/sing-box_${LATEST_VERSION}_linux_${ARCH}.deb"
+        sudo dpkg -i "sing-box_${LATEST_VERSION}_linux_${ARCH}.deb"
+        rm "sing-box_${LATEST_VERSION}_linux_${ARCH}.deb"
 
-    - name: Run Collector
-      run: python collector.py
-
-    - name: Run Checker
-      run: python checker.py
-
-    - name: Run Log Parser
-      run: python parse_logs.py
-
-    - name: Run Addon Parser
-      run: python addon_parser.py
-
-    - name: Run Build AdBlock
+    - name: Run Full Build Pipeline
       run: python build.py
 
     - name: Check and Commit Changes
       run: |
-        git config --local user.email "github-actions[bot]@://github.com"
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
         git add .
         if git diff --staged --quiet; then
