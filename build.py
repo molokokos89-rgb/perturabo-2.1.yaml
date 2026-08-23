@@ -135,7 +135,6 @@ def safe_b64decode(data):
     missing_padding = len(data) % 4
     if missing_padding:
         data += '=' * (4 - missing_padding)
-    # Универсальная обработка url-safe base64 (часто встречается в vmess/ss)
     data = data.replace('-', '+').replace('_', '/')
     try:
         return base64.b64decode(data).decode('utf-8', errors='ignore')
@@ -147,7 +146,6 @@ def extract_host_port(node):
     if not node:
         return None, 443
     try:
-        # Убираем параметры и якоря для безопасного парсинга хоста
         clean_node = node.split("#")[0]
         
         if clean_node.startswith("ss://"):
@@ -167,7 +165,6 @@ def extract_host_port(node):
             return hp.strip("[]"), 443
 
         elif clean_node.startswith(("trojan://", "hy2://", "hysteria2://", "vless://", "tuic://", "vmess://")):
-            # Для vmess внутри может быть base64 JSON, обрабатываем отдельно
             if clean_node.startswith("vmess://"):
                 try:
                     b64_str = clean_node.split("://")[1].split("?")[0]
@@ -180,19 +177,15 @@ def extract_host_port(node):
                 except Exception:
                     pass
 
-            # Общий парсинг для vless, trojan, hy2 и т.д.
             part = clean_node.split("://")[1]
             if "@" in part:
-                # Отрезаем всё до @ (там uuid/пароль), оставляем адрес@порт и параметры
                 host_part = part.split("@")[-1]
             else:
                 host_part = part
             
-            # Убираем параметры (?...) и пути (/...)
             hp = host_part.split("/")[0].split("?")[0]
             
             if ":" in hp:
-                # Учитываем IPv6 в квадратных скобках [2001:db8::1]:443
                 if "]" in hp:
                     h = hp.split("]")[0].strip("[")
                     p = hp.split("]:")[1] if "]:" in hp else 443
@@ -205,7 +198,6 @@ def extract_host_port(node):
     except Exception:
         return None, 443
     return None, 443
-
 
 def load_json_domains(filename):
     domains = set()
@@ -248,7 +240,7 @@ def save_mixed_rules_file(filename, domains, cidrs):
 # ==========================================
 
 def step_collect_proxies():
-    print("\n--- 1. СБОР И ТЕСТИРОВАНИЕ ПРОКСИ-УЗЛОВ (ВСЕ ПРОТОКОЛЫ) ---")
+    print("\n--- 1. СБОР И ФИЛЬТРАЦИЯ ПРОКСИ-УЗЛОВ (ВСЕ ПРОТОКОЛЫ) ---")
     raw_nodes = []
     
     for source in PROXY_SOURCES:
@@ -263,7 +255,6 @@ def step_collect_proxies():
                 missing_padding = len(b64_data) % 4
                 if missing_padding:
                     b64_data += '=' * (4 - missing_padding)
-                # Учет url-safe base64 в подписках
                 b64_data = b64_data.replace('-', '+').replace('_', '/')
                 decoded = base64.b64decode(b64_data).decode('utf-8', errors='ignore')
                 lines = decoded.splitlines()
@@ -290,31 +281,16 @@ def step_collect_proxies():
 
             if any(line.startswith(proto) for proto in PROTOCOLS):
                 if not any(bad in line.lower() for bad in BAD_KEYWORDS):
-                    raw_nodes.append(line)
+                    host, port = extract_host_port(line)
+                    if host and port:
+                        raw_nodes.append(line)
 
     unique_nodes = list(set(raw_nodes))
-    print(f"Собрано {len(unique_nodes)} уникальных нод. Проверка TCP в 30 потоков...")
-
-    def ping_node(node):
-        host, port = extract_host_port(node)
-        if not host or not port:
-            return node, False, None
-        try:
-            with socket.create_connection((host, port), timeout=2.5):
-                return node, True, host
-        except Exception:
-            return node, False, None
-
-    alive_nodes = []
-    with ThreadPoolExecutor(max_workers=30) as executor:
-        futures = {executor.submit(ping_node, node): node for node in unique_nodes}
-        for future in as_completed(futures):
-            node, is_alive, host = future.result()
-            if is_alive:
-                alive_nodes.append((node, host))
+    print(f"Собрано и успешно распарсено уникальных нод: {len(unique_nodes)}")
 
     foreign_nodes, ru_nodes = [], []
-    for node, host in alive_nodes:
+    for node in unique_nodes:
+        host, _ = extract_host_port(node)
         if host and (any(m in node.lower() for m in RU_MARKERS) or host.lower().endswith('.ru')):
             ru_nodes.append(node)
         else:
