@@ -46,6 +46,7 @@
     "doubleclick.com",
     "doubleclick.net",
     "episodic.com",
+    "euronews.com",
     "feedburner.com",
     "fflick.com",
     "financeleadsonline.com",
@@ -81,7 +82,6 @@
     "impermium.com",
     "isbgpsafeyet.com",
     "itasoftware.com",
-    "jules.google",
     "kedr.media",
     "labs.google",
     "labs.google.com",
@@ -128,7 +128,8 @@
     "x.company",
     "x.team",
     "youtubefanfest.com",
-    "youtubekids.com"
+    "youtubekids.com",
+    "youtubemobilesupport.com"
   ],
   "rules": [
     {
@@ -178,6 +179,7 @@
         "doubleclick.com",
         "doubleclick.net",
         "episodic.com",
+        "euronews.com",
         "feedburner.com",
         "fflick.com",
         "financeleadsonline.com",
@@ -213,7 +215,6 @@
         "impermium.com",
         "isbgpsafeyet.com",
         "itasoftware.com",
-        "jules.google",
         "kedr.media",
         "labs.google",
         "labs.google.com",
@@ -260,7 +261,8 @@
         "x.company",
         "x.team",
         "youtubefanfest.com",
-        "youtubekids.com"
+        "youtubekids.com",
+        "youtubemobilesupport.com"
       ]
     }
   ]
