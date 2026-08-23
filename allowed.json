@@ -7,6 +7,7 @@
     "ads.youtube.com",
     "adtrafficquality.google",
     "android.com",
+    "antigravity.google",
     "autodraw.com",
     "blink.org",
     "blogger.com",
@@ -73,6 +74,7 @@
     "googledomains.com",
     "hdrplusdata.org",
     "hey.boo",
+    "hwgo.com",
     "iam.soy",
     "idx.dev",
     "imasdk.googleapis.com",
@@ -122,11 +124,11 @@
     "webappfieldguide.com",
     "whats.new",
     "widevine.com",
+    "womenwill.com",
     "x.company",
     "x.team",
     "youtubefanfest.com",
-    "youtubekids.com",
-    "youtubemobilesupport.com"
+    "youtubekids.com"
   ],
   "rules": [
     {
@@ -137,6 +139,7 @@
         "ads.youtube.com",
         "adtrafficquality.google",
         "android.com",
+        "antigravity.google",
         "autodraw.com",
         "blink.org",
         "blogger.com",
@@ -203,6 +206,7 @@
         "googledomains.com",
         "hdrplusdata.org",
         "hey.boo",
+        "hwgo.com",
         "iam.soy",
         "idx.dev",
         "imasdk.googleapis.com",
@@ -252,11 +256,11 @@
         "webappfieldguide.com",
         "whats.new",
         "widevine.com",
+        "womenwill.com",
         "x.company",
         "x.team",
         "youtubefanfest.com",
-        "youtubekids.com",
-        "youtubemobilesupport.com"
+        "youtubekids.com"
       ]
     }
   ]
