@@ -19,11 +19,9 @@ URLS_FILE = "urls.txt"
 
 DROPBOX_URL = "https://www.dropbox.com/scl/fi/759t1a2us3y0kblgat0xr/log-for-reject.txt?rlkey=zr2uqv81lx89rdl6q55geyucy&st=8lc13ygu&dl=1"
 
-PROXY_SOURCES = [
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2Ball_RUS.txt",
-    "https://raw.githubusercontent.com/sevcator/5ubscript10n/main/protocols/hy2.txt",
-    "https://raw.githubusercontent.com/sevcator/5ubscript10n/main/protocols/ss.txt",
-    "https://raw.githubusercontent.com/sevcator/5ubscript10n/main/protocols/trojan.txt",
+SOURCES = [
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
+    "https://raw.githubusercontent.com/sevcator/5ubscrpt10n/main/protocols/hy2.txt",
     "https://raw.githubusercontent.com/yebekhe/TelegramV2rayCollector/main/sub/normal/mix",
     "https://raw.githubusercontent.com/freefq/free/master/v2ray",
     "https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/All_Configs_Sub.txt",
@@ -49,8 +47,7 @@ HEAVY_SOURCES = [
 ]
 
 PROTOCOLS = ["ss://", "vmess://", "trojan://", "hy2://", "hysteria2://", "vless://"]
-BAD_KEYWORDS = ["anycast", "fixnet", "fixcord", "cloudflare", "warp", "cf-"]
-RU_MARKERS = ["russia", "moscow", "spb", "россия", ".ru"]
+BAD_KEYWORDS = ["russia", "anycast", "fixnet", "fixcord", "cloudflare", "warp", "cf-"]
 
 TELEGRAM_DOMAINS = [
     "t.me", "telegram.org", "telegram.me", "tdesktop.com", "telegra.ph", 
@@ -69,16 +66,112 @@ DOMESTIC_EXCLUSIONS = [
 ]
 
 # ==========================================
-# 2. УНИВЕРСАЛЬНЫЕ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ИЗ ВАШЕГО РЕПОЗИТОРИЯ
 # ==========================================
 
-def download_text(url, timeout=15):
+def fetch_url(url):
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=timeout) as response:
-            return response.read().decode('utf-8', errors='ignore')
+        req = urllib.request.Request(
+            url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            content = response.read().decode('utf-8', errors='ignore')
+        if not any(proto in content for proto in PROTOCOLS):
+            try:
+                clean_content = content.strip().replace("\n", "").replace("\r", "")
+                missing_padding = len(clean_content) % 4
+                if missing_padding:
+                    clean_content += '=' * (4 - missing_padding)
+                clean_content = clean_content.replace('-', '+').replace('_', '/')
+                content = base64.b64decode(clean_content).decode('utf-8', errors='ignore')
+            except Exception:
+                pass
+        return content
     except Exception:
         return ""
+
+def safe_b64decode(data):
+    data = data.strip()
+    missing_padding = len(data) % 4
+    if missing_padding:
+        data += '=' * (4 - missing_padding)
+    data = data.replace('-', '+').replace('_', '/')
+    return base64.b64decode(data).decode('utf-8', errors='ignore')
+
+def extract_ip_or_domain(proxy_link):
+    try:
+        clean_link = re.sub(r'^[a-zA-Z0-9\-\.]+://', '', proxy_link)
+        if '@' in clean_link:
+            server_part = clean_link.split('@')[-1]
+        else:
+            server_part = clean_link
+        server_address = re.split(r'[:/?#]', server_part)
+        return server_address[0].strip()
+    except Exception:
+        return None
+
+def extract_host(line):
+    line = line.strip()
+    if not line:
+        return None
+    try:
+        if line.startswith("ss://"):
+            part = line.split("://")[1].split("#")[0]
+            if "@" in part:
+                host_port = part.split("@")[1]
+            else:
+                decoded = safe_b64decode(part)
+                host_port = decoded.split("@")[1]
+            return host_port.split(":")[0].strip("[]")
+        elif line.startswith(("trojan://", "hy2://", "hysteria2://", "vless://", "tuic://")):
+            if "@" in line:
+                part = line.split("://")[1].split("@")[1]
+                return part.split(":")[0].split("?")[0].strip("[]")
+            else:
+                part = line.split("://")[1]
+                return part.split(":")[0].split("?")[0].strip("[]")
+        elif line.startswith("vmess://"):
+            b64_str = line.split("://")[1].split("?")[0]
+            decoded = safe_b64decode(b64_str)
+            data = json.loads(decoded)
+            return str(data.get("add")).strip("[]") if data.get("add") else None
+    except Exception:
+        return None
+    return None
+
+def is_valid_reality(proxy_link):
+    if not proxy_link.startswith("vless://"):
+        return True
+    if "security=reality" not in proxy_link.lower() or "pbk=" not in proxy_link.lower():
+        return False
+    sni_match = re.search(r'[?&]sni=([^&]+)', proxy_link, re.IGNORECASE)
+    if sni_match:
+        sni = sni_match.group(1).split('#')[0].lower()
+        banned_sni_keywords = ["google", "netflix", "facebook", "instagram", "twitter", "youtube"]
+        if any(keyword in sni for keyword in banned_sni_keywords):
+            return False
+    return True
+
+def check_is_russia(host):
+    if not host:
+        return False
+    if host.lower().endswith('.ru') or host.lower().endswith('.su') or host.lower().endswith('.by'):
+        return True
+    try:
+        try:
+            socket.inet_aton(host)
+            ip = host
+        except socket.error:
+            ip = socket.gethostbyname(host)
+            
+        req = urllib.request.Request(f"http://ip-api.com/json/{ip}", headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=3) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            if data.get("status") == "success" and data.get("countryCode") == "RU":
+                return True
+    except Exception:
+        pass
+    return False
 
 def clean_domain(line):
     if not line:
@@ -86,25 +179,19 @@ def clean_domain(line):
     line = line.strip().lower()
     if not line or line.startswith(("#", "!", ";", "//")):
         return None
-    
     line = re.sub(r'^(127\.0\.0\.1|0\.0\.0\.0)\s+', '', line)
     if "#" in line:
         line = line.split("#")[0]
     line = line.strip()
-    
     line = re.sub(r'^[a-z0-9]+://', '', line)
     line = line.split('/')[0].split('?')[0].split(':')[0]
-    
     if line.startswith("||"): line = line[2:]
     if line.endswith("^"): line = line[:-1]
     line = line.strip(".-").replace("*.", "")
-
     if re.search(r'\.(js|css|png|jpg|jpeg|svg|gif|woff|woff2|json)$', line):
         return None
-
     if len(line) > 65:
         return None
-    
     domain_regex = r'^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$'
     if re.match(domain_regex, line):
         if not any(line.startswith(ip) for ip in ["127.", "0.", "192.168.", "10."]):
@@ -129,76 +216,6 @@ def is_ad_or_tracker(domain):
         return False
     return any(keyword in domain.lower() for keyword in AD_TRACKER_KEYWORDS)
 
-def safe_b64decode(data):
-    """Безопасное декодирование Base64 с учетом паддинга и URL-safe формата."""
-    data = data.strip()
-    missing_padding = len(data) % 4
-    if missing_padding:
-        data += '=' * (4 - missing_padding)
-    data = data.replace('-', '+').replace('_', '/')
-    try:
-        return base64.b64decode(data).decode('utf-8', errors='ignore')
-    except Exception:
-        return ""
-
-def extract_host_port(node):
-    node = node.strip()
-    if not node:
-        return None, 443
-    try:
-        clean_node = node.split("#")[0]
-        
-        if clean_node.startswith("ss://"):
-            part = clean_node.split("://")[1]
-            if "@" in part:
-                host_port = part.split("@")[1]
-            else:
-                decoded = safe_b64decode(part)
-                if "@" in decoded:
-                    host_port = decoded.split("@")[1]
-                else:
-                    host_port = decoded
-            hp = host_port.split("/")[0].split("?")[0]
-            if ":" in hp:
-                h, p = hp.rsplit(":", 1)
-                return h.strip("[]"), int(p)
-            return hp.strip("[]"), 443
-
-        elif clean_node.startswith(("trojan://", "hy2://", "hysteria2://", "vless://", "tuic://", "vmess://")):
-            if clean_node.startswith("vmess://"):
-                try:
-                    b64_str = clean_node.split("://")[1].split("?")[0]
-                    decoded = safe_b64decode(b64_str)
-                    if decoded:
-                        data = json.loads(decoded)
-                        h = data.get("add")
-                        p = data.get("port", 443)
-                        return str(h).strip("[]") if h else None, int(p)
-                except Exception:
-                    pass
-
-            part = clean_node.split("://")[1]
-            if "@" in part:
-                host_part = part.split("@")[-1]
-            else:
-                host_part = part
-            
-            hp = host_part.split("/")[0].split("?")[0]
-            
-            if ":" in hp:
-                if "]" in hp:
-                    h = hp.split("]")[0].strip("[")
-                    p = hp.split("]:")[1] if "]:" in hp else 443
-                    return h, int(p)
-                else:
-                    h, p = hp.rsplit(":", 1)
-                    return h.strip("[]"), int(p)
-            return hp.strip("[]"), 443
-
-    except Exception:
-        return None, 443
-    return None, 443
-
 def load_json_domains(filename):
     domains = set()
     if os.path.exists(filename):
@@ -220,13 +237,11 @@ def load_json_domains(filename):
 def save_mixed_rules_file(filename, domains, cidrs):
     sorted_domains = sorted(list(set(domains)))
     sorted_cidrs = sorted(list(set(cidrs)))
-    
     rule_obj = {}
     if sorted_domains:
         rule_obj["domain_suffix"] = sorted_domains
     if sorted_cidrs:
         rule_obj["ip_cidr"] = sorted_cidrs
-
     data = {
         "version": 1,
         "payload": sorted_domains + sorted_cidrs,
@@ -236,75 +251,50 @@ def save_mixed_rules_file(filename, domains, cidrs):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 # ==========================================
-# 3. ЭТАПЫ СБОРКИ
+# 3. ОСНОВНЫЕ ЭТАПЫ (СБОРКА + РЕПОЗИТОРИЙ)
 # ==========================================
 
 def step_collect_proxies():
-    print("\n--- 1. СБОР И ФИЛЬТРАЦИЯ ПРОКСИ-УЗЛОВ (ВСЕ ПРОТОКОЛЫ) ---")
+    print("\n--- 1. СБОР И ФИЛЬТРАЦИЯ ПРОКСИ-УЗЛОВ (ИЗ ВАШЕГО РЕПО) ---")
     raw_nodes = []
+    for source in SOURCES:
+        data = fetch_url(source)
+        if data:
+            for line in data.splitlines():
+                line = line.strip()
+                if any(line.startswith(proto) for proto in PROTOCOLS):
+                    raw_nodes.append(line)
+                    
+    unique_nodes = list(set(raw_nodes))
+    foreign_nodes = []
+    ru_nodes = []
     
-    for source in PROXY_SOURCES:
-        content = download_text(source, timeout=10)
-        if not content:
+    for node in unique_nodes:
+        if not is_valid_reality(node):
+            continue
+        if any(bad in node.lower() for bad in BAD_KEYWORDS):
             continue
             
-        lines = []
-        if not any(proto in content for proto in PROTOCOLS):
-            try:
-                b64_data = content.strip().replace('\n', '').replace('\r', '')
-                missing_padding = len(b64_data) % 4
-                if missing_padding:
-                    b64_data += '=' * (4 - missing_padding)
-                b64_data = b64_data.replace('-', '+').replace('_', '/')
-                decoded = base64.b64decode(b64_data).decode('utf-8', errors='ignore')
-                lines = decoded.splitlines()
-            except Exception:
-                lines = content.splitlines()
-        else:
-            lines = content.splitlines()
-
-        for line in lines:
-            line = line.strip()
-            if not any(line.startswith(proto) for proto in PROTOCOLS) and len(line) > 30:
-                try:
-                    missing_padding = len(line) % 4
-                    if missing_padding:
-                        line_b64 = line + ('=' * (4 - missing_padding))
-                    else:
-                        line_b64 = line
-                    line_b64 = line_b64.replace('-', '+').replace('_', '/')
-                    dec_line = base64.b64decode(line_b64).decode('utf-8', errors='ignore').strip()
-                    if any(dec_line.startswith(proto) for proto in PROTOCOLS):
-                        line = dec_line
-                except Exception:
-                    pass
-
-            if any(line.startswith(proto) for proto in PROTOCOLS):
-                if not any(bad in line.lower() for bad in BAD_KEYWORDS):
-                    host, port = extract_host_port(line)
-                    if host and port:
-                        raw_nodes.append(line)
-
-    unique_nodes = list(set(raw_nodes))
-    print(f"Собрано и успешно распарсено уникальных нод: {len(unique_nodes)}")
-
-    foreign_nodes, ru_nodes = [], []
-    for node in unique_nodes:
-        host, _ = extract_host_port(node)
-        if host and (any(m in node.lower() for m in RU_MARKERS) or host.lower().endswith('.ru')):
+        host = extract_host(node)
+        if not host:
+            host = extract_ip_or_domain(node)
+            
+        if check_is_russia(host):
             ru_nodes.append(node)
         else:
             foreign_nodes.append(node)
-
+            
     if foreign_nodes:
-        b64_proxy = base64.b64encode("\n".join(foreign_nodes).encode('utf-8')).decode('utf-8')
-        with open("proxy.txt", "w", encoding="utf-8") as f: 
-            f.write(b64_proxy)
-    
+        raw_text = "\n".join(sorted(list(set(foreign_nodes))))
+        b64_output = base64.b64encode(raw_text.encode('utf-8')).decode('utf-8')
+        with open("proxy.txt", "w", encoding="utf-8") as f:
+            f.write(b64_output)
+            
     if ru_nodes:
-        b64_ru = base64.b64encode("\n".join(ru_nodes).encode('utf-8')).decode('utf-8')
-        with open("ru_proxies.txt", "w", encoding="utf-8") as f: 
-            f.write(b64_ru)
+        ru_raw_text = "\n".join(sorted(list(set(ru_nodes))))
+        ru_b64 = base64.b64encode(ru_raw_text.encode('utf-8')).decode('utf-8')
+        with open("ru_proxies.txt", "w", encoding="utf-8") as rf:
+            rf.write(ru_b64)
 
     print(f"Готово! Записано: proxy.txt ({len(foreign_nodes)} нод), ru_proxies.txt ({len(ru_nodes)} нод)")
 
@@ -323,19 +313,17 @@ def step_parse_rules_and_logs():
         proxy_domains.add(tg_dom)
 
     for key, url in RULE_SOURCES.items():
-        content = download_text(url)
+        content = fetch_url(url)
         if content:
             for line in content.splitlines():
                 line = line.strip()
                 if not line or line.startswith(("#", "!", ";", "//")):
                     continue
-                
                 if "/" in line or re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', line.split(',')[0].strip()):
                     clean_ip = line.split(",")[-1].strip()
                     if key in ["telegram"]:
                         proxy_cidrs.add(clean_ip)
                     continue
-
                 d = clean_domain(line)
                 if d:
                     if is_telegram_domain(d):
@@ -345,14 +333,13 @@ def step_parse_rules_and_logs():
                     elif key in ["telegram", "youtube", "tiktok", "proxy_media", "google", "apple"]:
                         proxy_domains.add(d)
 
-    dropbox_content = download_text(DROPBOX_URL)
+    dropbox_content = fetch_url(DROPBOX_URL)
     if dropbox_content:
         for line in dropbox_content.splitlines():
             line = line.strip()
             if "/" in line or re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', line):
                 proxy_cidrs.add(line)
                 continue
-            
             d = clean_domain(line)
             if d:
                 if is_telegram_domain(d):
@@ -370,11 +357,10 @@ def step_check_heavy_rkn():
     print("\n--- 3. ПРОВЕРКА БАЗ РКН И URLS.TXT В 20 ПОТОКОВ ---")
     existing_proxies = load_json_domains(PROXY_JSON)
     existing_rejects = load_json_domains(REJECT_JSON)
-    
     heavy_domains = set()
 
     for url in HEAVY_SOURCES:
-        content = download_text(url)
+        content = fetch_url(url)
         if content:
             for line in content.splitlines():
                 d = clean_domain(line)
@@ -412,8 +398,6 @@ def step_check_heavy_rkn():
                 if os.path.exists(srs_file): os.remove(srs_file)
                 if os.path.exists(json_file): os.remove(json_file)
 
-    print(f"Собрано {len(heavy_domains)} доменов РКН для онлайн-чека...")
-
     def test_domain(domain):
         try:
             req = urllib.request.Request(f"https://{domain}", headers={'User-Agent': 'Mozilla/5.0'})
@@ -436,10 +420,9 @@ def step_check_heavy_rkn():
 
     save_mixed_rules_file("blocked.json", blocked, set())
     save_mixed_rules_file("allowed.json", allowed, set())
-    print(f"Проверка РКН завершена: {len(blocked)} заблокировано, {len(allowed)} доступно.")
 
 def step_global_cleaner():
-    print("\n--- 4. ГЛОБАЛЬНАЯ ОЧИСТКА ПЕРЕСЕЧЕНИЙ (Proxy > Rus > Reject) ---")
+    print("\n--- 4. ГЛОБАЛЬНАЯ ОЧИСТКА ПЕРЕСЕЧЕНИЙ ---")
     proxy_set = load_json_domains(PROXY_JSON)
     rus_set = load_json_domains(RUS_JSON)
     reject_set = load_json_domains(REJECT_JSON)
@@ -459,14 +442,12 @@ def step_global_cleaner():
     for d in proxy_clean:
         reject_set.discard(d)
         rus_set.discard(d)
-    
     for d in rus_set:
         reject_set.discard(d)
 
     save_mixed_rules_file(PROXY_JSON, proxy_clean, set())
     save_mixed_rules_file(RUS_JSON, rus_set, set())
     save_mixed_rules_file(REJECT_JSON, reject_set, set())
-    print("Идеальный баланс правил достигнут. Telegram защищен в PROXY.")
 
 def step_compile_srs():
     print("\n--- 5. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
