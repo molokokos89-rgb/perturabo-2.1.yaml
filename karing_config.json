@@ -1,0 +1,2414 @@
+{
+  "log": {
+    "level": "error"
+  },
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "address": [
+        "172.19.0.1/30"
+      ],
+      "auto_route": true,
+      "strict_route": true
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "selector",
+      "tag": "proxy",
+      "outbounds": [
+        "auto"
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "urltest",
+      "tag": "auto",
+      "outbounds": [
+        "node-0",
+        "node-1",
+        "node-2",
+        "node-3",
+        "node-4",
+        "node-5",
+        "node-6",
+        "node-7",
+        "node-8",
+        "node-9",
+        "node-10",
+        "node-11",
+        "node-12",
+        "node-13",
+        "node-14",
+        "node-15",
+        "node-16",
+        "node-17",
+        "node-18",
+        "node-19",
+        "node-20",
+        "node-21",
+        "node-22",
+        "node-23",
+        "node-24",
+        "node-25",
+        "node-26",
+        "node-27",
+        "node-28",
+        "node-29",
+        "node-30",
+        "node-31",
+        "node-32",
+        "node-33",
+        "node-34",
+        "node-35",
+        "node-36",
+        "node-37",
+        "node-38",
+        "node-39",
+        "node-40",
+        "node-41",
+        "node-42",
+        "node-43",
+        "node-44",
+        "node-45",
+        "node-46",
+        "node-47",
+        "node-48",
+        "node-49"
+      ],
+      "url": "http://www.gstatic.com/generate_204",
+      "interval": "5m"
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
+      "type": "block",
+      "tag": "block"
+    },
+    {
+      "type": "hysteria2",
+      "server": "139.28.168.54",
+      "server_port": 8080,
+      "password": "0wdsa_nJXEWRj9jz9J9xMgtx_n7gzfK_m8",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-0"
+    },
+    {
+      "type": "hysteria2",
+      "server": "es1.xiaoliyu.cyou",
+      "server_port": 4433,
+      "password": "1427eb10-7529-4d38-a6a2-01b337868b37",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-1"
+    },
+    {
+      "type": "hysteria2",
+      "server": "nl1.xiaoliyu.cyou",
+      "server_port": 4433,
+      "password": "1427eb10-7529-4d38-a6a2-01b337868b37",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-2"
+    },
+    {
+      "type": "hysteria2",
+      "server": "sg2.xiaoliyu.cyou",
+      "server_port": 1935,
+      "password": "1427eb10-7529-4d38-a6a2-01b337868b37",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-3"
+    },
+    {
+      "type": "hysteria2",
+      "server": "sg2.xiaoliyu.cyou",
+      "server_port": 1935,
+      "password": "1427eb10-7529-4d38-a6a2-01b337868b37",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-4"
+    },
+    {
+      "type": "hysteria2",
+      "server": "forever.h4ck.me",
+      "server_port": 443,
+      "password": "14f7504c-bd01-4d88-bd42-80dc6bf6b202",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-5"
+    },
+    {
+      "type": "hysteria2",
+      "server": "samurai.h4ck.me",
+      "server_port": 443,
+      "password": "14f7504c-bd01-4d88-bd42-80dc6bf6b202",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-6"
+    },
+    {
+      "type": "hysteria2",
+      "server": "hl1.mangshe.xyz",
+      "server_port": 2056,
+      "password": "22d891f5-ad85-4824-b0b8-e30cf3d37eb5",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-7"
+    },
+    {
+      "type": "hysteria2",
+      "server": "lmny.mangshe.xyz",
+      "server_port": 2056,
+      "password": "22d891f5-ad85-4824-b0b8-e30cf3d37eb5",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-8"
+    },
+    {
+      "type": "hysteria2",
+      "server": "xby.mangshe.xyz",
+      "server_port": 2056,
+      "password": "22d891f5-ad85-4824-b0b8-e30cf3d37eb5",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-9"
+    },
+    {
+      "type": "hysteria2",
+      "server": "xby.mangshe.xyz",
+      "server_port": 2056,
+      "password": "22d891f5-ad85-4824-b0b8-e30cf3d37eb5",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-10"
+    },
+    {
+      "type": "hysteria2",
+      "server": "213.35.114.141",
+      "server_port": 50160,
+      "password": "2544ad8a388f1b7e6d1c878f5a7d121c",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-11"
+    },
+    {
+      "type": "hysteria2",
+      "server": "31.76.111.33",
+      "server_port": 443,
+      "password": "2b3e8750-b944-42fc-b36e-ec2c64b48a98",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-12"
+    },
+    {
+      "type": "hysteria2",
+      "server": "31.76.111.33",
+      "server_port": 443,
+      "password": "2b3e8750-b944-42fc-b36e-ec2c64b48a98",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-13"
+    },
+    {
+      "type": "hysteria2",
+      "server": "31.76.119.101",
+      "server_port": 443,
+      "password": "2b3e8750-b944-42fc-b36e-ec2c64b48a98",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-14"
+    },
+    {
+      "type": "hysteria2",
+      "server": "node.embrofree.org",
+      "server_port": 443,
+      "password": "32d3c043-8c78-4348-94e4-37b7937ccae2",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-15"
+    },
+    {
+      "type": "hysteria2",
+      "server": "iq5ny.pleiades.codes",
+      "server_port": 8443,
+      "password": "3aabd489-04af-42fb-87e2-363d1b83d335",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-16"
+    },
+    {
+      "type": "hysteria2",
+      "server": "iq5ny.pleiades.codes",
+      "server_port": 8443,
+      "password": "3aabd489-04af-42fb-87e2-363d1b83d335",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-17"
+    },
+    {
+      "type": "hysteria2",
+      "server": "de-two.letsgodance.site",
+      "server_port": 443,
+      "password": "5d36ddf8-dde5-4b2d-8213-d3255f22a0f1",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-18"
+    },
+    {
+      "type": "hysteria2",
+      "server": "fi-one.letsgodance.site",
+      "server_port": 443,
+      "password": "5d36ddf8-dde5-4b2d-8213-d3255f22a0f1",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-19"
+    },
+    {
+      "type": "hysteria2",
+      "server": "swe-one.letsgodance.site",
+      "server_port": 443,
+      "password": "5d36ddf8-dde5-4b2d-8213-d3255f22a0f1",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-20"
+    },
+    {
+      "type": "hysteria2",
+      "server": "swe-two.letsgodance.site",
+      "server_port": 8443,
+      "password": "5d36ddf8-dde5-4b2d-8213-d3255f22a0f1",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-21"
+    },
+    {
+      "type": "hysteria2",
+      "server": "iq5ny.pleiades.codes",
+      "server_port": 8443,
+      "password": "8f7eeebd-3378-4bf1-b80a-cb2a393a031d",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-22"
+    },
+    {
+      "type": "hysteria2",
+      "server": "iq5ny.pleiades.codes",
+      "server_port": 8443,
+      "password": "95e8532b-cc69-42d4-9553-e3c23292b15b",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-23"
+    },
+    {
+      "type": "hysteria2",
+      "server": "140.238.43.0",
+      "server_port": 50160,
+      "password": "9c5be37406b6584005b8de0ee3734dd9",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-24"
+    },
+    {
+      "type": "hysteria2",
+      "server": "160.187.100.109",
+      "server_port": 443,
+      "password": "H7mP2xY9kJ4nQ8wR5tF6vB3z",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-25"
+    },
+    {
+      "type": "hysteria2",
+      "server": "160.187.100.109",
+      "server_port": 443,
+      "password": "H7mP2xY9kJ4nQ8wR5tF6vB3z",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-26"
+    },
+    {
+      "type": "hysteria2",
+      "server": "vpn-ca-001.fastervpn.world",
+      "server_port": 443,
+      "password": "H7mP2xY9kJ4nQ8wR5tF6vB3z",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-27"
+    },
+    {
+      "type": "hysteria2",
+      "server": "vpn-ca-001.fastervpn.world",
+      "server_port": 443,
+      "password": "H7mP2xY9kJ4nQ8wR5tF6vB3z",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-28"
+    },
+    {
+      "type": "hysteria2",
+      "server": "vpn-tw-002.fastervpn.world",
+      "server_port": 443,
+      "password": "H7mP2xY9kJ4nQ8wR5tF6vB3z",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-29"
+    },
+    {
+      "type": "hysteria2",
+      "server": "vpn-tw-002.fastervpn.world",
+      "server_port": 443,
+      "password": "H7mP2xY9kJ4nQ8wR5tF6vB3z",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-30"
+    },
+    {
+      "type": "hysteria2",
+      "server": "vpn-tw-002.fastervpn.world",
+      "server_port": 443,
+      "password": "H7mP2xY9kJ4nQ8wR5tF6vB3z",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-31"
+    },
+    {
+      "type": "hysteria2",
+      "server": "vpn-tw-002.fastervpn.world",
+      "server_port": 443,
+      "password": "H7mP2xY9kJ4nQ8wR5tF6vB3z",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-32"
+    },
+    {
+      "type": "hysteria2",
+      "server": "vpn-tw-002.fastervpn.world",
+      "server_port": 443,
+      "password": "H7mP2xY9kJ4nQ8wR5tF6vB3z",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-33"
+    },
+    {
+      "type": "hysteria2",
+      "server": "43.156.90.144",
+      "server_port": 34567,
+      "password": "P6qkAwznuC076mbIR2cGPg==",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-34"
+    },
+    {
+      "type": "hysteria2",
+      "server": "forever.h4ck.me",
+      "server_port": 443,
+      "password": "a4130dea-9e33-4032-805d-0392fdf26cbd",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-35"
+    },
+    {
+      "type": "hysteria2",
+      "server": "samurai.h4ck.me",
+      "server_port": 443,
+      "password": "a4130dea-9e33-4032-805d-0392fdf26cbd",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-36"
+    },
+    {
+      "type": "hysteria2",
+      "server": "151.145.65.190",
+      "server_port": 50160,
+      "password": "b4c65d3711d27d46f32263f1dd9caf48",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-37"
+    },
+    {
+      "type": "hysteria2",
+      "server": "45.153.245.25",
+      "server_port": 50160,
+      "password": "bb7c0aa0966a031bb9184a64a52ce80e",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-38"
+    },
+    {
+      "type": "hysteria2",
+      "server": "178.236.254.21",
+      "server_port": 2083,
+      "password": "da98e502-5e93-4fc5-bd61-388c557df29c",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-39"
+    },
+    {
+      "type": "hysteria2",
+      "server": "178.236.254.21",
+      "server_port": 2096,
+      "password": "da98e502-5e93-4fc5-bd61-388c557df29c",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-40"
+    },
+    {
+      "type": "hysteria2",
+      "server": "3.71.196.174",
+      "server_port": 50160,
+      "password": "e660daf2da753ca8317387342b8af384",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-41"
+    },
+    {
+      "type": "hysteria2",
+      "server": "34.80.120.225",
+      "server_port": 50160,
+      "password": "f4ae05bcb9528779a8469ee5d352a817",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-42"
+    },
+    {
+      "type": "hysteria2",
+      "server": "185.156.44.99",
+      "server_port": 443,
+      "password": "gf1%3Agfhysteria2024",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-43"
+    },
+    {
+      "type": "hysteria2",
+      "server": "185.156.44.99",
+      "server_port": 443,
+      "password": "gf1%3Agfhysteria2024",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-44"
+    },
+    {
+      "type": "hysteria2",
+      "server": "66.94.121.46",
+      "server_port": 443,
+      "password": "gf1%3Agfhysteria2024",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-45"
+    },
+    {
+      "type": "hysteria2",
+      "server": "66.94.121.46",
+      "server_port": 443,
+      "password": "gf1",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-46"
+    },
+    {
+      "type": "hysteria2",
+      "server": "62.210.7.139",
+      "server_port": 60111,
+      "password": "github.com%2FAlvin9999-newpac%2Ffanqiang",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-47"
+    },
+    {
+      "type": "hysteria2",
+      "server": "62.210.7.139",
+      "server_port": 60111,
+      "password": "github.com%2FAlvin9999-newpac%2Ffanqiang",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-48"
+    },
+    {
+      "type": "trojan",
+      "server": "221.230.19.73",
+      "server_port": 48966,
+      "password": "1addb6f6-c65a-4652-91e7-cbf3c6fa6f95",
+      "tls": {
+        "enabled": true,
+        "server_name": "vpn-node.internal"
+      },
+      "tag": "node-49"
+    },
+    {
+      "type": "trojan",
+      "server": "223.107.155.28",
+      "server_port": 41187,
+      "password": "2b1f78c0-6111-44fe-b023-b70ae5929d71",
+      "tls": {
+        "enabled": true,
+        "server_name": "vpn-node.internal"
+      },
+      "tag": "node-50"
+    },
+    {
+      "type": "trojan",
+      "server": "47.250.84.25",
+      "server_port": 443,
+      "password": "5931134d1cde66bf83a54acdfebe7ab2",
+      "tls": {
+        "enabled": true,
+        "server_name": "moltbot.doctoroyy.net"
+      },
+      "tag": "node-51"
+    },
+    {
+      "type": "trojan",
+      "server": "47.250.84.25",
+      "server_port": 443,
+      "password": "5931134d1cde66bf83a54acdfebe7ab2",
+      "tls": {
+        "enabled": true,
+        "server_name": "moltbot.doctoroyy.net"
+      },
+      "tag": "node-52"
+    },
+    {
+      "type": "trojan",
+      "server": "47.250.84.25",
+      "server_port": 443,
+      "password": "5931134d1cde66bf83a54acdfebe7ab2",
+      "tls": {
+        "enabled": true,
+        "server_name": "moltbot.doctoroyy.net"
+      },
+      "tag": "node-53"
+    },
+    {
+      "type": "trojan",
+      "server": "47.250.84.25",
+      "server_port": 443,
+      "password": "5931134d1cde66bf83a54acdfebe7ab2",
+      "tls": {
+        "enabled": true,
+        "server_name": "moltbot.doctoroyy.net"
+      },
+      "tag": "node-54"
+    },
+    {
+      "type": "trojan",
+      "server": "by01.botovod.space",
+      "server_port": 500,
+      "password": "8qCNZU2XdtefT7uB4uPxgRR839btqMG8",
+      "tls": {
+        "enabled": true,
+        "server_name": "by01.botovod.space"
+      },
+      "tag": "node-55"
+    },
+    {
+      "type": "trojan",
+      "server": "by01.botovod.space",
+      "server_port": 500,
+      "password": "8qCNZU2XdtefT7uB4uPxgRR839btqMG8",
+      "tls": {
+        "enabled": true,
+        "server_name": "by01.botovod.space"
+      },
+      "tag": "node-56"
+    },
+    {
+      "type": "trojan",
+      "server": "58.152.46.127",
+      "server_port": 28443,
+      "password": "a80dd76d-bf0f-47fe-8b66-c89572cf7e38",
+      "tls": {
+        "enabled": true,
+        "server_name": "vpn-node.internal"
+      },
+      "tag": "node-57"
+    },
+    {
+      "type": "vless",
+      "server": "45.82.67.183",
+      "server_port": 443,
+      "uuid": "1a8d3885-d868-49c5-abc4-68ff79a91e09",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "daiJkQwpAcBk7oH1iZzRthMj-jAlqovX7vAiwVqfjTU",
+          "short_id": "8880a9f75eb46d91"
+        },
+        "server_name": "northwaleswildlifetrust.org.uk"
+      },
+      "tag": "node-58"
+    },
+    {
+      "type": "vless",
+      "server": "store20.vevluma.ir",
+      "server_port": 1234,
+      "uuid": "22fff84b-dd89-489d-bc4c-794f664b92a2",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "4sT8gYkbYI1RUPlO-SFVpJENKfGgMWoYQpflbcfspkI",
+          "short_id": "4844fb0c077b20b7"
+        },
+        "server_name": "updates.cdn-apple.com"
+      },
+      "tag": "node-59"
+    },
+    {
+      "type": "vless",
+      "server": "78.129.150.216",
+      "server_port": 443,
+      "uuid": "26504b79-cf88-41aa-90c2-4a0e5d9b6032",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "SiSky02wHz-S0TDHKFTdYhnrlT8Y3CfRsekZlcdLXDY",
+          "short_id": "fd55b698ee8c3629"
+        },
+        "server_name": "strapi.io"
+      },
+      "tag": "node-60"
+    },
+    {
+      "type": "vless",
+      "server": "107.181.155.227",
+      "server_port": 34156,
+      "uuid": "35dc1a9b-c02c-4670-a3f9-1f8106567f14",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "BsCp88E9PdpEDjC5bxLMP2tiJYK6afCPQT_CoxCVgAI",
+          "short_id": "d6cdfdd9a21f8d23"
+        },
+        "server_name": "yahoo.com"
+      },
+      "tag": "node-61"
+    },
+    {
+      "type": "vless",
+      "server": "107.181.155.227",
+      "server_port": 34156,
+      "uuid": "35dc1a9b-c02c-4670-a3f9-1f8106567f14",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "BsCp88E9PdpEDjC5bxLMP2tiJYK6afCPQT_CoxCVgAI",
+          "short_id": "d6cdfdd9a21f8d23"
+        },
+        "server_name": "yahoo.com"
+      },
+      "tag": "node-62"
+    },
+    {
+      "type": "vless",
+      "server": "tr.propollcenter.site",
+      "server_port": 34156,
+      "uuid": "35dc1a9b-c02c-4670-a3f9-1f8106567f14",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "BsCp88E9PdpEDjC5bxLMP2tiJYK6afCPQT_CoxCVgAI",
+          "short_id": "d6cdfdd9a21f8d23"
+        },
+        "server_name": "yahoo.com"
+      },
+      "tag": "node-63"
+    },
+    {
+      "type": "vless",
+      "server": "45.82.67.183",
+      "server_port": 443,
+      "uuid": "437ebf3c-a92c-4f40-9fc5-9af78c28802d",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "daiJkQwpAcBk7oH1iZzRthMj-jAlqovX7vAiwVqfjTU",
+          "short_id": "8880a9f75eb46d91"
+        },
+        "server_name": "northwaleswildlifetrust.org.uk"
+      },
+      "tag": "node-64"
+    },
+    {
+      "type": "vless",
+      "server": "45.82.67.183",
+      "server_port": 443,
+      "uuid": "4ce3f49a-dd92-47b6-9ea6-8d4bb1f03538",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "daiJkQwpAcBk7oH1iZzRthMj-jAlqovX7vAiwVqfjTU",
+          "short_id": "8880a9f75eb46d91"
+        },
+        "server_name": "northwaleswildlifetrust.org.uk"
+      },
+      "tag": "node-65"
+    },
+    {
+      "type": "vless",
+      "server": "78.129.150.216",
+      "server_port": 443,
+      "uuid": "60a52f57-536a-4327-9a4c-c64db318dab3",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "SiSky02wHz-S0TDHKFTdYhnrlT8Y3CfRsekZlcdLXDY",
+          "short_id": "fd55b698ee8c3629"
+        },
+        "server_name": "strapi.io"
+      },
+      "tag": "node-66"
+    },
+    {
+      "type": "vless",
+      "server": "2.26.128.76",
+      "server_port": 443,
+      "uuid": "627b1c2d-2905-470f-857a-da7589968fbc",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "w88Ys8dVF9DuslGwUD05J9-FHNoAT9qmPysCvHiEmmg",
+          "short_id": "1b40e7c2a1d8f635"
+        },
+        "server_name": "wombat.mycdn-me.ru"
+      },
+      "tag": "node-67"
+    },
+    {
+      "type": "vless",
+      "server": "2.26.128.76",
+      "server_port": 443,
+      "uuid": "627b1c2d-2905-470f-857a-da7589968fbc",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "w88Ys8dVF9DuslGwUD05J9-FHNoAT9qmPysCvHiEmmg",
+          "short_id": "1b40e7c2a1d8f635"
+        },
+        "server_name": "wombat.mycdn-me.ru"
+      },
+      "tag": "node-68"
+    },
+    {
+      "type": "vless",
+      "server": "2.26.135.193",
+      "server_port": 443,
+      "uuid": "627b1c2d-2905-470f-857a-da7589968fbc",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "09O8bAlIWm9AGnNyxBtHwpYNQxlXPSQeQeKzS3ZMwGE",
+          "short_id": "a1f9c0e21d7b6485"
+        },
+        "server_name": "smorodina.mycdn-me.ru"
+      },
+      "tag": "node-69"
+    },
+    {
+      "type": "vless",
+      "server": "78.129.150.216",
+      "server_port": 443,
+      "uuid": "7ec31525-7ac3-4597-8f39-a2d4edc46342",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "SiSky02wHz-S0TDHKFTdYhnrlT8Y3CfRsekZlcdLXDY",
+          "short_id": "fd55b698ee8c3629"
+        },
+        "server_name": "strapi.io"
+      },
+      "tag": "node-70"
+    },
+    {
+      "type": "vless",
+      "server": "109.169.84.146",
+      "server_port": 443,
+      "uuid": "88212d38-f112-4a35-8ac2-eb3a1923e413",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "vvpu_ljhBuTWmM9w5Hl6jj8ZTiE_JYq29S77zNDeCjQ",
+          "short_id": "ff6975658b6cefce"
+        },
+        "server_name": "strapi.io"
+      },
+      "tag": "node-71"
+    },
+    {
+      "type": "vless",
+      "server": "109.169.84.146",
+      "server_port": 443,
+      "uuid": "88212d38-f112-4a35-8ac2-eb3a1923e413",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "vvpu_ljhBuTWmM9w5Hl6jj8ZTiE_JYq29S77zNDeCjQ",
+          "short_id": "ff6975658b6cefce"
+        },
+        "server_name": "strapi.io"
+      },
+      "tag": "node-72"
+    },
+    {
+      "type": "vless",
+      "server": "78.129.150.216",
+      "server_port": 443,
+      "uuid": "8f3c3002-1acc-4800-a51f-b7f904fa66f0",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "SiSky02wHz-S0TDHKFTdYhnrlT8Y3CfRsekZlcdLXDY",
+          "short_id": "fd55b698ee8c3629"
+        },
+        "server_name": "strapi.io"
+      },
+      "tag": "node-73"
+    },
+    {
+      "type": "vless",
+      "server": "45.82.67.183",
+      "server_port": 443,
+      "uuid": "9cf37bb1-47c8-4198-8d86-64ed260b85df",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "daiJkQwpAcBk7oH1iZzRthMj-jAlqovX7vAiwVqfjTU",
+          "short_id": "8880a9f75eb46d91"
+        },
+        "server_name": "northwaleswildlifetrust.org.uk"
+      },
+      "tag": "node-74"
+    },
+    {
+      "type": "vless",
+      "server": "104.105.78.231",
+      "server_port": 17780,
+      "uuid": "a06119a7-4f1a-4592-86d9-e050a332b2b3",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "CHNEnURyZzZ1OQwb5SD2Ze8K9eIY2oggyrV5FOIsU28",
+          "short_id": "a0fbc54d937aaccb"
+        },
+        "server_name": "amp-api-edge.apps.apple.com"
+      },
+      "transport": {
+        "path": "/"
+      },
+      "tag": "node-75"
+    },
+    {
+      "type": "vless",
+      "server": "104.105.78.231",
+      "server_port": 17780,
+      "uuid": "a06119a7-4f1a-4592-86d9-e050a332b2b3",
+      "network": "raw",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "CHNEnURyZzZ1OQwb5SD2Ze8K9eIY2oggyrV5FOIsU28",
+          "short_id": "a0fbc54d937aaccb"
+        },
+        "server_name": "amp-api-edge.apps.apple.com"
+      },
+      "tag": "node-76"
+    },
+    {
+      "type": "vless",
+      "server": "104.105.78.231",
+      "server_port": 17780,
+      "uuid": "a06119a7-4f1a-4592-86d9-e050a332b2b3",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "CHNEnURyZzZ1OQwb5SD2Ze8K9eIY2oggyrV5FOIsU28",
+          "short_id": "a0fbc54d937aaccb"
+        },
+        "server_name": "amp-api-edge.apps.apple.com"
+      },
+      "tag": "node-77"
+    },
+    {
+      "type": "vless",
+      "server": "172.239.237.246",
+      "server_port": 17780,
+      "uuid": "a06119a7-4f1a-4592-86d9-e050a332b2b3",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "CHNEnURyZzZ1OQwb5SD2Ze8K9eIY2oggyrV5FOIsU28",
+          "short_id": "a0fbc54d937aaccb"
+        },
+        "server_name": "amp-api-edge.apps.apple.com"
+      },
+      "tag": "node-78"
+    },
+    {
+      "type": "vless",
+      "server": "172.239.26.195",
+      "server_port": 17780,
+      "uuid": "a06119a7-4f1a-4592-86d9-e050a332b2b3",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "CHNEnURyZzZ1OQwb5SD2Ze8K9eIY2oggyrV5FOIsU28",
+          "short_id": "a0fbc54d937aaccb"
+        },
+        "server_name": "amp-api-edge.apps.apple.com"
+      },
+      "tag": "node-79"
+    },
+    {
+      "type": "vless",
+      "server": "am1.milkabebar.ir",
+      "server_port": 17780,
+      "uuid": "a06119a7-4f1a-4592-86d9-e050a332b2b3",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "CHNEnURyZzZ1OQwb5SD2Ze8K9eIY2oggyrV5FOIsU28",
+          "short_id": "a0fbc54d937aaccb"
+        },
+        "server_name": "amp-api-edge.apps.apple.com"
+      },
+      "transport": {
+        "path": "/"
+      },
+      "tag": "node-80"
+    },
+    {
+      "type": "vless",
+      "server": "fr1.milkabebar.ir",
+      "server_port": 17780,
+      "uuid": "a06119a7-4f1a-4592-86d9-e050a332b2b3",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "CHNEnURyZzZ1OQwb5SD2Ze8K9eIY2oggyrV5FOIsU28",
+          "short_id": "a0fbc54d937aaccb"
+        },
+        "server_name": "amp-api-edge.apps.apple.com"
+      },
+      "tag": "node-81"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 39777,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "g34pLEPfAcoh-gu60CCUfUAVr0bEjlexzNIYPujm0Xw",
+          "short_id": "e84cf8eb3d"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-82"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 39777,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "g34pLEPfAcoh-gu60CCUfUAVr0bEjlexzNIYPujm0Xw",
+          "short_id": "e84cf8eb3d"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-83"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 39777,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "g34pLEPfAcoh-gu60CCUfUAVr0bEjlexzNIYPujm0Xw",
+          "short_id": "e84cf8eb3d"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-84"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 39777,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "g34pLEPfAcoh-gu60CCUfUAVr0bEjlexzNIYPujm0Xw",
+          "short_id": "e84cf8eb3d"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-85"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 39777,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "g34pLEPfAcoh-gu60CCUfUAVr0bEjlexzNIYPujm0Xw",
+          "short_id": "e84cf8eb3d"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-86"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 53113,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "BdFiTcTZt1oIRD_Q04KnxPjs_1cZFqjV-sbVGP49PVY",
+          "short_id": "238ba3b9e8"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "transport": {
+        "path": "/"
+      },
+      "tag": "node-87"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 53113,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "BdFiTcTZt1oIRD_Q04KnxPjs_1cZFqjV-sbVGP49PVY",
+          "short_id": "238ba3b9e8"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-88"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 53113,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "BdFiTcTZt1oIRD_Q04KnxPjs_1cZFqjV-sbVGP49PVY",
+          "short_id": "238ba3b9e8"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-89"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 53113,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "BdFiTcTZt1oIRD_Q04KnxPjs_1cZFqjV-sbVGP49PVY",
+          "short_id": "238ba3b9e8"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-90"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 53113,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "BdFiTcTZt1oIRD_Q04KnxPjs_1cZFqjV-sbVGP49PVY",
+          "short_id": "238ba3b9e8"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-91"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 53113,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "BdFiTcTZt1oIRD_Q04KnxPjs_1cZFqjV-sbVGP49PVY",
+          "short_id": "238ba3b9e8"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-92"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 53113,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "BdFiTcTZt1oIRD_Q04KnxPjs_1cZFqjV-sbVGP49PVY",
+          "short_id": "238ba3b9e8"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-93"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 53113,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "BdFiTcTZt1oIRD_Q04KnxPjs_1cZFqjV-sbVGP49PVY",
+          "short_id": "238ba3b9e8"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-94"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 53113,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "BdFiTcTZt1oIRD_Q04KnxPjs_1cZFqjV-sbVGP49PVY",
+          "short_id": "238ba3b9e8"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-95"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 64294,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "KmcS-yU6kDycbSojXgUYU1-fHwXmF1oBk_ke0gbGUy0",
+          "short_id": "7083"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-96"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 64294,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "KmcS-yU6kDycbSojXgUYU1-fHwXmF1oBk_ke0gbGUy0",
+          "short_id": "7083"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-97"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 64294,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "KmcS-yU6kDycbSojXgUYU1-fHwXmF1oBk_ke0gbGUy0",
+          "short_id": "7083"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-98"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 64294,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "KmcS-yU6kDycbSojXgUYU1-fHwXmF1oBk_ke0gbGUy0",
+          "short_id": "7083"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "transport": {
+        "path": "/"
+      },
+      "tag": "node-99"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 64294,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "KmcS-yU6kDycbSojXgUYU1-fHwXmF1oBk_ke0gbGUy0",
+          "short_id": "7083"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "transport": {
+        "path": "/"
+      },
+      "tag": "node-100"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 6897,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "X2thmYgL8pXZBmFxMOPo3oIYAga5CTMEd-YMcJHk4Es",
+          "short_id": "54efd54cf3e7"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-101"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 6897,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "X2thmYgL8pXZBmFxMOPo3oIYAga5CTMEd-YMcJHk4Es",
+          "short_id": "54efd54cf3e7"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-102"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 6897,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "X2thmYgL8pXZBmFxMOPo3oIYAga5CTMEd-YMcJHk4Es",
+          "short_id": "54efd54cf3e7"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-103"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 6897,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "X2thmYgL8pXZBmFxMOPo3oIYAga5CTMEd-YMcJHk4Es",
+          "short_id": "54efd54cf3e7"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-104"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 6897,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "X2thmYgL8pXZBmFxMOPo3oIYAga5CTMEd-YMcJHk4Es",
+          "short_id": "54efd54cf3e7"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-105"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 6897,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "X2thmYgL8pXZBmFxMOPo3oIYAga5CTMEd-YMcJHk4Es",
+          "short_id": "54efd54cf3e7"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-106"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 6897,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "X2thmYgL8pXZBmFxMOPo3oIYAga5CTMEd-YMcJHk4Es",
+          "short_id": "54efd54cf3e7"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-107"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 6897,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "X2thmYgL8pXZBmFxMOPo3oIYAga5CTMEd-YMcJHk4Es",
+          "short_id": "54efd54cf3e7"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "transport": {
+        "path": "/"
+      },
+      "tag": "node-108"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 6897,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "X2thmYgL8pXZBmFxMOPo3oIYAga5CTMEd-YMcJHk4Es",
+          "short_id": "54efd54cf3e7"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "transport": {
+        "path": "/"
+      },
+      "tag": "node-109"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 6897,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "X2thmYgL8pXZBmFxMOPo3oIYAga5CTMEd-YMcJHk4Es",
+          "short_id": "54efd54cf3e7"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-110"
+    },
+    {
+      "type": "vless",
+      "server": "jpaws.ccwink.photos",
+      "server_port": 6897,
+      "uuid": "a157bb84-dd84-4ad8-86b0-0656bc76e4d1",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "X2thmYgL8pXZBmFxMOPo3oIYAga5CTMEd-YMcJHk4Es",
+          "short_id": "54efd54cf3e7"
+        },
+        "server_name": "docs.aws.amazon.com"
+      },
+      "tag": "node-111"
+    },
+    {
+      "type": "vless",
+      "server": "45.82.67.183",
+      "server_port": 443,
+      "uuid": "abe7e676-068a-452f-be84-fbac1554fd6f",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "daiJkQwpAcBk7oH1iZzRthMj-jAlqovX7vAiwVqfjTU",
+          "short_id": "8880a9f75eb46d91"
+        },
+        "server_name": "northwaleswildlifetrust.org.uk"
+      },
+      "tag": "node-112"
+    },
+    {
+      "type": "vless",
+      "server": "109.169.76.34",
+      "server_port": 443,
+      "uuid": "b2bef9e4-0e52-43d7-9613-f6e73c2eb970",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "JZ6o_q7-OSJ87w9kTrcn9I4UiMVZdPUnjXoRs4TbLzE",
+          "short_id": "61811b12a62fb2a4"
+        },
+        "server_name": "slashdot.org"
+      },
+      "tag": "node-113"
+    },
+    {
+      "type": "vless",
+      "server": "109.169.76.34",
+      "server_port": 443,
+      "uuid": "b2bef9e4-0e52-43d7-9613-f6e73c2eb970",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "JZ6o_q7-OSJ87w9kTrcn9I4UiMVZdPUnjXoRs4TbLzE",
+          "short_id": "61811b12a62fb2a4"
+        },
+        "server_name": "slashdot.org"
+      },
+      "tag": "node-114"
+    },
+    {
+      "type": "vless",
+      "server": "109.169.85.141",
+      "server_port": 443,
+      "uuid": "bbc164a1-b246-456b-aefd-95c5e5f877d4",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "djzfpNmvwYjCaOUUOHU_k0kl92HXIGIurq2i0p5UyDo",
+          "short_id": "1dc6d8a2045a7c9d"
+        },
+        "server_name": "slashdot.org"
+      },
+      "tag": "node-115"
+    },
+    {
+      "type": "vless",
+      "server": "78.129.150.216",
+      "server_port": 443,
+      "uuid": "c2d8ab90-e33e-4eca-8467-c987dc5f4374",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "SiSky02wHz-S0TDHKFTdYhnrlT8Y3CfRsekZlcdLXDY",
+          "short_id": "fd55b698ee8c3629"
+        },
+        "server_name": "strapi.io"
+      },
+      "tag": "node-116"
+    },
+    {
+      "type": "vless",
+      "server": "109.169.84.146",
+      "server_port": 443,
+      "uuid": "d0f6c857-c814-438a-83f8-f34232294194",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "vvpu_ljhBuTWmM9w5Hl6jj8ZTiE_JYq29S77zNDeCjQ",
+          "short_id": "ff6975658b6cefce"
+        },
+        "server_name": "strapi.io"
+      },
+      "tag": "node-117"
+    },
+    {
+      "type": "vless",
+      "server": "103.182.96.72",
+      "server_port": 20159,
+      "uuid": "d5e77b10-7374-11eb-b739-9160314e12e6",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "KLE79o1tQq-bvGbD4ocK5FVfBL_knSsoB_weR77dIgw",
+          "short_id": "eb8225cafad99147"
+        },
+        "server_name": "www.bilibili.com"
+      },
+      "tag": "node-118"
+    },
+    {
+      "type": "vless",
+      "server": "175.29.23.106",
+      "server_port": 794,
+      "uuid": "d5e77b10-7374-11eb-b739-9160314e12e6",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "3lku6KkzR158dLknyyPMHzccKrnxczDPddvah1lt92s",
+          "short_id": "3ef5bc1a9876e667"
+        },
+        "server_name": "i1.hdslb.com"
+      },
+      "tag": "node-119"
+    },
+    {
+      "type": "vless",
+      "server": "8mc0z4qk-7n2r-5t9x-0r6p-3a4w8k1d9e2.edge.ccdn3.work",
+      "server_port": 20158,
+      "uuid": "d5e77b10-7374-11eb-b739-9160314e12e6",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "zYijLoutrnnrwLpLXaL9KAIT9siijcdajF8blOfgSxM",
+          "short_id": "33f6498052e5cb1a"
+        },
+        "server_name": "www.bilibili.com"
+      },
+      "transport": {
+        "path": "/"
+      },
+      "tag": "node-120"
+    },
+    {
+      "type": "vless",
+      "server": "8mc0z4qk-7n2r-5t9x-0r6p-3a4w8k1d9e2.edge.ccdn3.work",
+      "server_port": 20159,
+      "uuid": "d5e77b10-7374-11eb-b739-9160314e12e6",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "KLE79o1tQq-bvGbD4ocK5FVfBL_knSsoB_weR77dIgw",
+          "short_id": "eb8225cafad99147"
+        },
+        "server_name": "www.bilibili.com"
+      },
+      "tag": "node-121"
+    },
+    {
+      "type": "vless",
+      "server": "8mc0z4qk-7n2r-5t9x-0r6p-3a4w8k1d9e2.edge.ccdn3.work",
+      "server_port": 20159,
+      "uuid": "d5e77b10-7374-11eb-b739-9160314e12e6",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "KLE79o1tQq-bvGbD4ocK5FVfBL_knSsoB_weR77dIgw",
+          "short_id": "eb8225cafad99147"
+        },
+        "server_name": "www.bilibili.com"
+      },
+      "transport": {
+        "path": "/"
+      },
+      "tag": "node-122"
+    },
+    {
+      "type": "vless",
+      "server": "hk02.ccdn3.work",
+      "server_port": 794,
+      "uuid": "d5e77b10-7374-11eb-b739-9160314e12e6",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "3lku6KkzR158dLknyyPMHzccKrnxczDPddvah1lt92s",
+          "short_id": "3ef5bc1a9876e667"
+        },
+        "server_name": "i1.hdslb.com"
+      },
+      "transport": {
+        "path": "/"
+      },
+      "tag": "node-123"
+    },
+    {
+      "type": "vless",
+      "server": "hk03.ccdn3.work",
+      "server_port": 733,
+      "uuid": "d5e77b10-7374-11eb-b739-9160314e12e6",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "HYgpFMGD32D4WsZUct6VMxgEax13DGzP_bLykxAnwQo",
+          "short_id": "056feca4a91fdc96"
+        },
+        "server_name": "www.bilibili.com"
+      },
+      "transport": {
+        "path": "/"
+      },
+      "tag": "node-124"
+    },
+    {
+      "type": "vless",
+      "server": "hk05.ccdn3.work",
+      "server_port": 767,
+      "uuid": "d5e77b10-7374-11eb-b739-9160314e12e6",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "LaT7HYn_Ni0dEMwWdLa06UCYlswX7fENEAKwILZ0Lnc",
+          "short_id": "408dc2d972797b29"
+        },
+        "server_name": "i1.hdslb.com"
+      },
+      "transport": {
+        "path": "/"
+      },
+      "tag": "node-125"
+    },
+    {
+      "type": "vless",
+      "server": "45.82.67.183",
+      "server_port": 443,
+      "uuid": "dc62727d-5caf-4943-9f0d-5234e6f5b489",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "daiJkQwpAcBk7oH1iZzRthMj-jAlqovX7vAiwVqfjTU",
+          "short_id": "8880a9f75eb46d91"
+        },
+        "server_name": "northwaleswildlifetrust.org.uk"
+      },
+      "tag": "node-126"
+    },
+    {
+      "type": "vless",
+      "server": "78.129.150.216",
+      "server_port": 443,
+      "uuid": "e339b1d4-b95c-4e0c-84e8-de35a680b165",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "SiSky02wHz-S0TDHKFTdYhnrlT8Y3CfRsekZlcdLXDY",
+          "short_id": "fd55b698ee8c3629"
+        },
+        "server_name": "strapi.io"
+      },
+      "tag": "node-127"
+    },
+    {
+      "type": "vless",
+      "server": "176.65.151.86",
+      "server_port": 37430,
+      "uuid": "e5c9eb13-0b60-4955-8355-2cd62021054d",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "2PoRqgcBLnDMICOg1UvlGRjuNTv4qhakrI2uyqRTaEI",
+          "short_id": ""
+        },
+        "server_name": "amp-api-edge.apps.apple.com"
+      },
+      "tag": "node-128"
+    },
+    {
+      "type": "vless",
+      "server": "5.39.202.105",
+      "server_port": 443,
+      "uuid": "fbb74aa8-b89a-4f20-9504-6b25aadf6681",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "bZpzmeWiEJyJQy0W2hHc34Nr6BuFXj1UDd80Cbwh1Fk",
+          "short_id": "ff776ff77be48b88"
+        },
+        "server_name": "cz.freeinternat.com"
+      },
+      "tag": "node-129"
+    },
+    {
+      "type": "vless",
+      "server": "5.39.202.105",
+      "server_port": 443,
+      "uuid": "fbb74aa8-b89a-4f20-9504-6b25aadf6681",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "bZpzmeWiEJyJQy0W2hHc34Nr6BuFXj1UDd80Cbwh1Fk",
+          "short_id": "ff776ff77be48b88"
+        },
+        "server_name": "cz.freeinternat.com"
+      },
+      "tag": "node-130"
+    },
+    {
+      "type": "vless",
+      "server": "cz.freeinternat.com",
+      "server_port": 443,
+      "uuid": "fbb74aa8-b89a-4f20-9504-6b25aadf6681",
+      "network": "tcp",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "bZpzmeWiEJyJQy0W2hHc34Nr6BuFXj1UDd80Cbwh1Fk",
+          "short_id": "ff776ff77be48b88"
+        },
+        "server_name": "cz.freeinternat.com"
+      },
+      "tag": "node-131"
+    },
+    {
+      "type": "vmess",
+      "server": "hk31.ccdn3.work",
+      "server_port": 20091,
+      "uuid": "d5e77b10-7374-11eb-b739-9160314e12e6",
+      "security": "auto",
+      "alterId": 0,
+      "network": "tcp",
+      "tls": {
+        "enabled": true
+      },
+      "tag": "node-132"
+    }
+  ],
+  "route": {
+    "rules": [
+      {
+        "domain_suffix": [
+          "7tv.app",
+          "7tv.io",
+          "abtesting.roblox.com",
+          "accountsettings.roblox.com",
+          "adconfiguration.roblox.com",
+          "ads.roblox.com",
+          "adserver.roblox.com",
+          "adspolicy.roblox.com",
+          "akamaized.net",
+          "amazonaws.com",
+          "api.rbxcdn.com",
+          "api.roblox.com",
+          "apis.roblox.com",
+          "assetdelivery.roblox.com",
+          "assetgame.roblox.com",
+          "auth.roblox.com",
+          "avatar.api.roblox.com",
+          "avatar.roblox.com",
+          "betterttv.net",
+          "billing.roblox.com",
+          "captcha.roblox.com",
+          "catalog.api.roblox.com",
+          "catalog.roblox.com",
+          "cdn.roblox.com",
+          "cdngc.net",
+          "cdngs.net",
+          "chat.roblox.com",
+          "chatmoderation.roblox.com",
+          "chatrealtime.roblox.com",
+          "clicks.roblox.com",
+          "client-telemetry.roblox.com",
+          "client.roblox.com",
+          "clientconfig.roblox.com",
+          "clientsettings.api.roblox.com",
+          "clientsettingscdn.roblox.com",
+          "cloudflare-ech.com",
+          "cloudflareaccess.com",
+          "cloudflareapps.com",
+          "cloudflarebolt.com",
+          "cloudflareclient.com",
+          "cloudflareinsights.com",
+          "cloudflareok.com",
+          "cloudflarepartners.com",
+          "cloudflareportal.com",
+          "cloudflarepreview.com",
+          "cloudflareresolve.com",
+          "cloudflaressl.com",
+          "cloudflarestatus.com",
+          "cloudflarestorage.com",
+          "cloudflarestream.com",
+          "cloudflaretest.com",
+          "cloudfront.net",
+          "config.roblox.com",
+          "contentdelivery.roblox.com",
+          "contentstore.roblox.com",
+          "crl.roblox.com",
+          "crl.verisign.com",
+          "cs.rbxcdn.com",
+          "develop.api.roblox.com",
+          "develop.roblox.com",
+          "devforum.api.roblox.com",
+          "devforum.roblox.com",
+          "dis.gd",
+          "discord-activities.com",
+          "discord-attachments-uploads-prd.storage.googleapis.com",
+          "discord.app",
+          "discord.co",
+          "discord.com",
+          "discord.design",
+          "discord.dev",
+          "discord.gg",
+          "discord.gift",
+          "discord.gifts",
+          "discord.media",
+          "discord.new",
+          "discord.status",
+          "discord.store",
+          "discordactivities.com",
+          "discordapp.com",
+          "discordapp.net",
+          "discordcdn.com",
+          "discordmerch.com",
+          "discordpartygames.com",
+          "discordsays.com",
+          "discordsez.com",
+          "discordstatus.com",
+          "economy.roblox.com",
+          "economycdn.roblox.com",
+          "ecs.roblox.com",
+          "edgecastcdn.net",
+          "encryptedsni.com",
+          "ephemeralcounters.api.roblox.com",
+          "f.ybr",
+          "ffzap.com",
+          "followings.roblox.com",
+          "footprint.net",
+          "frankerfacez.com",
+          "friends.api.roblox.com",
+          "friends.roblox.com",
+          "g-cdn.net",
+          "gameanalytics.roblox.com",
+          "gamejoin.roblox.com",
+          "gamepersistence.roblox.com",
+          "games.roblox.com",
+          "gcdn.co",
+          "geoip.roblox.com",
+          "geoip.services.roblox.com",
+          "global.stun.twilio.com",
+          "graphql.roblox.com",
+          "groups.api.roblox.com",
+          "groups.roblox.com",
+          "groupsmoderation.roblox.com",
+          "hwcdn.net",
+          "inventory.api.roblox.com",
+          "inventory.roblox.com",
+          "itemconfiguration.roblox.com",
+          "j.czq",
+          "llnwd.net",
+          "locale.roblox.com",
+          "localizationtables.roblox.com",
+          "localizeapi.com",
+          "matchmaking.api.roblox.com",
+          "matchmaking.roblox.com",
+          "metrics.roblox.com",
+          "notifications.roblox.com",
+          "ocsp.digicert.com",
+          "ocsp.verisign.com",
+          "pointbalancing.roblox.com",
+          "premiumfeatures.roblox.com",
+          "presence.api.roblox.com",
+          "presence.roblox.com",
+          "privatemessages.roblox.com",
+          "publish.roblox.com",
+          "ratings.roblox.com",
+          "rblx.com",
+          "rbx.com",
+          "rbxcdn.biz",
+          "rbxcdn.cc",
+          "rbxcdn.co",
+          "rbxcdn.com",
+          "rbxcdn.dev",
+          "rbxcdn.fun",
+          "rbxcdn.gg",
+          "rbxcdn.io",
+          "rbxcdn.me",
+          "rbxcdn.net",
+          "rbxcdn.one",
+          "rbxcdn.online",
+          "rbxcdn.org",
+          "rbxcdn.services",
+          "rbxcdn.site",
+          "rbxcdn.space",
+          "rbxcdn.store",
+          "rbxcdn.tech",
+          "rbxcdn.today",
+          "rbxcdn.tv",
+          "rbxcdn.us",
+          "rbxcdn.work",
+          "rbxcdn.world",
+          "rbxcdn.xyz",
+          "rbxlabs.com",
+          "realtime.roblox.com",
+          "roblox-setup.cache.roblox.com",
+          "roblox-setup.roblox.com",
+          "roblox-update.cache.roblox.com",
+          "roblox-update.roblox.com",
+          "roblox.cn",
+          "roblox.com",
+          "roblox.qq.com",
+          "robloxapp.com",
+          "robloxgames.com",
+          "robloxlabs.com",
+          "s3.amazonaws.com",
+          "search.roblox.com",
+          "secure.footprint.net",
+          "secure.llnwd.net",
+          "setup-cdn.roblox.com",
+          "setup.api.rbxcdn.com",
+          "setup.cache.rbxcdn.com",
+          "setup.cache.roblox.com",
+          "setup.rbxcdn.com",
+          "setup.roblox.com",
+          "sitetest.roblox.com",
+          "status.roblox.com",
+          "studio.roblox.com",
+          "stun.l.google.com",
+          "stun.services.mozilla.com",
+          "stun1.l.google.com",
+          "stun2.l.google.com",
+          "stun3.l.google.com",
+          "stun4.l.google.com",
+          "teleg.xyz",
+          "telemetry.roblox.com",
+          "telesco.pe",
+          "tg.dev",
+          "tg.org",
+          "tgram.org",
+          "thumbnails.roblox.com",
+          "tix.roblox.com",
+          "torg.org",
+          "trades.roblox.com",
+          "translations.roblox.com",
+          "translationservice.roblox.com",
+          "turn.twilio.com",
+          "tutorials.roblox.com",
+          "u.vs",
+          "update-cdn.roblox.com",
+          "update.cache.roblox.com",
+          "update.roblox.com",
+          "users.api.roblox.com",
+          "users.roblox.com",
+          "usersmoderation.roblox.com",
+          "versioncompatibility.roblox.com",
+          "voice.roblox.com",
+          "web.roblox.com",
+          "wiki.roblox.com",
+          "wire.roblox.com",
+          "www.roblox.com"
+        ],
+        "outbound": "block"
+      },
+      {
+        "domain_suffix": [
+          "2fa.telegram.org",
+          "5z-r.lk",
+          "abuse.telegram.org",
+          "account.telegram.org",
+          "admin.telegram.org",
+          "alpha.telegram.org",
+          "analytics.telegram.org",
+          "android.telegram.org",
+          "api-docs.telegram.org",
+          "api.t.me",
+          "api.telegram.org",
+          "api1.telegram.org",
+          "api2.telegram.org",
+          "api3.telegram.org",
+          "apollo.telegram.org",
+          "ares.telegram.org",
+          "assets.telegram.org",
+          "athena.telegram.org",
+          "aurora.telegram.org",
+          "auth.telegram.org",
+          "beta.telegram.org",
+          "blog.telegram.org",
+          "bot.t.me",
+          "bot.telegram.org",
+          "bots.telegram.org",
+          "business.telegram.org",
+          "careers.telegram.org",
+          "cdn.telegram.org",
+          "cdn1.telegram.org",
+          "cdn2.telegram.org",
+          "cdn3.telegram.org",
+          "cdn4.telegram.org",
+          "cdn5.telegram.org",
+          "cdn6.telegram.org",
+          "cdn7.telegram.org",
+          "cdn8.telegram.org",
+          "cdn9.telegram.org",
+          "changelog.telegram.org",
+          "channels.telegram.org",
+          "community.telegram.org",
+          "contact.telegram.org",
+          "contest.telegram.org",
+          "control.telegram.org",
+          "core.telegram.org",
+          "corp.telegram.org",
+          "dashboard.telegram.org",
+          "dc1.telegram.org",
+          "dc2.telegram.org",
+          "dc3.telegram.org",
+          "dc4.telegram.org",
+          "dc5.telegram.org",
+          "de.telegram.org",
+          "demo.telegram.org",
+          "desktop.telegram.org",
+          "dev.t.me",
+          "dev.telegram.org",
+          "developers.telegram.org",
+          "devtest.telegram.org",
+          "docs.telegram.org",
+          "donate.telegram.org",
+          "email.telegram.org",
+          "enterprise.telegram.org",
+          "faq.telegram.org",
+          "feedback.telegram.org",
+          "files.telegram.org",
+          "flora.telegram.org",
+          "forum.telegram.org",
+          "fr.telegram.org",
+          "ftp.telegram.org",
+          "groups.telegram.org",
+          "hades.telegram.org",
+          "health.telegram.org",
+          "help.telegram.org",
+          "hermes.telegram.org",
+          "hire.telegram.org",
+          "i.rk",
+          "i18n.telegram.org",
+          "image.telegram.org",
+          "imap.telegram.org",
+          "img.telegram.org",
+          "internal.telegram.org",
+          "ios.telegram.org",
+          "jobs.telegram.org",
+          "l10n.telegram.org",
+          "lang.telegram.org",
+          "linux.telegram.org",
+          "local.telegram.org",
+          "login.telegram.org",
+          "macos.telegram.org",
+          "mail.telegram.org",
+          "manager.telegram.org",
+          "media.telegram.org",
+          "merch.telegram.org",
+          "metrics.telegram.org",
+          "mobile.telegram.org",
+          "monitor.telegram.org",
+          "mtproto.telegram.org",
+          "my.telegram.org",
+          "news.telegram.org",
+          "nylrz.ulrz.vg",
+          "panel.telegram.org",
+          "passport.telegram.org",
+          "ping.telegram.org",
+          "pluto.telegram.org",
+          "pop.telegram.org",
+          "poseidon.telegram.org",
+          "premium.telegram.org",
+          "private.telegram.org",
+          "protocol.telegram.org",
+          "report.telegram.org",
+          "ru.telegram.org",
+          "sandbox.telegram.org",
+          "schema.telegram.org",
+          "security.telegram.org",
+          "shop.telegram.org",
+          "smtp.telegram.org",
+          "ssh.telegram.org",
+          "staging.telegram.org",
+          "static.telegram.org",
+          "stats.telegram.org",
+          "status.telegram.org",
+          "store.telegram.org",
+          "support.telegram.org",
+          "system.telegram.org",
+          "t.me",
+          "tdesktop.com",
+          "tdesktop.telegram.org",
+          "tdlib.telegram.org",
+          "telegra.ph",
+          "telegram.ai",
+          "telegram.asia",
+          "telegram.biz",
+          "telegram.cloud",
+          "telegram.cn",
+          "telegram.co",
+          "telegram.com",
+          "telegram.de",
+          "telegram.dev",
+          "telegram.dog",
+          "telegram.eu",
+          "telegram.fr",
+          "telegram.host",
+          "telegram.in",
+          "telegram.info",
+          "telegram.io",
+          "telegram.jp",
+          "telegram.me",
+          "telegram.net",
+          "telegram.org",
+          "telegram.qa",
+          "telegram.ru",
+          "telegram.services",
+          "telegram.solutions",
+          "telegram.space",
+          "telegram.team",
+          "telegram.tech",
+          "telegram.uk",
+          "telegram.us",
+          "telegram.website",
+          "telegram.xyz",
+          "telegramapp.org",
+          "test.telegram.org",
+          "testing.telegram.org",
+          "tgandroid.telegram.org",
+          "tgios.telegram.org",
+          "tgraph.telegram.org",
+          "translate.telegram.org",
+          "translations.telegram.org",
+          "tx.me",
+          "updates.telegram.org",
+          "uptime.telegram.org",
+          "usercontent.dev",
+          "venus.telegram.org",
+          "verify.telegram.org",
+          "vesta.telegram.org",
+          "web.t.me",
+          "web.telegram.org",
+          "webk.telegram.org",
+          "windows.telegram.org",
+          "zeus.telegram.org"
+        ],
+        "outbound": "proxy"
+      },
+      {
+        "domain_suffix": [
+          "h.zqh",
+          "wh.whi"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "protocol": [
+          "dns"
+        ],
+        "outbound": "direct"
+      }
+    ],
+    "final": "proxy"
+  }
+}
