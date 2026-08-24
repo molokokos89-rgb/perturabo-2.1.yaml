@@ -3,6 +3,7 @@
   "rules": [
     {
       "domain_suffix": [
+        "6rz.vo",
         "7tv.app",
         "7tv.io",
         "abtesting.roblox.com",
@@ -115,6 +116,7 @@
         "groups.api.roblox.com",
         "groups.roblox.com",
         "groupsmoderation.roblox.com",
+        "h.jv",
         "hwcdn.net",
         "inventory.api.roblox.com",
         "inventory.roblox.com",
@@ -216,7 +218,6 @@
         "users.api.roblox.com",
         "users.roblox.com",
         "usersmoderation.roblox.com",
-        "uy.jwr",
         "versioncompatibility.roblox.com",
         "voice.roblox.com",
         "web.roblox.com",
