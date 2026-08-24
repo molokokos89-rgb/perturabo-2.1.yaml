@@ -9,9 +9,6 @@ import urllib.parse
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# ==========================================
-# 1. КОНФИГУРАЦИЯ И ФАЙЛЫ-ИСТОЧНИКИ (TXT)
-# ==========================================
 RUS_JSON = "My_rules_RUS.json"
 REJECT_JSON = "reject_rules.json"
 PROXY_JSON = "my_rules_proxy.json"
@@ -60,10 +57,6 @@ DOMESTIC_EXCLUSIONS = [
     "yandex", "ya.ru", "yastatic", "kinopoisk", "dzen", "vk.com", 
     "vk.ru", "mail.ru", "ok.ru", "rutube", "gosuslugi", "sberbank", "tbank", "tinkoff"
 ]
-
-# ==========================================
-# 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-# ==========================================
 
 def fetch_url(url):
     try:
@@ -159,12 +152,10 @@ def clean_domain(line):
         line = line.split("#")[0]
     line = line.strip().replace("||", "").replace("^", "").strip(".-")
     line = re.sub(r'^[a-z0-9]+://', '', line).split('/')[0].split('?')[0].split(':')[0]
-    
     if not line or len(line) < 4 or len(line) > 60:
         return None
     if re.search(r'\.(js|css|png|jpg|jpeg|svg|gif|woff|woff2|json|ico|xml)$', line):
         return None
-        
     domain_regex = r'^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$'
     if re.match(domain_regex, line):
         if any(line.startswith(pfx) for pfx in ["127.", "0.", "192.168.", "10.", "172."]):
@@ -216,27 +207,134 @@ def process_url_content(url, domains_set, cidrs_set=None):
         if d:
             domains_set.add(d)
 
+def load_json_domains(filename):
+    domains = set()
+    if os.path.exists(filename):
+        try:
+            with open(filename, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                items = data.get("payload", [])
+                if not items and "rules" in data:
+                    for rule in data.get("rules", []):
+                        items.extend(rule.get("domain_suffix", []))
+                        items.extend(rule.get("domain", []))
+                for d in items:
+                    cd = clean_domain(d)
+                    if cd:
+                        domains.add(cd)
+        except Exception:
+            pass
+    return domains
+
 def save_mixed_rules_file(filename, domains, cidrs):
     sorted_domains = sorted(list(set(domains)))
     sorted_cidrs = sorted(list(set(cidrs)))
-    
     rule_item = {}
     if sorted_domains:
         rule_item["domain_suffix"] = sorted_domains
     if sorted_cidrs:
         rule_item["ip_cidr"] = sorted_cidrs
-        
     data = {
         "version": 1,
         "rules": [rule_item] if rule_item else []
     }
-    
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
-# ==========================================
-# 3. ОСНОВНЫЕ ЭТАПЫ СБОРКИ
-# ==========================================
+def parse_proxy_to_singbox(link):
+    try:
+        if link.startswith("ss://"):
+            if "@" in link:
+                part = link.split("://")[1]
+                b64_userinfo, server = part.rsplit("@", 1)
+                decoded = safe_b64decode(b64_userinfo)
+                method, password = decoded.split(":", 1)
+                host, port = server.split(":")
+                return {
+                    "type": "shadowsocks",
+                    "server": host.strip("[]"),
+                    "server_port": int(port),
+                    "method": method,
+                    "password": password
+                }
+            else:
+                decoded = safe_b64decode(link.split("://")[1])
+                method, rest = decoded.split(":", 1)
+                password, server = rest.rsplit("@", 1)
+                host, port = server.split(":")
+                return {
+                    "type": "shadowsocks",
+                    "server": host.strip("[]"),
+                    "server_port": int(port),
+                    "method": method,
+                    "password": password
+                }
+        elif link.startswith("vmess://"):
+            decoded = safe_b64decode(link.split("://")[1])
+            data = json.loads(decoded)
+            return {
+                "type": "vmess",
+                "server": data["add"],
+                "server_port": int(data["port"]),
+                "uuid": data["id"],
+                "security": data.get("scy", "auto"),
+                "alterId": int(data.get("aid", 0)),
+                "network": data.get("net", "tcp"),
+                "tls": {"enabled": data.get("tls", "") == "tls"}
+            }
+        elif link.startswith("vless://"):
+            url = urllib.parse.urlparse(link)
+            uuid = url.username
+            host = url.hostname
+            port = url.port
+            params = urllib.parse.parse_qs(url.query)
+            outbound = {
+                "type": "vless",
+                "server": host,
+                "server_port": port,
+                "uuid": uuid,
+                "network": params.get("type", ["tcp"])[0],
+                "tls": {"enabled": params.get("security", [""])[0] in ["tls", "reality"]}
+            }
+            if params.get("security", [""])[0] == "reality":
+                outbound["tls"]["reality"] = {
+                    "enabled": True,
+                    "public_key": params.get("pbk", [""])[0],
+                    "short_id": params.get("sid", [""])[0]
+                }
+                if params.get("sni"):
+                    outbound["tls"]["server_name"] = params["sni"][0]
+            if params.get("path"):
+                outbound["transport"] = {"path": params["path"][0]}
+            return outbound
+        elif link.startswith("trojan://"):
+            url = urllib.parse.urlparse(link)
+            password = url.username
+            host = url.hostname
+            port = url.port
+            params = urllib.parse.parse_qs(url.query)
+            return {
+                "type": "trojan",
+                "server": host,
+                "server_port": port,
+                "password": password,
+                "tls": {"enabled": True, "server_name": params.get("sni", [host])[0]}
+            }
+        elif link.startswith(("hy2://", "hysteria2://")):
+            url = urllib.parse.urlparse(link)
+            password = url.username
+            host = url.hostname
+            port = url.port
+            return {
+                "type": "hysteria2",
+                "server": host,
+                "server_port": port,
+                "password": password,
+                "tls": {"enabled": True}
+            }
+    except Exception:
+        return None
+    return None
 
 def step_collect_proxies():
     print("\n--- 1. СБОР И ФИЛЬТРАЦИЯ ПРОКСИ-УЗЛОВ ---")
@@ -248,10 +346,8 @@ def step_collect_proxies():
                 line = line.strip()
                 if any(line.startswith(proto) for proto in PROTOCOLS):
                     raw_nodes.append(line)
-                    
     unique_nodes = list(set(raw_nodes))
     foreign_nodes, ru_nodes = [], []
-    
     for node in unique_nodes:
         if not is_valid_reality(node) or any(bad in node.lower() for bad in BAD_KEYWORDS):
             continue
@@ -260,54 +356,40 @@ def step_collect_proxies():
             ru_nodes.append(node)
         else:
             foreign_nodes.append(node)
-            
     if foreign_nodes:
         with open("proxy.txt", "w", encoding="utf-8") as f:
             f.write(base64.b64encode("\n".join(sorted(list(set(foreign_nodes)))).encode('utf-8')).decode('utf-8'))
-            
     if ru_nodes:
         with open("ru_proxies.txt", "w", encoding="utf-8") as rf:
             rf.write(base64.b64encode("\n".join(sorted(list(set(ru_nodes)))).encode('utf-8')).decode('utf-8'))
-
     print(f"Готово! Записано: proxy.txt ({len(foreign_nodes)} нод), ru_proxies.txt ({len(ru_nodes)} нод)")
 
 def step_parse_rules_and_sorting():
     print("\n--- 2. ЗАГРУЗКА И СОРТИРОВКА ПРАВИЛ ИЗ TXT-ФАЙЛОВ ---")
-    
     reject_domains = set()
     reject_cidrs = set()
     direct_domains = set()
     direct_cidrs = set()
     proxy_domains = set()
     proxy_cidrs = set()
-
-    # === ВСЕГДА В PROXY: Telegram и Wildberries ===
     for tg_dom in TELEGRAM_DOMAINS:
         proxy_domains.add(tg_dom)
     for tg_cidr in TELEGRAM_CIDRS:
         proxy_cidrs.add(tg_cidr)
     for wb_cidr in WILDBERRIES_CIDRS:
         proxy_cidrs.add(wb_cidr)
-
-    # 1. PROXY-источники
     proxy_urls = load_links_from_txt(PROXY_MANUAL_TXT)
     print(f"PROXY: {len(proxy_urls)} ссылок")
     for url in proxy_urls:
         process_url_content(url, proxy_domains, proxy_cidrs)
-
-    # 2. DIRECT-источники
     direct_urls = load_links_from_txt(DIRECT_MANUAL_TXT)
     print(f"DIRECT: {len(direct_urls)} ссылок")
     for url in direct_urls:
         process_url_content(url, direct_domains, direct_cidrs)
-
-    # 3. REJECT-источники
     reject_urls = load_links_from_txt(REJECT_MANUAL_TXT)
     print(f"REJECT: {len(reject_urls)} ссылок")
     for url in reject_urls:
         process_url_content(url, reject_domains, reject_cidrs)
-
-    # 4. Dropbox-логи → REJECT (с проверкой)
     dropbox_content = fetch_url(DROPBOX_URL)
     if dropbox_content:
         for line in dropbox_content.splitlines():
@@ -327,29 +409,71 @@ def step_parse_rules_and_sorting():
                     direct_domains.add(d)
                 else:
                     reject_domains.add(d)
-
-    # === ПРИОРИТЕТЫ: REJECT > PROXY > DIRECT ===
     proxy_domains = {d for d in proxy_domains if d not in reject_domains}
     proxy_cidrs = {c for c in proxy_cidrs if c not in reject_cidrs}
-    
     direct_domains = {d for d in direct_domains if d not in reject_domains}
     direct_cidrs = {c for c in direct_cidrs if c not in reject_cidrs}
-    
     direct_domains = {d for d in direct_domains if d not in proxy_domains}
     direct_cidrs = {c for c in direct_cidrs if c not in proxy_cidrs}
-
-    # === СОХРАНЕНИЕ ===
     save_mixed_rules_file(REJECT_JSON, reject_domains, reject_cidrs)
     save_mixed_rules_file(RUS_JSON, direct_domains, direct_cidrs)
     save_mixed_rules_file(PROXY_JSON, proxy_domains, proxy_cidrs)
-    
     print(f"\nСортировка завершена:")
     print(f" -> Реджекты/Реклама: {len(reject_domains)} доменов, {len(reject_cidrs)} CIDR")
     print(f" -> Прямой доступ (Direct): {len(direct_domains)} доменов, {len(direct_cidrs)} CIDR")
     print(f" -> Прокси: {len(proxy_domains)} доменов, {len(proxy_cidrs)} CIDR")
 
+def generate_karing_config():
+    print("\n--- 3. ГЕНЕРАЦИЯ KARING_CONFIG.JSON ---")
+    proxy_links = []
+    if os.path.exists("proxy.txt"):
+        with open("proxy.txt", "r", encoding="utf-8") as f:
+            proxy_b64 = f.read().strip()
+            try:
+                proxy_links = base64.b64decode(proxy_b64).decode('utf-8').splitlines()
+            except Exception:
+                proxy_links = []
+    reject_domains = load_json_domains(REJECT_JSON)
+    proxy_domains = load_json_domains(PROXY_JSON)
+    rus_domains = load_json_domains(RUS_JSON)
+    outbounds = [
+        {"type": "selector", "tag": "proxy", "outbounds": ["auto"], "default": "auto"},
+        {"type": "urltest", "tag": "auto", "outbounds": [], "url": "http://www.gstatic.com/generate_204", "interval": "5m"},
+        {"type": "direct", "tag": "direct"},
+        {"type": "block", "tag": "block"}
+    ]
+    auto_outbounds = []
+    for i, link in enumerate(proxy_links):
+        node = parse_proxy_to_singbox(link)
+        if node:
+            tag = f"node-{i}"
+            node["tag"] = tag
+            outbounds.append(node)
+            auto_outbounds.append(tag)
+    outbounds[1]["outbounds"] = auto_outbounds[:50]
+    rules = [
+        {"domain_suffix": sorted(list(reject_domains)), "outbound": "block"},
+        {"domain_suffix": sorted(list(proxy_domains)), "outbound": "proxy"},
+        {"domain_suffix": sorted(list(rus_domains)), "outbound": "direct"},
+        {"protocol": ["dns"], "outbound": "direct"}
+    ]
+    config = {
+        "log": {"level": "error"},
+        "inbounds": [
+            {"type": "tun", "tag": "tun-in", "address": ["172.19.0.1/30"], "auto_route": True, "strict_route": True}
+        ],
+        "outbounds": outbounds,
+        "route": {
+            "rules": rules,
+            "final": "proxy"
+        }
+    }
+    with open("karing_config.json", "w", encoding="utf-8") as f:
+        json.dump(config, f, indent=2, ensure_ascii=False)
+    print(f"Готов karing_config.json: {len(proxy_links)} прокси, {len(reject_domains)} reject, {len(proxy_domains)} proxy, {len(rus_domains)} direct")
+
 def step_compile_srs():
-    print("\n--- 3. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
+    print("\n--- 4. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
     current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
     for jf in [f for f in os.listdir(current_dir) if f.endswith('.json')]:
         srs_file = jf.replace('.json', '.srs')
@@ -359,15 +483,13 @@ def step_compile_srs():
         except Exception as e:
             print(f"Ошибка компиляции {jf}: {e}")
 
-# ==========================================
-# 4. ГЛАВНАЯ ТОЧКА ВХОДА
-# ==========================================
 def main():
     print("==================================================")
     print("=== СБОРКА ПРАВИЛ ДЛЯ KARING ===")
     print("==================================================")
     step_collect_proxies()
     step_parse_rules_and_sorting()
+    generate_karing_config()
     step_compile_srs()
     print("\n==================================================")
     print("=== ГОТОВО! ===")
