@@ -1,0 +1,33 @@
+name: Compile Sing-box Rule-sets
+
+on:
+  push:
+    paths:
+      - '*.json'
+  workflow_dispatch:
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install sing-box
+        run: |
+          curl -fsSL https://github.com/SagerNet/sing-box/releases/download/v1.9.3/sing-box-1.9.3-linux-amd64.tar.gz | tar -xz
+          sudo mv sing-box-1.9.3-linux-amd64/sing-box /usr/local/bin/
+
+      - name: Compile JSON to SRS
+        run: |
+          sing-box rule-set compile My_rules_RUS.json -o My_rules_RUS.srs
+          sing-box rule-set compile my_rules_proxy.json -o my_rules_proxy.srs
+          sing-box rule-set compile reject_rules.json -o reject_rules.srs
+
+      - name: Commit and push compiled SRS
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add *.srs
+          git commit -m "Auto-compile all SRS rule-sets" || exit 0
+          git push
