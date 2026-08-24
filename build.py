@@ -450,7 +450,7 @@ def generate_karing_config():
             node["tag"] = tag
             outbounds.append(node)
             auto_outbounds.append(tag)
-    outbounds[1]["outbounds"] = auto_outbounds[:50]
+    outbounds[1]["outbounds"] = auto_outbounds
     rules = [
         {"domain_suffix": sorted(list(reject_domains)), "outbound": "block"},
         {"domain_suffix": sorted(list(proxy_domains)), "outbound": "proxy"},
