@@ -1,0 +1,2 @@
+https://github.com/KaringX/karing-ruleset/raw/refs/heads/sing/russia/runetfreedom/sing-box/rule-set-geosite/geosite-adblock.srs
+https://github.com/KaringX/karing-ruleset/raw/refs/heads/sing/russia/runetfreedom/sing-box/rule-set-geosite/geosite-adblockplus.srs
