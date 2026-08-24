@@ -21,12 +21,24 @@ jobs:
     - name: Install Sing-Box
       run: |
         sudo apt-get update
-        sudo apt-get install -y jq curl
+        sudo apt-get install -y jq curl tar
+        
         LATEST_VERSION=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r .tag_name | sed 's/^v//')
         ARCH=$(dpkg --print-architecture)
-        wget "https://github.com/SagerNet/sing-box/releases/download/v${LATEST_VERSION}/sing-box_${LATEST_VERSION}_linux_${ARCH}.deb"
-        sudo dpkg -i "sing-box_${LATEST_VERSION}_linux_${ARCH}.deb"
-        rm "sing-box_${LATEST_VERSION}_linux_${ARCH}.deb"
+        
+        GO_ARCH=$ARCH
+        if [ "$ARCH" = "armhf" ]; then GO_ARCH="armv7"; fi
+        
+        DOWNLOAD_URL="https://github.com/SagerNet/sing-box/releases/download/v${LATEST_VERSION}/sing-box-${LATEST_VERSION}-linux-${GO_ARCH}.tar.gz"
+        echo "Downloading from: $DOWNLOAD_URL"
+        
+        curl -L -o sing-box.tar.gz "$DOWNLOAD_URL"
+        tar -xzf sing-box.tar.gz
+        
+        sudo mv sing-box-${LATEST_VERSION}-linux-${GO_ARCH}/sing-box /usr/local/bin/
+        rm -rf sing-box*
+        
+        sing-box version
 
     - name: Run Full Build Pipeline
       run: python build.py
@@ -40,6 +52,8 @@ jobs:
           echo "No changes to commit"
         else
           git commit -m "Auto-update proxies, rules and srs binaries"
-          git pull --rebase origin main
-          git push
+          git fetch origin main
+          git reset --soft origin/main
+          git commit -m "Auto-update proxies, rules and srs binaries" || echo "Nothing to commit"
+          git push origin HEAD:main --force
         fi
