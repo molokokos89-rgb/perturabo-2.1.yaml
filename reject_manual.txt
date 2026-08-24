@@ -1,2 +1,7 @@
 https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/DNSFilter/sections/adservers.txt
 https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt
+https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt
+https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/DNSFilter/sections/adservers.txt
+https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/DNSFilter/sections/spyware.txt
+https://small.oisd.nl/domainswild
+https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
