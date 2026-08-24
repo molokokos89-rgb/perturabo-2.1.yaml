@@ -1,3 +1,4 @@
+```python
 import os
 import sys
 import re
@@ -195,6 +196,34 @@ def process_url_content(url, domains_set, cidrs_set=None):
     content = fetch_url(url)
     if not content:
         return
+    
+    if content.strip().startswith(("{", "[")):
+        try:
+            data = json.loads(content)
+            items = []
+            if isinstance(data, list):
+                items = data
+            elif isinstance(data, dict):
+                if "payload" in data:
+                    items = data["payload"]
+                elif "rules" in data:
+                    for rule in data["rules"]:
+                        items.extend(rule.get("domain_suffix", []))
+                        items.extend(rule.get("domain", []))
+                        items.extend(rule.get("ip_cidr", []))
+            for item in items:
+                if isinstance(item, str):
+                    if "/" in item and re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', item):
+                        if cidrs_set is not None:
+                            cidrs_set.add(item)
+                    else:
+                        d = clean_domain(item)
+                        if d:
+                            domains_set.add(d)
+        except Exception:
+            pass
+        return
+    
     for line in content.splitlines():
         line = line.strip()
         if not line or line.startswith(("#", "!", ";", "//")):
@@ -336,6 +365,48 @@ def parse_proxy_to_singbox(link):
         return None
     return None
 
+def parse_srs_file(srs_path):
+    domains = set()
+    cidrs = set()
+    try:
+        result = subprocess.run(
+            ["sing-box", "rule-set", "decompile", srs_path],
+            check=True,
+            capture_output=True,
+            text=True
+        )
+        data = json.loads(result.stdout)
+        for rule in data.get("rules", []):
+            domains.update(rule.get("domain_suffix", []))
+            domains.update(rule.get("domain", []))
+            cidrs.update(rule.get("ip_cidr", []))
+    except Exception:
+        pass
+    return domains, cidrs
+
+def process_srs_url(url, domains_set, cidrs_set=None):
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=15) as response:
+            content = response.read()
+        temp_srs = "temp_rule.srs"
+        with open(temp_srs, "wb") as f:
+            f.write(content)
+        domains, cidrs = parse_srs_file(temp_srs)
+        domains_set.update(domains)
+        if cidrs_set is not None:
+            cidrs_set.update(cidrs)
+        if os.path.exists(temp_srs):
+            os.remove(temp_srs)
+    except Exception:
+        pass
+
+def process_rule_source(url, domains_set, cidrs_set=None):
+    if url.endswith(".srs"):
+        process_srs_url(url, domains_set, cidrs_set)
+    else:
+        process_url_content(url, domains_set, cidrs_set)
+
 def step_collect_proxies():
     print("\n--- 1. СБОР И ФИЛЬТРАЦИЯ ПРОКСИ-УЗЛОВ ---")
     raw_nodes = []
@@ -381,15 +452,15 @@ def step_parse_rules_and_sorting():
     proxy_urls = load_links_from_txt(PROXY_MANUAL_TXT)
     print(f"PROXY: {len(proxy_urls)} ссылок")
     for url in proxy_urls:
-        process_url_content(url, proxy_domains, proxy_cidrs)
+        process_rule_source(url, proxy_domains, proxy_cidrs)
     direct_urls = load_links_from_txt(DIRECT_MANUAL_TXT)
     print(f"DIRECT: {len(direct_urls)} ссылок")
     for url in direct_urls:
-        process_url_content(url, direct_domains, direct_cidrs)
+        process_rule_source(url, direct_domains, direct_cidrs)
     reject_urls = load_links_from_txt(REJECT_MANUAL_TXT)
     print(f"REJECT: {len(reject_urls)} ссылок")
     for url in reject_urls:
-        process_url_content(url, reject_domains, reject_cidrs)
+        process_rule_source(url, reject_domains, reject_cidrs)
     dropbox_content = fetch_url(DROPBOX_URL)
     if dropbox_content:
         for line in dropbox_content.splitlines():
@@ -476,6 +547,8 @@ def step_compile_srs():
     print("\n--- 4. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
     current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
     for jf in [f for f in os.listdir(current_dir) if f.endswith('.json')]:
+        if jf == "karing_config.json":
+            continue
         srs_file = jf.replace('.json', '.srs')
         try:
             subprocess.run(["sing-box", "rule-set", "compile", os.path.join(current_dir, jf), "--output", os.path.join(current_dir, srs_file)], check=True, capture_output=True, text=True)
@@ -497,3 +570,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+```
