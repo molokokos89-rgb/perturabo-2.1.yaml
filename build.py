@@ -451,14 +451,26 @@ def step_global_cleaner():
 
 def step_compile_srs():
     print("\n--- 5. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
-    json_files = [f for f in os.listdir('.') if f.endswith('.json')]
+    current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
+    json_files = [f for f in os.listdir(current_dir) if f.endswith('.json')]
+    
     for jf in json_files:
         srs_file = jf.replace('.json', '.srs')
+        json_path = os.path.join(current_dir, jf)
+        srs_path = os.path.join(current_dir, srs_file)
         try:
-            subprocess.run(["sing-box", "rule-set", "compile", jf, "--output", srs_file], check=True)
-            print(f"Скомпилировано: {srs_file}")
+            result = subprocess.run(
+                ["sing-box", "rule-set", "compile", json_path, "--output", srs_path],
+                check=True,
+                capture_output=True,
+                text=True
+            )
+            print(f"Успешно скомпилировано: {jf} -> {srs_file}")
+        except subprocess.CalledProcessError as e:
+            print(f"ОШИБКА компиляции файла {jf}:")
+            print(e.stderr)
         except Exception as e:
-            print(f"Ошибка компиляции {jf}: {e}")
+            print(f"Непредвиденная ошибка для {jf}: {e}")
 
 # ==========================================
 # 4. ГЛАВНАЯ ТОЧКА ВХОДА
