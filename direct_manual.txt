@@ -1,2 +1,3 @@
 https://github.com/KaringX/karing-ruleset/raw/refs/heads/sing/russia/runetfreedom/sing-box/rule-set-geoip/geoip-ru-whitelist.srs
 https://github.com/KaringX/karing-ruleset/raw/refs/heads/sing/russia/runetfreedom/sing-box/rule-set-geoip/geoip-ru.srs
+https://raw.githubusercontent.com/pumPCin/AntiZapret/main/list-general.txt
