@@ -46,7 +46,6 @@
     "doubleclick.com",
     "doubleclick.net",
     "episodic.com",
-    "euronews.com",
     "feedburner.com",
     "fflick.com",
     "financeleadsonline.com",
@@ -75,7 +74,7 @@
     "googledomains.com",
     "hdrplusdata.org",
     "hey.boo",
-    "hwgo.com",
+    "howtogetmo.co.uk",
     "iam.soy",
     "idx.dev",
     "imasdk.googleapis.com",
@@ -114,7 +113,6 @@
     "stxmosquitoproject.org",
     "tenor.com",
     "thecleversense.com",
-    "thinkquarterly.com",
     "txvia.com",
     "urchin.com",
     "useplannr.com",
@@ -125,12 +123,11 @@
     "warp.plus",
     "webappfieldguide.com",
     "whats.new",
-    "widevine.com",
-    "womenwill.com",
     "x.company",
     "x.team",
     "youtubefanfest.com",
-    "youtubekids.com"
+    "youtubekids.com",
+    "youtubemobilesupport.com"
   ],
   "rules": [
     {
@@ -180,7 +177,6 @@
         "doubleclick.com",
         "doubleclick.net",
         "episodic.com",
-        "euronews.com",
         "feedburner.com",
         "fflick.com",
         "financeleadsonline.com",
@@ -209,7 +205,7 @@
         "googledomains.com",
         "hdrplusdata.org",
         "hey.boo",
-        "hwgo.com",
+        "howtogetmo.co.uk",
         "iam.soy",
         "idx.dev",
         "imasdk.googleapis.com",
@@ -248,7 +244,6 @@
         "stxmosquitoproject.org",
         "tenor.com",
         "thecleversense.com",
-        "thinkquarterly.com",
         "txvia.com",
         "urchin.com",
         "useplannr.com",
@@ -259,12 +254,11 @@
         "warp.plus",
         "webappfieldguide.com",
         "whats.new",
-        "widevine.com",
-        "womenwill.com",
         "x.company",
         "x.team",
         "youtubefanfest.com",
-        "youtubekids.com"
+        "youtubekids.com",
+        "youtubemobilesupport.com"
       ]
     }
   ]
