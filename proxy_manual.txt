@@ -1,3 +1,7 @@
+https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/google.txt
+https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/youtube.txt
+https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/telegramcidr.txt
+https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/proxy.txt
 https://github.com/KaringX/karing-ruleset/raw/refs/heads/sing/russia/runetfreedom/sing-box/rule-set-geosite/geosite-google-gemini.srs
 https://github.com/KaringX/karing-ruleset/raw/refs/heads/sing/russia/runetfreedom/sing-box/rule-set-geosite/geosite-category-media-ru-blocked.srs
 https://github.com/KaringX/karing-ruleset/raw/refs/heads/sing/russia/runetfreedom/sing-box/rule-set-geosite/geosite-google-deepmind.srs
