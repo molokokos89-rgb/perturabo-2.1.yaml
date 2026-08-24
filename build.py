@@ -10,36 +10,39 @@ import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ==========================================
-# 1. КОНФИГУРАЦИЯ И ФАЙЛЫ
+# 1. КОНФИГУРАЦИЯ И ССЫЛКИ ИЗ ИСТОЧНИКОВ
 # ==========================================
 RUS_JSON = "My_rules_RUS.json"
 REJECT_JSON = "reject_rules.json"
 PROXY_JSON = "my_rules_proxy.json"
-
-# Новые ручные файлы-списки
-REJECT_TXT = "reject_manual.txt"
-DIRECT_TXT = "direct_manual.txt"
-PROXY_TXT = "proxy_manual.txt"
 URLS_FILE = "urls.txt"
 
-DROPBOX_URL = "https://www.dropbox.com/scl/fi/759t1a2us3y0kblgat0xr/log-for-reject.txt?rlkey=zr2uqv81lx89rdl6q55geyucy&st=8lc13ygu&dl=1"
-
+# Основные источники конфигов (из репозитория vpn-configs-for-russia и др.)
 SOURCES = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt",
     "https://raw.githubusercontent.com/sevcator/5ubscrpt10n/main/protocols/hy2.txt",
     "https://raw.githubusercontent.com/yebekhe/TelegramV2rayCollector/main/sub/normal/mix",
-    "https://raw.githubusercontent.com/freefq/free/master/v2ray",
-    "https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/All_Configs_Sub.txt",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt"
+    "https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/All_Configs_Sub.txt"
 ]
 
-# Доверенные базы для автодополнения (можно сократить при желании)
+# Официальные списки правил (Loyalsoldier / AdGuard)
 RULE_SOURCES = {
     "telegram": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/telegramcidr.txt",
     "google": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/google.txt",
     "youtube": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/youtube.txt",
+    "apple": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/apple.txt",
+    "proxy_media": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/proxy.txt",
     "reject": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt",
+    "adguard_ads": "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/DNSFilter/sections/adservers.txt",
+    "adguard_spy": "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/DNSFilter/sections/spyware.txt"
 }
+
+HEAVY_SOURCES = [
+    "https://raw.githubusercontent.com/roskomkod/ru-blocked-domains/main/domains.txt"
+]
+
+DROPBOX_URL = "https://www.dropbox.com/scl/fi/759t1a2us3y0kblgat0xr/log-for-reject.txt?rlkey=zr2uqv81lx89rdl6q55geyucy&st=8lc13ygu&dl=1"
 
 PROTOCOLS = ["ss://", "vmess://", "trojan://", "hy2://", "hysteria2://", "vless://"]
 BAD_KEYWORDS = ["russia", "anycast", "fixnet", "fixcord", "cloudflare", "warp", "cf-"]
@@ -47,6 +50,18 @@ BAD_KEYWORDS = ["russia", "anycast", "fixnet", "fixcord", "cloudflare", "warp", 
 TELEGRAM_DOMAINS = [
     "t.me", "telegram.org", "telegram.me", "tdesktop.com", "telegra.ph", 
     "telegram.dog", "tx.me", "usercontent.dev"
+]
+
+# Ключевые слова для принудительного отсева рекламы/метрик
+AD_TRACKER_KEYWORDS = [
+    "analytics", "ads", "pixel", "metrics", "telemetry", "tracker",
+    "tracking", "adservice", "adsystem", "banner", "counter", "pangle",
+    "doubleclick", "app-measurement", "adjust", "appsflyer", "stat", "syndication"
+]
+
+DOMESTIC_EXCLUSIONS = [
+    "yandex", "ya.ru", "yastatic", "kinopoisk", "dzen", "vk.com", 
+    "vk.ru", "mail.ru", "ok.ru", "rutube", "gosuslugi", "sberbank", "tbank", "tinkoff"
 ]
 
 # ==========================================
@@ -160,15 +175,23 @@ def clean_domain(line):
         return line
     return None
 
-def load_txt_file(filename):
-    domains = set()
-    if os.path.exists(filename):
-        with open(filename, "r", encoding="utf-8") as f:
-            for line in f:
-                cd = clean_domain(line)
-                if cd:
-                    domains.add(cd)
-    return domains
+def is_telegram_domain(domain):
+    return any(tg in domain.lower() for tg in TELEGRAM_DOMAINS) or "telegram" in domain.lower()
+
+def is_domestic_service(domain):
+    if is_telegram_domain(domain):
+        return False
+    domain_lower = domain.lower()
+    if any(dom in domain_lower for dom in DOMESTIC_EXCLUSIONS):
+        return True
+    if any(domain_lower.endswith(zone) for zone in [".ru", ".su", ".by", ".xn--p1ai"]):
+        return True
+    return False
+
+def is_ad_or_tracker(domain):
+    if is_telegram_domain(domain):
+        return False
+    return any(keyword in domain.lower() for keyword in AD_TRACKER_KEYWORDS)
 
 def save_mixed_rules_file(filename, domains, cidrs):
     sorted_domains = sorted(list(set(domains)))
@@ -189,7 +212,7 @@ def save_mixed_rules_file(filename, domains, cidrs):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 # ==========================================
-# 3. ОСНОВНЫЕ ЭТАПЫ
+# 3. ОСНОВНЫЕ ЭТАПЫ СБОРКИ
 # ==========================================
 
 def step_collect_proxies():
@@ -226,20 +249,17 @@ def step_collect_proxies():
     print(f"Готово! Записано: proxy.txt ({len(foreign_nodes)} нод), ru_proxies.txt ({len(ru_nodes)} нод)")
 
 def step_parse_rules_and_sorting():
-    print("\n--- 2. СБОР И СТРОГАЯ СОРТИРОВКА ПО РУЧНЫМ СПИСКАМ ---")
+    print("\n--- 2. ЗАГРУЗКА И АВТОМАТИЧЕСКАЯ СОРТИРОВКА ПРАВИЛ ---")
     
-    # 1. Загружаем пользовательские базы из TXT
-    reject_domains = load_txt_file(REJECT_TXT)
-    direct_domains = load_txt_file(DIRECT_TXT)
-    proxy_domains = load_txt_file(PROXY_TXT)
-    
+    reject_domains = set()
+    proxy_domains = set()
+    rus_domains = set()
     proxy_cidrs = set()
 
-    # Всегда держим Telegram в прокси
     for tg_dom in TELEGRAM_DOMAINS:
         proxy_domains.add(tg_dom)
 
-    # 2. Докачиваем базовые списки (Telegram CIDR и стандартный Reject)
+    # Загружаем внешние списки по категориям
     for key, url in RULE_SOURCES.items():
         content = fetch_url(url)
         if content:
@@ -252,14 +272,18 @@ def step_parse_rules_and_sorting():
                     if key == "telegram":
                         proxy_cidrs.add(clean_ip)
                     continue
+                
                 d = clean_domain(line)
                 if d:
-                    if key == "reject":
+                    if key in ["reject", "adguard_ads", "adguard_spy"] or is_ad_or_tracker(d):
                         reject_domains.add(d)
-                    elif key == "telegram":
+                    elif key == "telegram" or is_telegram_domain(d):
+                        proxy_domains.add(d)
+                    else:
+                        # Остальное (google, youtube, apple, proxy) идет в прокси, но проверяем на мусор
                         proxy_domains.add(d)
 
-    # 3. Подтягиваем логи из Dropbox в Reject
+    # Логи из Dropbox улетают в реджекты
     dropbox_content = fetch_url(DROPBOX_URL)
     if dropbox_content:
         for line in dropbox_content.splitlines():
@@ -267,19 +291,28 @@ def step_parse_rules_and_sorting():
             if d:
                 reject_domains.add(d)
 
-    # 4. Жесткий приоритет и очистка пересечений (Reject > Direct > Proxy)
-    direct_domains = {d for d in direct_domains if d not in reject_domains}
-    proxy_domains = {d for d in proxy_domains if d not in reject_domains and d not in direct_domains}
+    # Жесткое разделение и очистка от пересечений
+    clean_proxy = set()
+    for d in proxy_domains:
+        if is_ad_or_tracker(d):
+            reject_domains.add(d)
+        elif is_domestic_service(d):
+            rus_domains.add(d)
+        else:
+            clean_proxy.add(d)
 
-    # Сохраняем в JSON для sing-box
+    # Принудительно убираем пересечения (Reject побеждает всё)
+    clean_proxy = {d for d in clean_proxy if d not in reject_domains}
+    rus_domains = {d for d in rus_domains if d not in reject_domains and d not in clean_proxy}
+
     save_mixed_rules_file(REJECT_JSON, reject_domains, set())
-    save_mixed_rules_file(RUS_JSON, direct_domains, set())
-    save_mixed_rules_file(PROXY_JSON, proxy_domains, proxy_cidrs)
+    save_mixed_rules_file(RUS_JSON, rus_domains, set())
+    save_mixed_rules_file(PROXY_JSON, clean_proxy, proxy_cidrs)
     
     print(f"Сортировка завершена:")
-    print(f" -> Реджекты/Реклама: {len(reject_domains)}")
-    print(f" -> Прямой доступ (Direct): {len(direct_domains)}")
-    print(f" -> Прокси: {len(proxy_domains)}")
+    print(f" -> Реджекты/Реклама/Метрики: {len(reject_domains)}")
+    print(f" -> Прямой доступ (Direct/RUS): {len(rus_domains)}")
+    print(f" -> Прокси: {len(clean_proxy)}")
 
 def step_compile_srs():
     print("\n--- 3. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
@@ -292,9 +325,12 @@ def step_compile_srs():
         except Exception as e:
             print(f"Ошибка компиляции {jf}: {e}")
 
+# ==========================================
+# 4. ГЛАВНАЯ ТОЧКА ВХОДА
+# ==========================================
 def main():
     print("==================================================")
-    print("=== СБОРКА НА БАЗЕ РУЧНЫХ СПИСКОВ (TXT) ===")
+    print("=== АВТОМАТИЧЕСКАЯ СБОРКА С УЧЕТОМ ИСТОЧНИКОВ ===")
     print("==================================================")
     step_collect_proxies()
     step_parse_rules_and_sorting()
