@@ -1,3 +1,4 @@
+https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/refs/heads/main/My_rules_RUS.json
 https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/gfw.txt
 https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/telegramcidr.txt
 https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/google.txt
