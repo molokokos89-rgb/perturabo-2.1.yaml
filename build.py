@@ -66,7 +66,7 @@ DOMESTIC_EXCLUSIONS = [
 ]
 
 # ==========================================
-# 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ИЗ ВАШЕГО РЕПОЗИТОРИЯ
+# 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 # ==========================================
 
 def fetch_url(url):
@@ -222,12 +222,17 @@ def load_json_domains(filename):
         try:
             with open(filename, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                items = data.get("payload", [])
-                if not items and "rules" in data:
+                items = []
+                # Поддержка чтения из нового формата правил sing-box (через "rules")
+                if "rules" in data:
                     for rule in data.get("rules", []):
                         items.extend(rule.get("domain_suffix", []))
                         items.extend(rule.get("domain", []))
                         items.extend(rule.get("ip_cidr", []))
+                # Обратная совместимость на всякий случай
+                if "payload" in data:
+                    items.extend(data.get("payload", []))
+                    
                 for d in items:
                     cd = clean_domain(d)
                     if cd: domains.add(cd)
@@ -245,6 +250,7 @@ def save_mixed_rules_file(filename, domains, cidrs):
     if sorted_cidrs:
         rule_item["ip_cidr"] = sorted_cidrs
         
+    # СТРОГИЙ СТАНДАРТ SING-BOX: никакого payload, только version и rules
     data = {
         "version": 1,
         "rules": [rule_item] if rule_item else []
@@ -254,7 +260,7 @@ def save_mixed_rules_file(filename, domains, cidrs):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 # ==========================================
-# 3. ОСНОВНЫЕ ЭТАПЫ (СБОРКА + РЕПОЗИТОРИЙ)
+# 3. ОСНОВНЫЕ ЭТАПЫ
 # ==========================================
 
 def step_collect_proxies():
