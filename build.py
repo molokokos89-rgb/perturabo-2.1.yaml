@@ -9,6 +9,9 @@ import urllib.parse
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+# ==========================================
+# 1. КОНФИГУРАЦИЯ И ФАЙЛЫ
+# ==========================================
 RUS_JSON = "My_rules_RUS.json"
 REJECT_JSON = "reject_rules.json"
 PROXY_JSON = "my_rules_proxy.json"
@@ -61,6 +64,10 @@ DOMESTIC_EXCLUSIONS = [
     "yandex", "ya.ru", "yastatic", "kinopoisk", "dzen", "vk.com", 
     "vk.ru", "mail.ru", "ok.ru", "rutube", "gosuslugi", "sberbank", "tbank", "tinkoff"
 ]
+
+# ==========================================
+# 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ИЗ ВАШЕГО РЕПОЗИТОРИЯ
+# ==========================================
 
 def fetch_url(url):
     try:
@@ -220,6 +227,7 @@ def load_json_domains(filename):
                     for rule in data.get("rules", []):
                         items.extend(rule.get("domain_suffix", []))
                         items.extend(rule.get("domain", []))
+                        items.extend(rule.get("ip_cidr", []))
                 for d in items:
                     cd = clean_domain(d)
                     if cd: domains.add(cd)
@@ -230,21 +238,27 @@ def load_json_domains(filename):
 def save_mixed_rules_file(filename, domains, cidrs):
     sorted_domains = sorted(list(set(domains)))
     sorted_cidrs = sorted(list(set(cidrs)))
-    rule_obj = {}
+    
+    rule_item = {}
     if sorted_domains:
-        rule_obj["domain_suffix"] = sorted_domains
+        rule_item["domain_suffix"] = sorted_domains
     if sorted_cidrs:
-        rule_obj["ip_cidr"] = sorted_cidrs
+        rule_item["ip_cidr"] = sorted_cidrs
+        
     data = {
         "version": 1,
-        "payload": sorted_domains + sorted_cidrs,
-        "rules": [rule_obj] if rule_obj else []
+        "rules": [rule_item] if rule_item else []
     }
+    
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
+# ==========================================
+# 3. ОСНОВНЫЕ ЭТАПЫ (СБОРКА + РЕПОЗИТОРИЙ)
+# ==========================================
+
 def step_collect_proxies():
-    print("\n--- 1. СБОР И ФИЛЬТРАЦИЯ ПРОКСИ-УЗЛОВ (ИЗ ВАШЕГО РЕПО) ---")
+    print("\n--- 1. СБОР И ФИЛЬТРАЦИЯ ПРОКСИ-УЗЛОВ ---")
     raw_nodes = []
     for source in SOURCES:
         data = fetch_url(source)
@@ -288,7 +302,7 @@ def step_collect_proxies():
     print(f"Готово! Записано: proxy.txt ({len(foreign_nodes)} нод), ru_proxies.txt ({len(ru_nodes)} нод)")
 
 def step_parse_rules_and_logs():
-    print("\n--- 2. СБОР ПРАВИЛ REJECT, PROXY И ЛОГОВ (DROPBOX) ---")
+    print("\n--- 2. СБОР ПРАВИЛ REJECT, PROXY И ЛОГОВ ---")
     rejected_domains = load_json_domains(REJECT_JSON)
     rejected_cidrs = set()
     
@@ -343,7 +357,7 @@ def step_parse_rules_and_logs():
     save_mixed_rules_file(RUS_JSON, rus_domains, rus_cidrs)
 
 def step_check_heavy_rkn():
-    print("\n--- 3. ПРОВЕРКА БАЗ РКН И URLS.TXT В 20 ПОТОКОВ ---")
+    print("\n--- 3. ПРОВЕРКА БАЗ РКН И URLС.TXT ---")
     existing_proxies = load_json_domains(PROXY_JSON)
     existing_rejects = load_json_domains(REJECT_JSON)
     heavy_domains = set()
@@ -461,6 +475,9 @@ def step_compile_srs():
         except Exception as e:
             print(f"Непредвиденная ошибка для {jf}: {e}")
 
+# ==========================================
+# 4. ГЛАВНАЯ ТОЧКА ВХОДА
+# ==========================================
 def main():
     print("==================================================")
     print("=== ЗАПУСК ПОЛНОГО ЦИКЛА СБОРКИ ПРАВИЛ И НОД ===")
