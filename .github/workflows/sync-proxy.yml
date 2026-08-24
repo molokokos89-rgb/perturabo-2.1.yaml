@@ -1,4 +1,4 @@
-name: Perturabo Sync and Build
+name: Proxy Sync and Build
 
 on:
   schedule:
@@ -39,7 +39,7 @@ jobs:
         if git diff --staged --quiet; then
           echo "No changes to commit"
         else
-          git commit -m "Auto-update proxies, rules and adblock"
+          git commit -m "Auto-update proxies, rules and srs binaries"
           git pull --rebase origin main
           git push
         fi
