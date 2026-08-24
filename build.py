@@ -9,9 +9,6 @@ import urllib.parse
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# ==========================================
-# 1. КОНФИГУРАЦИЯ И ФАЙЛЫ
-# ==========================================
 RUS_JSON = "My_rules_RUS.json"
 REJECT_JSON = "reject_rules.json"
 PROXY_JSON = "my_rules_proxy.json"
@@ -64,10 +61,6 @@ DOMESTIC_EXCLUSIONS = [
     "yandex", "ya.ru", "yastatic", "kinopoisk", "dzen", "vk.com", 
     "vk.ru", "mail.ru", "ok.ru", "rutube", "gosuslugi", "sberbank", "tbank", "tinkoff"
 ]
-
-# ==========================================
-# 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ИЗ ВАШЕГО РЕПОЗИТОРИЯ
-# ==========================================
 
 def fetch_url(url):
     try:
@@ -249,10 +242,6 @@ def save_mixed_rules_file(filename, domains, cidrs):
     }
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
-
-# ==========================================
-# 3. ОСНОВНЫЕ ЭТАПЫ (СБОРКА + РЕПОЗИТОРИЙ)
-# ==========================================
 
 def step_collect_proxies():
     print("\n--- 1. СБОР И ФИЛЬТРАЦИЯ ПРОКСИ-УЗЛОВ (ИЗ ВАШЕГО РЕПО) ---")
@@ -472,9 +461,6 @@ def step_compile_srs():
         except Exception as e:
             print(f"Непредвиденная ошибка для {jf}: {e}")
 
-# ==========================================
-# 4. ГЛАВНАЯ ТОЧКА ВХОДА
-# ==========================================
 def main():
     print("==================================================")
     print("=== ЗАПУСК ПОЛНОГО ЦИКЛА СБОРКИ ПРАВИЛ И НОД ===")
