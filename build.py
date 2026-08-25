@@ -37,8 +37,9 @@ TELEGRAM_DOMAINS = [
 
 TELEGRAM_CIDRS = [
     "91.108.4.0/22", "91.108.8.0/22", "91.108.12.0/22", "91.108.16.0/22",
-    "91.108.20.0/22", "91.108.56.0/22", "149.154.160.0/20", "149.154.164.0/22",
-    "149.154.168.0/22", "149.154.172.0/22", "185.76.151.0/24", "200.1.1.0/24"
+    "91.108.20.0/22", "91.108.24.0/22", "91.108.56.0/22", "149.154.160.0/20",
+    "149.154.164.0/22", "149.154.168.0/22", "149.154.172.0/22", "185.76.151.0/24",
+    "200.1.1.0/24"
 ]
 
 WILDBERRIES_CIDRS = [
@@ -55,7 +56,8 @@ AD_TRACKER_KEYWORDS = [
 
 DOMESTIC_EXCLUSIONS = [
     "yandex", "ya.ru", "yastatic", "kinopoisk", "dzen", "vk.com", 
-    "vk.ru", "mail.ru", "ok.ru", "rutube", "gosuslugi", "sberbank", "tbank", "tinkoff"
+    "vk.ru", "mail.ru", "ok.ru", "rutube", "gosuslugi", "sberbank", "tbank", "tinkoff",
+    "ident.me"
 ]
 
 def fetch_url(url):
@@ -195,7 +197,6 @@ def process_url_content(url, domains_set, cidrs_set=None):
     content = fetch_url(url)
     if not content:
         return
-    
     if content.strip().startswith(("{", "[")):
         try:
             data = json.loads(content)
@@ -222,7 +223,6 @@ def process_url_content(url, domains_set, cidrs_set=None):
         except Exception:
             pass
         return
-    
     for line in content.splitlines():
         line = line.strip()
         if not line or line.startswith(("#", "!", ";", "//")):
@@ -406,6 +406,18 @@ def process_rule_source(url, domains_set, cidrs_set=None):
     else:
         process_url_content(url, domains_set, cidrs_set)
 
+def check_domain_via_proxy(domain, proxy_list):
+    for proxy in proxy_list[:5]:
+        try:
+            req = urllib.request.Request(f"http://{domain}", headers={'User-Agent': 'Mozilla/5.0'})
+            req.set_proxy(proxy, 'http')
+            with urllib.request.urlopen(req, timeout=5) as response:
+                if response.status == 200:
+                    return True
+        except Exception:
+            continue
+    return False
+
 def step_collect_proxies():
     print("\n--- 1. СБОР И ФИЛЬТРАЦИЯ ПРОКСИ-УЗЛОВ ---")
     raw_nodes = []
@@ -422,6 +434,8 @@ def step_collect_proxies():
         if not is_valid_reality(node) or any(bad in node.lower() for bad in BAD_KEYWORDS):
             continue
         host = extract_host(node) or extract_ip_or_domain(node)
+        if not host:
+            continue
         if check_is_russia(host):
             ru_nodes.append(node)
         else:
@@ -442,26 +456,54 @@ def step_parse_rules_and_sorting():
     direct_cidrs = set()
     proxy_domains = set()
     proxy_cidrs = set()
+    
     for tg_dom in TELEGRAM_DOMAINS:
         proxy_domains.add(tg_dom)
     for tg_cidr in TELEGRAM_CIDRS:
         proxy_cidrs.add(tg_cidr)
     for wb_cidr in WILDBERRIES_CIDRS:
         proxy_cidrs.add(wb_cidr)
+    
+    ru_proxies = []
+    if os.path.exists("ru_proxies.txt"):
+        with open("ru_proxies.txt", "r", encoding="utf-8") as f:
+            ru_b64 = f.read().strip()
+            try:
+                ru_proxies = base64.b64decode(ru_b64).decode('utf-8').splitlines()
+            except Exception:
+                ru_proxies = []
+    
     proxy_urls = load_links_from_txt(PROXY_MANUAL_TXT)
-    print(f"PROXY: {len(proxy_urls)} ссылок")
+    print(f"PROXY: загружено {len(proxy_urls)} ссылок из {PROXY_MANUAL_TXT}")
     for url in proxy_urls:
+        print(f"  Обработка: {url}")
         process_rule_source(url, proxy_domains, proxy_cidrs)
+    
     direct_urls = load_links_from_txt(DIRECT_MANUAL_TXT)
-    print(f"DIRECT: {len(direct_urls)} ссылок")
+    print(f"DIRECT: загружено {len(direct_urls)} ссылок из {DIRECT_MANUAL_TXT}")
+    temp_direct_domains = set()
+    temp_direct_cidrs = set()
     for url in direct_urls:
-        process_rule_source(url, direct_domains, direct_cidrs)
+        print(f"  Обработка: {url}")
+        process_rule_source(url, temp_direct_domains, temp_direct_cidrs)
+    
+    for domain in list(temp_direct_domains):
+        if ru_proxies and not check_domain_via_proxy(domain, ru_proxies):
+            proxy_domains.add(domain)
+            print(f"  {domain} -> в PROXY (недоступен через РФ)")
+        else:
+            direct_domains.add(domain)
+    direct_cidrs.update(temp_direct_cidrs)
+    
     reject_urls = load_links_from_txt(REJECT_MANUAL_TXT)
-    print(f"REJECT: {len(reject_urls)} ссылок")
+    print(f"REJECT: загружено {len(reject_urls)} ссылок из {REJECT_MANUAL_TXT}")
     for url in reject_urls:
+        print(f"  Обработка: {url}")
         process_rule_source(url, reject_domains, reject_cidrs)
+    
     dropbox_content = fetch_url(DROPBOX_URL)
     if dropbox_content:
+        print("  Обработка Dropbox-логов:")
         for line in dropbox_content.splitlines():
             line = line.strip()
             if not line or line.startswith(("#", "!", ";", "//")):
@@ -470,24 +512,39 @@ def step_parse_rules_and_sorting():
                 reject_cidrs.add(line.split(",")[-1].strip())
                 continue
             d = clean_domain(line)
-            if d:
-                if is_telegram_domain(d):
-                    proxy_domains.add(d)
-                elif is_ad_or_tracker(d):
-                    reject_domains.add(d)
-                elif is_domestic_service(d):
+            if not d:
+                continue
+            if d in direct_domains or d in proxy_domains:
+                print(f"    {d} -> ПРОПУЩЕН (уже в Direct/Proxy)")
+                continue
+            if is_telegram_domain(d):
+                proxy_domains.add(d)
+                print(f"    {d} -> в PROXY (Telegram)")
+            elif is_domestic_service(d):
+                direct_domains.add(d)
+                print(f"    {d} -> в DIRECT (РФ-сервис)")
+            elif is_ad_or_tracker(d):
+                reject_domains.add(d)
+                print(f"    {d} -> в REJECT (реклама/трекер)")
+            else:
+                if ru_proxies and check_domain_via_proxy(d, ru_proxies):
                     direct_domains.add(d)
+                    print(f"    {d} -> в DIRECT (доступен через РФ)")
                 else:
                     reject_domains.add(d)
+                    print(f"    {d} -> в REJECT (неизвестный/недоступный)")
+    
     proxy_domains = {d for d in proxy_domains if d not in reject_domains}
     proxy_cidrs = {c for c in proxy_cidrs if c not in reject_cidrs}
     direct_domains = {d for d in direct_domains if d not in reject_domains}
     direct_cidrs = {c for c in direct_cidrs if c not in reject_cidrs}
     direct_domains = {d for d in direct_domains if d not in proxy_domains}
     direct_cidrs = {c for c in direct_cidrs if c not in proxy_cidrs}
+    
     save_mixed_rules_file(REJECT_JSON, reject_domains, reject_cidrs)
     save_mixed_rules_file(RUS_JSON, direct_domains, direct_cidrs)
     save_mixed_rules_file(PROXY_JSON, proxy_domains, proxy_cidrs)
+    
     print(f"\nСортировка завершена:")
     print(f" -> Реджекты/Реклама: {len(reject_domains)} доменов, {len(reject_cidrs)} CIDR")
     print(f" -> Прямой доступ (Direct): {len(direct_domains)} доменов, {len(direct_cidrs)} CIDR")
@@ -506,41 +563,76 @@ def generate_karing_config():
     reject_domains = load_json_domains(REJECT_JSON)
     proxy_domains = load_json_domains(PROXY_JSON)
     rus_domains = load_json_domains(RUS_JSON)
+    proxy_links = [p for p in proxy_links if p and not any(bad in p.lower() for bad in BAD_KEYWORDS)]
     outbounds = [
-        {"type": "selector", "tag": "proxy", "outbounds": ["auto"], "default": "auto"},
+        {"type": "selector", "tag": "Proxy", "outbounds": ["auto"], "default": "auto"},
         {"type": "urltest", "tag": "auto", "outbounds": [], "url": "http://www.gstatic.com/generate_204", "interval": "5m"},
         {"type": "direct", "tag": "direct"},
         {"type": "block", "tag": "block"}
     ]
     auto_outbounds = []
-    for i, link in enumerate(proxy_links):
+    for i, link in enumerate(proxy_links[:50]):
         node = parse_proxy_to_singbox(link)
         if node:
-            tag = f"node-{i}"
+            tag = f"proxy-{i}"
             node["tag"] = tag
             outbounds.append(node)
             auto_outbounds.append(tag)
     outbounds[1]["outbounds"] = auto_outbounds
     rules = [
         {"domain_suffix": sorted(list(reject_domains)), "outbound": "block"},
-        {"domain_suffix": sorted(list(proxy_domains)), "outbound": "proxy"},
+        {"domain_suffix": sorted(list(proxy_domains)), "outbound": "Proxy"},
         {"domain_suffix": sorted(list(rus_domains)), "outbound": "direct"},
         {"protocol": ["dns"], "outbound": "direct"}
     ]
     config = {
-        "log": {"level": "error"},
+        "log": {"level": "info"},
+        "dns": {
+            "servers": [
+                {"tag": "cloudflare", "address": "https://1.1.1.1/dns-query", "address_resolver": "local"},
+                {"tag": "local", "address": "223.5.5.5", "detour": "direct"}
+            ],
+            "rules": [
+                {"outbound": "any", "server": "local"},
+                {"domain_suffix": ".cn", "server": "local"}
+            ]
+        },
         "inbounds": [
-            {"type": "tun", "tag": "tun-in", "address": ["172.19.0.1/30"], "auto_route": True, "strict_route": True}
+            {"type": "tun", "tag": "tun-in", "interface_name": "utun0", "inet4_address": "172.19.0.1/30", "auto_route": True, "strict_route": True, "sniff": True},
+            {"type": "mixed", "tag": "mixed-in", "listen": "127.0.0.1", "listen_port": 7890}
         ],
         "outbounds": outbounds,
         "route": {
-            "rules": rules,
-            "final": "proxy"
+            "rules": [
+                {"protocol": "dns", "outbound": "dns-out"},
+                {"domain_suffix": ["localhost", "local"], "outbound": "direct"},
+                {"ip_is_private": True, "outbound": "direct"},
+                {"rule_set": "geoip-cn", "outbound": "direct"},
+                {"rule_set": "geosite-cn", "outbound": "direct"},
+                {"rule_set": "geosite-ad", "outbound": "block"},
+                {"rule_set": "my-rules", "outbound": "Proxy"}
+            ],
+            "rule_set": [
+                {"tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://github.com/SagerNet/sing-geoip/raw/rule-set/geoip-cn.srs", "download_detour": "direct", "update_interval": "24h"},
+                {"tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-cn.srs", "download_detour": "direct", "update_interval": "24h"},
+                {"tag": "geosite-ad", "type": "remote", "format": "binary", "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-ad.srs", "download_detour": "direct", "update_interval": "24h"},
+                {"tag": "my-rules", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/my_rules_proxy.srs", "download_detour": "direct", "update_interval": "2h"}
+            ],
+            "auto_detect_interface": True,
+            "final": "Proxy"
+        },
+        "experimental": {
+            "cache_file": {
+                "enabled": True,
+                "path": "cache.db",
+                "store_fakeip": True,
+                "store_rdrc": True
+            }
         }
     }
     with open("karing_config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
-    print(f"Готов karing_config.json: {len(proxy_links)} прокси, {len(reject_domains)} reject, {len(proxy_domains)} proxy, {len(rus_domains)} direct")
+    print(f"Готов karing_config.json: {len(auto_outbounds)} прокси, {len(reject_domains)} reject, {len(proxy_domains)} proxy, {len(rus_domains)} direct")
 
 def step_compile_srs():
     print("\n--- 4. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
@@ -555,6 +647,27 @@ def step_compile_srs():
         except Exception as e:
             print(f"Ошибка компиляции {jf}: {e}")
 
+def create_proxy_list_json():
+    print("\n--- 5. СОЗДАНИЕ PROXY_LIST.JSON ДЛЯ KARING ---")
+    proxy_links = []
+    if os.path.exists("proxy.txt"):
+        with open("proxy.txt", "r", encoding="utf-8") as f:
+            proxy_b64 = f.read().strip()
+            try:
+                proxy_links = base64.b64decode(proxy_b64).decode('utf-8').splitlines()
+            except Exception:
+                proxy_links = []
+    proxy_links = [p for p in proxy_links if p and not any(bad in p.lower() for bad in BAD_KEYWORDS)]
+    proxy_list = []
+    for i, link in enumerate(proxy_links[:50]):
+        node = parse_proxy_to_singbox(link)
+        if node:
+            node["tag"] = f"proxy-{i}"
+            proxy_list.append(node)
+    with open("proxy_list.json", "w", encoding="utf-8") as f:
+        json.dump(proxy_list, f, indent=2, ensure_ascii=False)
+    print(f"Создан proxy_list.json с {len(proxy_list)} прокси")
+
 def main():
     print("==================================================")
     print("=== СБОРКА ПРАВИЛ ДЛЯ KARING ===")
@@ -563,6 +676,7 @@ def main():
     step_parse_rules_and_sorting()
     generate_karing_config()
     step_compile_srs()
+    create_proxy_list_json()
     print("\n==================================================")
     print("=== ГОТОВО! ===")
     print("==================================================")
