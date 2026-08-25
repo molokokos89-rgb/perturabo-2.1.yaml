@@ -93,6 +93,7 @@
         "vk.com",
         "vk.company",
         "vk.me",
+        "vk.net",
         "vk.org",
         "vk.ru",
         "vkat.me",
@@ -108,7 +109,16 @@
         "yandex.com",
         "yandex.net",
         "yandex.org",
-        "yandex.ru"
+        "yandex.ru",
+        "yastatic.net"
+      ],
+      "domain": [
+        "yabs.yandex.ru",
+        "api.browser.yandex.ru",
+        "api.remanga.org"
+      ],
+      "domain_regex": [
+        "^.*manga.*$"
       ],
       "ip_cidr": [
         "109.207.0.0/19",
