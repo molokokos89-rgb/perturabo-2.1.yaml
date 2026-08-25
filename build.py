@@ -306,37 +306,45 @@ def load_json_domains(filename):
     return domains
 
 def save_mixed_rules_file(filename, domains, cidrs):
-    existing_domains = set()
-    existing_cidrs = set()
+    existing_data = {}
     if os.path.exists(filename):
         try:
             with open(filename, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                if "rules" in data and data["rules"]:
-                    for rule in data["rules"]:
-                        existing_domains.update(rule.get("domain_suffix", []))
-                        existing_domains.update(rule.get("domain", []))
-                        existing_cidrs.update(rule.get("ip_cidr", []))
+                existing_data = json.load(f)
         except Exception:
             pass
-
+    
+    existing_domains = set()
+    existing_cidrs = set()
+    existing_keywords = set()
+    existing_regex = set()
+    
+    if "rules" in existing_data and existing_data["rules"]:
+        for rule in existing_data["rules"]:
+            existing_domains.update(rule.get("domain_suffix", []))
+            existing_domains.update(rule.get("domain", []))
+            existing_cidrs.update(rule.get("ip_cidr", []))
+            existing_keywords.update(rule.get("domain_keyword", []))
+            existing_regex.update(rule.get("domain_regex", []))
+    
     combined_domains = existing_domains | set(domains)
     combined_cidrs = existing_cidrs | set(cidrs)
-
-    sorted_domains = sorted(list(combined_domains))
-    sorted_cidrs = sorted(list(combined_cidrs))
-
+    
     rule_item = {}
-    if sorted_domains:
-        rule_item["domain_suffix"] = sorted_domains
-    if sorted_cidrs:
-        rule_item["ip_cidr"] = sorted_cidrs
-
+    if combined_domains:
+        rule_item["domain_suffix"] = sorted(list(combined_domains))
+    if combined_cidrs:
+        rule_item["ip_cidr"] = sorted(list(combined_cidrs))
+    if existing_keywords:
+        rule_item["domain_keyword"] = sorted(list(existing_keywords))
+    if existing_regex:
+        rule_item["domain_regex"] = sorted(list(existing_regex))
+    
     data = {
         "version": 1,
         "rules": [rule_item] if rule_item else []
     }
-
+    
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
@@ -480,7 +488,6 @@ def process_rule_source(url, domains_set, cidrs_set=None):
     if not content:
         return
     
-    # --- ПРОБУЕМ ПАРСИТЬ КАК JSON ---
     if content.strip().startswith(("{", "[")):
         try:
             data = json.loads(content)
@@ -489,7 +496,6 @@ def process_rule_source(url, domains_set, cidrs_set=None):
         except Exception:
             pass
     
-    # --- ПРОБУЕМ ПАРСИТЬ КАК YAML ---
     try:
         data = yaml.safe_load(content)
         if isinstance(data, (dict, list)):
@@ -498,19 +504,16 @@ def process_rule_source(url, domains_set, cidrs_set=None):
     except Exception:
         pass
     
-    # --- ИНАЧЕ — ОБРАБАТЫВАЕМ КАК ТЕКСТ (TXT, hosts, AdGuard) ---
     for line in content.splitlines():
         line = line.strip()
         if not line or line.startswith(("#", "!", ";", "//")):
             continue
         
-        # Проверяем CIDR
         if cidrs_set is not None and re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(/\d+)?$', line.split(',')[0].strip()):
             cidr = line.split(",")[-1].strip()
             cidrs_set.add(cidr)
             continue
         
-        # Чистим домен (убираем IP, AdGuard-префиксы)
         d = clean_domain(line)
         if d:
             domains_set.add(d)
@@ -566,7 +569,6 @@ def step_parse_rules_and_sorting():
     proxy_domains = set()
     proxy_cidrs = set()
 
-    # --- РУЧНЫЕ ПРАВИЛА ИЗ KARING (DIRECT + forever yes) ---
     manual_direct_domains = [
         "yabs.yandex.ru", "yastatic.net", "api.browser.yandex.ru",
         "init.itunes.apple.com", "bag.itunes.apple.com", "polaris-iot.com",
@@ -601,7 +603,6 @@ def step_parse_rules_and_sorting():
     for d in manual_direct_domains:
         direct_domains.add(d)
 
-    # --- РУЧНЫЕ ПРАВИЛА ИЗ KARING (PROXY) ---
     manual_proxy_domains = [
         "gstatic.gemini.com", "gemini.google.com", "aistudio.google.com",
         "generativelanguage.googleapis.com", "alkalimining-pa.googleapis.com",
@@ -659,7 +660,6 @@ def step_parse_rules_and_sorting():
         print(f"  Обработка: {url}")
         process_rule_source(url, reject_domains, reject_cidrs)
 
-    # --- DROPBOX ЛОГИ: ОТПРАВЛЯЕМ ТОЛЬКО В REJECT ---
     dropbox_content = fetch_url(DROPBOX_URL)
     if dropbox_content:
         print("  Обработка Dropbox-логов (только для REJECT):")
@@ -683,7 +683,6 @@ def step_parse_rules_and_sorting():
             if not d:
                 continue
             
-            # Проверяем, не является ли домен российским или уже в direct/proxy
             if d in direct_domains or d in proxy_domains:
                 print(f"    {d} -> ПРОПУЩЕН (уже в Direct/Proxy)")
                 continue
@@ -698,7 +697,6 @@ def step_parse_rules_and_sorting():
                 reject_domains.add(d)
                 print(f"    {d} -> в REJECT (реклама/трекер)")
             else:
-                # Если не реклама и не российский — пропускаем (не добавляем в proxy)
                 print(f"    {d} -> ПРОПУЩЕН (не реклама, не РФ)")
 
     proxy_domains = {d for d in proxy_domains if d not in reject_domains}
@@ -708,7 +706,6 @@ def step_parse_rules_and_sorting():
     direct_domains = {d for d in direct_domains if d not in proxy_domains}
     direct_cidrs = {c for c in direct_cidrs if c not in proxy_cidrs}
 
-    # --- ИСКЛЮЧЕНИЯ (домены, которые никогда не должны попадать в REJECT) ---
     EXCLUDED_DOMAINS = [
         "roblox.com",
         "roblox.net",
