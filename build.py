@@ -274,17 +274,36 @@ def load_json_domains(filename):
     return domains
 
 def save_mixed_rules_file(filename, domains, cidrs):
-    sorted_domains = sorted(list(set(domains)))
-    sorted_cidrs = sorted(list(set(cidrs)))
+    existing_domains = set()
+    existing_cidrs = set()
+    if os.path.exists(filename):
+        try:
+            with open(filename, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if "rules" in data and data["rules"]:
+                    for rule in data["rules"]:
+                        existing_domains.update(rule.get("domain_suffix", []))
+                        existing_cidrs.update(rule.get("ip_cidr", []))
+        except Exception:
+            pass
+    
+    combined_domains = existing_domains | set(domains)
+    combined_cidrs = existing_cidrs | set(cidrs)
+    
+    sorted_domains = sorted(list(combined_domains))
+    sorted_cidrs = sorted(list(combined_cidrs))
+    
     rule_item = {}
     if sorted_domains:
         rule_item["domain_suffix"] = sorted_domains
     if sorted_cidrs:
         rule_item["ip_cidr"] = sorted_cidrs
+    
     data = {
         "version": 1,
         "rules": [rule_item] if rule_item else []
     }
+    
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
