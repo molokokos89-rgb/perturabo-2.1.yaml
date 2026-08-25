@@ -1,9 +1,18 @@
 name: Proxy Sync and Build
 
 on:
+  push:
+    branches: [ "main", "master" ]
+    paths-ignore:
+      - 'reject_rules.json'
+      - 'My_rules_RUS.json'
+      - 'my_rules_proxy.json'
   schedule:
     - cron: '0 */2 * * *'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   run-pipeline:
@@ -40,20 +49,44 @@ jobs:
         
         sing-box version
 
+    - name: Fix JSON Syntax Automatically
+      shell: python
+      run: |
+        import json
+        import re
+        import os
+
+        for file_path in ["My_rules_RUS.json", "reject_rules.json", "my_rules_proxy.json"]:
+            if os.path.exists(file_path):
+                try:
+                    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                        content = f.read()
+                    
+                    content = re.sub(r'[\u200b\u200c\u200d\ufeff\u200e\u200f\u00ad]', '', content)
+                    content = content.replace('“', '"').replace('”', '"')
+                    
+                    data = json.loads(content)
+                    
+                    with open(file_path, "w", encoding="utf-8") as f:
+                        json.dump(data, f, indent=2, ensure_ascii=False)
+                    print(f"JSON clean and fixed: {file_path}")
+                except Exception as e:
+                    print(f"Skipping or error on {file_path}: {e}")
+
     - name: Run Full Build Pipeline
       run: python build.py
 
     - name: Check and Commit Changes
       run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
         git add .
         if git diff --staged --quiet; then
           echo "No changes to commit"
         else
-          git commit -m "Auto-update proxies, rules and srs binaries"
+          git commit -m "Auto-update proxies, rules and srs binaries [skip ci]"
           git fetch origin main
           git reset --soft origin/main
-          git commit -m "Auto-update proxies, rules and srs binaries" || echo "Nothing to commit"
+          git commit -m "Auto-update proxies, rules and srs binaries [skip ci]" || echo "Nothing to commit"
           git push origin HEAD:main --force
         fi
