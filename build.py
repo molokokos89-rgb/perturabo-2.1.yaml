@@ -12,7 +12,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 RUS_JSON = "My_rules_RUS.json"
 REJECT_JSON = "reject_rules.json"
 PROXY_JSON = "my_rules_proxy.json"
-URLS_FILE = "urls.txt"
 
 PROXY_MANUAL_TXT = "proxy_manual.txt"
 DIRECT_MANUAL_TXT = "direct_manual.txt"
