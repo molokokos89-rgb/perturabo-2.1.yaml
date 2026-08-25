@@ -4175,6 +4175,35 @@
   "route": {
     "rules": [
       {
+        "protocol": [
+          "dns"
+        ],
+        "outbound": "dns-out"
+      },
+      {
+        "domain_suffix": [
+          "localhost",
+          "local"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "ip_is_private": true,
+        "outbound": "direct"
+      },
+      {
+        "rule_set": "geoip-cn",
+        "outbound": "direct"
+      },
+      {
+        "rule_set": "geosite-cn",
+        "outbound": "direct"
+      },
+      {
+        "rule_set": "geosite-ad",
+        "outbound": "block"
+      },
+      {
         "domain_suffix": [
           "7tv.app",
           "7tv.io",
@@ -4290,7 +4319,6 @@
           "inventory.api.roblox.com",
           "inventory.roblox.com",
           "itemconfiguration.roblox.com",
-          "j.il",
           "llnwd.net",
           "locale.roblox.com",
           "localizationtables.roblox.com",
@@ -4299,7 +4327,6 @@
           "matchmaking.api.roblox.com",
           "matchmaking.roblox.com",
           "metrics.roblox.com",
-          "mh.sk",
           "notifications.roblox.com",
           "ocsp.digicert.com",
           "ocsp.verisign.com",
@@ -4388,7 +4415,6 @@
           "users.api.roblox.com",
           "users.roblox.com",
           "usersmoderation.roblox.com",
-          "uy.jwr",
           "versioncompatibility.roblox.com",
           "voice.roblox.com",
           "web.roblox.com",
@@ -4686,10 +4712,6 @@
         "outbound": "Proxy"
       },
       {
-        "domain_suffix": [],
-        "outbound": "direct"
-      },
-      {
         "domain_suffix": [
           ".google.com",
           ".google.ru",
@@ -4698,22 +4720,8 @@
         "outbound": "Proxy"
       },
       {
-        "protocol": [
-          "dns"
-        ],
+        "domain_suffix": [],
         "outbound": "direct"
-      },
-      {
-        "rule_set": "geoip-cn",
-        "outbound": "direct"
-      },
-      {
-        "rule_set": "geosite-cn",
-        "outbound": "direct"
-      },
-      {
-        "rule_set": "geosite-ad",
-        "outbound": "block"
       },
       {
         "rule_set": "my_rules_proxy",
