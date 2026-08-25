@@ -232,7 +232,7 @@ def process_url_content(url, domains_set, cidrs_set=None):
                         items.extend(rule.get("ip_cidr", []))
             for item in items:
                 if isinstance(item, str):
-                    if "/" in item and re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', item):
+                    if "/" in item and re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d+$', item):
                         if cidrs_set is not None:
                             cidrs_set.add(item)
                     else:
@@ -286,24 +286,24 @@ def save_mixed_rules_file(filename, domains, cidrs):
                         existing_cidrs.update(rule.get("ip_cidr", []))
         except Exception:
             pass
-    
+
     combined_domains = existing_domains | set(domains)
     combined_cidrs = existing_cidrs | set(cidrs)
-    
+
     sorted_domains = sorted(list(combined_domains))
     sorted_cidrs = sorted(list(combined_cidrs))
-    
+
     rule_item = {}
     if sorted_domains:
         rule_item["domain_suffix"] = sorted_domains
     if sorted_cidrs:
         rule_item["ip_cidr"] = sorted_cidrs
-    
+
     data = {
         "version": 1,
         "rules": [rule_item] if rule_item else []
     }
-    
+
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
@@ -441,8 +441,52 @@ def process_srs_url(url, domains_set, cidrs_set=None):
 def process_rule_source(url, domains_set, cidrs_set=None):
     if url.endswith(".srs"):
         process_srs_url(url, domains_set, cidrs_set)
-    else:
-        process_url_content(url, domains_set, cidrs_set)
+        return
+    
+    content = fetch_url(url)
+    if not content:
+        return
+    
+    if content.strip().startswith(("{", "[")):
+        try:
+            data = json.loads(content)
+            items = []
+            if isinstance(data, list):
+                items = data
+            elif isinstance(data, dict):
+                if "payload" in data:
+                    items = data["payload"]
+                elif "rules" in data:
+                    for rule in data["rules"]:
+                        items.extend(rule.get("domain_suffix", []))
+                        items.extend(rule.get("domain", []))
+                        items.extend(rule.get("ip_cidr", []))
+            for item in items:
+                if isinstance(item, str):
+                    if "/" in item and re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d+$', item):
+                        if cidrs_set is not None:
+                            cidrs_set.add(item)
+                    else:
+                        d = clean_domain(item)
+                        if d:
+                            domains_set.add(d)
+            return
+        except Exception:
+            pass
+    
+    for line in content.splitlines():
+        line = line.strip()
+        if not line or line.startswith(("#", "!", ";", "//")):
+            continue
+        
+        if cidrs_set is not None and re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(/\d+)?$', line.split(',')[0].strip()):
+            cidr = line.split(",")[-1].strip()
+            cidrs_set.add(cidr)
+            continue
+        
+        d = clean_domain(line)
+        if d:
+            domains_set.add(d)
 
 def check_domain_via_proxy(domain, proxy_list):
     for proxy in proxy_list[:5]:
@@ -494,14 +538,14 @@ def step_parse_rules_and_sorting():
     direct_cidrs = set()
     proxy_domains = set()
     proxy_cidrs = set()
-    
+
     for tg_dom in TELEGRAM_DOMAINS:
         proxy_domains.add(tg_dom)
     for tg_cidr in TELEGRAM_CIDRS:
         proxy_cidrs.add(tg_cidr)
     for wb_cidr in WILDBERRIES_CIDRS:
         proxy_cidrs.add(wb_cidr)
-    
+
     ru_proxies = []
     if os.path.exists("ru_proxies.txt"):
         with open("ru_proxies.txt", "r", encoding="utf-8") as f:
@@ -510,25 +554,25 @@ def step_parse_rules_and_sorting():
                 ru_proxies = base64.b64decode(ru_b64).decode('utf-8').splitlines()
             except Exception:
                 ru_proxies = []
-    
+
     proxy_urls = load_links_from_txt(PROXY_MANUAL_TXT)
     print(f"PROXY: загружено {len(proxy_urls)} ссылок из {PROXY_MANUAL_TXT}")
     for url in proxy_urls:
         print(f"  Обработка: {url}")
         process_rule_source(url, proxy_domains, proxy_cidrs)
-    
+
     direct_urls = load_links_from_txt(DIRECT_MANUAL_TXT)
     print(f"DIRECT: загружено {len(direct_urls)} ссылок из {DIRECT_MANUAL_TXT}")
     for url in direct_urls:
         print(f"  Обработка: {url}")
         process_rule_source(url, direct_domains, direct_cidrs)
-    
+
     reject_urls = load_links_from_txt(REJECT_MANUAL_TXT)
     print(f"REJECT: загружено {len(reject_urls)} ссылок из {REJECT_MANUAL_TXT}")
     for url in reject_urls:
         print(f"  Обработка: {url}")
         process_rule_source(url, reject_domains, reject_cidrs)
-    
+
     dropbox_content = fetch_url(DROPBOX_URL)
     if dropbox_content:
         print("  Обработка Dropbox-логов:")
@@ -561,18 +605,18 @@ def step_parse_rules_and_sorting():
                 else:
                     reject_domains.add(d)
                     print(f"    {d} -> в REJECT (неизвестный/недоступный)")
-    
+
     proxy_domains = {d for d in proxy_domains if d not in reject_domains}
     proxy_cidrs = {c for c in proxy_cidrs if c not in reject_cidrs}
     direct_domains = {d for d in direct_domains if d not in reject_domains}
     direct_cidrs = {c for c in direct_cidrs if c not in reject_cidrs}
     direct_domains = {d for d in direct_domains if d not in proxy_domains}
     direct_cidrs = {c for c in direct_cidrs if c not in proxy_cidrs}
-    
+
     save_mixed_rules_file(REJECT_JSON, reject_domains, reject_cidrs)
     save_mixed_rules_file(RUS_JSON, direct_domains, direct_cidrs)
     save_mixed_rules_file(PROXY_JSON, proxy_domains, proxy_cidrs)
-    
+
     print(f"\nСортировка завершена:")
     print(f" -> Реджекты/Реклама: {len(reject_domains)} доменов, {len(reject_cidrs)} CIDR")
     print(f" -> Прямой доступ (Direct): {len(direct_domains)} доменов, {len(direct_cidrs)} CIDR")
@@ -592,7 +636,7 @@ def generate_karing_config():
     proxy_domains = load_json_domains(PROXY_JSON)
     rus_domains = load_json_domains(RUS_JSON)
     proxy_links = [p for p in proxy_links if p and not any(bad in p.lower() for bad in BAD_KEYWORDS)]
-    
+
     outbounds = [
         {
             "type": "selector",
@@ -611,7 +655,7 @@ def generate_karing_config():
         {"type": "direct", "tag": "direct"},
         {"type": "block", "tag": "block"}
     ]
-    
+
     auto_outbounds = []
     for i, link in enumerate(proxy_links):
         node = parse_proxy_to_singbox(link)
@@ -620,9 +664,9 @@ def generate_karing_config():
             node["tag"] = tag
             outbounds.append(node)
             auto_outbounds.append(tag)
-    
+
     outbounds[1]["outbounds"] = auto_outbounds
-    
+
     rules = [
         {"protocol": ["dns"], "outbound": "dns-out"},
         {"domain_suffix": ["localhost", "local"], "outbound": "direct"},
@@ -636,16 +680,16 @@ def generate_karing_config():
         {"domain_suffix": sorted(list(rus_domains)), "outbound": "direct"},
         {"rule_set": "my_rules_proxy", "outbound": "Proxy"}
     ]
-    
+
     current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
     rule_set = []
-    
+
     base_rules = [
         {"tag": "geoip-cn", "url": "https://github.com/SagerNet/sing-geoip/raw/rule-set/geoip-cn.srs"},
         {"tag": "geosite-cn", "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-cn.srs"},
         {"tag": "geosite-ad", "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-ad.srs"}
     ]
-    
+
     for base in base_rules:
         rule_set.append({
             "tag": base["tag"],
@@ -655,7 +699,7 @@ def generate_karing_config():
             "download_detour": "direct",
             "update_interval": "24h"
         })
-    
+
     for json_file in [f for f in os.listdir(current_dir) if f.endswith('.json') and f != "karing_config.json"]:
         srs_file = json_file.replace('.json', '.srs')
         if os.path.exists(os.path.join(current_dir, srs_file)):
@@ -668,7 +712,7 @@ def generate_karing_config():
                 "download_detour": "direct",
                 "update_interval": "2h"
             })
-    
+
     config = {
         "log": {"level": "info"},
         "dns": {
@@ -741,7 +785,7 @@ def create_proxy_list_json():
     proxy_links = [p for p in proxy_links if p and not any(bad in p.lower() for bad in BAD_KEYWORDS)]
     working_proxies = []
     print("  Проверка прокси (20 потоков):")
-    
+
     def check_proxy(link):
         node = parse_proxy_to_singbox(link)
         if not node:
@@ -756,7 +800,7 @@ def create_proxy_list_json():
         except Exception:
             pass
         return None
-    
+
     with ThreadPoolExecutor(max_workers=20) as executor:
         futures = {executor.submit(check_proxy, link): link for link in proxy_links}
         for future in as_completed(futures):
@@ -768,7 +812,7 @@ def create_proxy_list_json():
             else:
                 link = futures[future]
                 print(f"    ✗ {link[:50]}... - не работает")
-    
+
     with open("proxy_list.json", "w", encoding="utf-8") as f:
         json.dump(working_proxies, f, indent=2, ensure_ascii=False)
     print(f"Создан proxy_list.json с {len(working_proxies)} рабочими прокси")
