@@ -432,13 +432,19 @@ def parse_proxy_to_singbox(link):
             password = url.username
             host = url.hostname
             port = url.port
-            return {
+            params = urllib.parse.parse_qs(url.query)
+            outbound = {
                 "type": "hysteria2",
                 "server": host,
                 "server_port": port,
                 "password": password,
                 "tls": {"enabled": True}
             }
+            if "sni" in params:
+                outbound["tls"]["server_name"] = params["sni"][0]
+            if "insecure" in params and params["insecure"][0] == "1":
+                outbound["tls"]["insecure"] = True
+            return outbound
     except Exception:
         return None
     return None
@@ -488,6 +494,7 @@ def process_rule_source(url, domains_set, cidrs_set=None):
     if not content:
         return
     
+    # --- ПРОБУЕМ ПАРСИТЬ КАК JSON ---
     if content.strip().startswith(("{", "[")):
         try:
             data = json.loads(content)
@@ -496,6 +503,7 @@ def process_rule_source(url, domains_set, cidrs_set=None):
         except Exception:
             pass
     
+    # --- ПРОБУЕМ ПАРСИТЬ КАК YAML ---
     try:
         data = yaml.safe_load(content)
         if isinstance(data, (dict, list)):
@@ -504,16 +512,19 @@ def process_rule_source(url, domains_set, cidrs_set=None):
     except Exception:
         pass
     
+    # --- ИНАЧЕ — ОБРАБАТЫВАЕМ КАК ТЕКСТ (TXT, hosts, AdGuard) ---
     for line in content.splitlines():
         line = line.strip()
         if not line or line.startswith(("#", "!", ";", "//")):
             continue
         
+        # Проверяем CIDR
         if cidrs_set is not None and re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(/\d+)?$', line.split(',')[0].strip()):
             cidr = line.split(",")[-1].strip()
             cidrs_set.add(cidr)
             continue
         
+        # Чистим домен (убираем IP, AdGuard-префиксы)
         d = clean_domain(line)
         if d:
             domains_set.add(d)
@@ -569,6 +580,7 @@ def step_parse_rules_and_sorting():
     proxy_domains = set()
     proxy_cidrs = set()
 
+    # --- РУЧНЫЕ ПРАВИЛА ИЗ KARING (DIRECT + forever yes) ---
     manual_direct_domains = [
         "yabs.yandex.ru", "yastatic.net", "api.browser.yandex.ru",
         "init.itunes.apple.com", "bag.itunes.apple.com", "polaris-iot.com",
@@ -603,6 +615,7 @@ def step_parse_rules_and_sorting():
     for d in manual_direct_domains:
         direct_domains.add(d)
 
+    # --- РУЧНЫЕ ПРАВИЛА ИЗ KARING (PROXY) ---
     manual_proxy_domains = [
         "gstatic.gemini.com", "gemini.google.com", "aistudio.google.com",
         "generativelanguage.googleapis.com", "alkalimining-pa.googleapis.com",
@@ -731,18 +744,19 @@ def step_parse_rules_and_sorting():
 
 def generate_karing_config():
     print("\n--- 3. ГЕНЕРАЦИЯ KARING_CONFIG.JSON ---")
-    proxy_links = []
-    if os.path.exists("proxy.txt"):
-        with open("proxy.txt", "r", encoding="utf-8") as f:
-            proxy_b64 = f.read().strip()
-            try:
-                proxy_links = base64.b64decode(proxy_b64).decode('utf-8').splitlines()
-            except Exception:
-                proxy_links = []
     reject_domains = load_json_domains(REJECT_JSON)
     proxy_domains = load_json_domains(PROXY_JSON)
     rus_domains = load_json_domains(RUS_JSON)
-    proxy_links = [p for p in proxy_links if p and not any(bad in p.lower() for bad in BAD_KEYWORDS)]
+    
+    # Ссылка на proxy.txt (подписка)
+    proxy_providers = {
+        "my-subscription": {
+            "type": "remote",
+            "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/proxy.txt",
+            "interval": "24h",
+            "path": "proxy.db"
+        }
+    }
 
     outbounds = [
         {
@@ -754,7 +768,7 @@ def generate_karing_config():
         {
             "type": "urltest",
             "tag": "auto",
-            "outbounds": [],
+            "outbounds": ["provider"],
             "url": "http://www.gstatic.com/generate_204",
             "interval": "30m",
             "tolerance": 300
@@ -762,17 +776,6 @@ def generate_karing_config():
         {"type": "direct", "tag": "direct"},
         {"type": "block", "tag": "block"}
     ]
-
-    auto_outbounds = []
-    for i, link in enumerate(proxy_links):
-        node = parse_proxy_to_singbox(link)
-        if node:
-            tag = f"proxy-{i}"
-            node["tag"] = tag
-            outbounds.append(node)
-            auto_outbounds.append(tag)
-
-    outbounds[1]["outbounds"] = auto_outbounds
 
     rules = [
         {"protocol": ["dns"], "outbound": "dns-out"},
@@ -840,6 +843,7 @@ def generate_karing_config():
             {"type": "mixed", "tag": "mixed-in", "listen": "127.0.0.1", "listen_port": 7890}
         ],
         "outbounds": outbounds,
+        "proxy-providers": proxy_providers,
         "route": {
             "rules": rules,
             "rule_set": rule_set,
@@ -857,7 +861,7 @@ def generate_karing_config():
     }
     with open("karing_config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
-    print(f"Готов karing_config.json: {len(auto_outbounds)} прокси, {len(reject_domains)} reject, {len(proxy_domains)} proxy, {len(rus_domains)} direct")
+    print(f"Готов karing_config.json (подписка на proxy.txt)")
 
 def step_compile_srs():
     print("\n--- 4. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
@@ -879,51 +883,6 @@ def step_compile_srs():
         except Exception as e:
             print(f"Ошибка компиляции {jf}: {e}")
 
-def create_proxy_list_json():
-    print("\n--- 5. СОЗДАНИЕ PROXY_LIST.JSON ДЛЯ KARING ---")
-    proxy_links = []
-    if os.path.exists("proxy.txt"):
-        with open("proxy.txt", "r", encoding="utf-8") as f:
-            proxy_b64 = f.read().strip()
-            try:
-                proxy_links = base64.b64decode(proxy_b64).decode('utf-8').splitlines()
-            except Exception:
-                proxy_links = []
-    proxy_links = [p for p in proxy_links if p and not any(bad in p.lower() for bad in BAD_KEYWORDS)]
-    working_proxies = []
-    print("  Проверка прокси (20 потоков):")
-
-    def check_proxy(link):
-        node = parse_proxy_to_singbox(link)
-        if not node:
-            return None
-        try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(2)
-            result = sock.connect_ex((node["server"], node["server_port"]))
-            sock.close()
-            if result == 0:
-                return node
-        except Exception:
-            pass
-        return None
-
-    with ThreadPoolExecutor(max_workers=20) as executor:
-        futures = {executor.submit(check_proxy, link): link for link in proxy_links}
-        for future in as_completed(futures):
-            node = future.result()
-            if node:
-                node["tag"] = f"proxy-{len(working_proxies)}"
-                working_proxies.append(node)
-                print(f"    ✓ {node['server']}:{node['server_port']} - работает")
-            else:
-                link = futures[future]
-                print(f"    ✗ {link[:50]}... - не работает")
-
-    with open("proxy_list.json", "w", encoding="utf-8") as f:
-        json.dump(working_proxies, f, indent=2, ensure_ascii=False)
-    print(f"Создан proxy_list.json с {len(working_proxies)} рабочими прокси")
-
 def main():
     print("==================================================")
     print("=== СБОРКА ПРАВИЛ ДЛЯ KARING ===")
@@ -932,7 +891,6 @@ def main():
     step_parse_rules_and_sorting()
     generate_karing_config()
     step_compile_srs()
-    create_proxy_list_json()
     print("\n==================================================")
     print("=== ГОТОВО! ===")
     print("==================================================")
