@@ -585,7 +585,7 @@ def generate_karing_config():
     ]
     
     auto_outbounds = []
-    for i, link in enumerate(proxy_links[:50]):
+    for i, link in enumerate(proxy_links):
         node = parse_proxy_to_singbox(link)
         if node:
             tag = f"proxy-{i}"
@@ -600,8 +600,44 @@ def generate_karing_config():
         {"domain_suffix": sorted(list(proxy_domains)), "outbound": "Proxy"},
         {"domain_suffix": sorted(list(rus_domains)), "outbound": "direct"},
         {"domain_suffix": [".google.com", ".google.ru", ".youtube.com"], "outbound": "Proxy"},
-        {"protocol": ["dns"], "outbound": "direct"}
+        {"protocol": ["dns"], "outbound": "direct"},
+        {"rule_set": "geoip-cn", "outbound": "direct"},
+        {"rule_set": "geosite-cn", "outbound": "direct"},
+        {"rule_set": "geosite-ad", "outbound": "block"},
+        {"rule_set": "my_rules_proxy", "outbound": "Proxy"}
     ]
+    
+    current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
+    rule_set = []
+    
+    base_rules = [
+        {"tag": "geoip-cn", "url": "https://github.com/SagerNet/sing-geoip/raw/rule-set/geoip-cn.srs"},
+        {"tag": "geosite-cn", "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-cn.srs"},
+        {"tag": "geosite-ad", "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-ad.srs"}
+    ]
+    
+    for base in base_rules:
+        rule_set.append({
+            "tag": base["tag"],
+            "type": "remote",
+            "format": "binary",
+            "url": base["url"],
+            "download_detour": "direct",
+            "update_interval": "24h"
+        })
+    
+    for json_file in [f for f in os.listdir(current_dir) if f.endswith('.json') and f != "karing_config.json"]:
+        srs_file = json_file.replace('.json', '.srs')
+        if os.path.exists(os.path.join(current_dir, srs_file)):
+            tag = json_file.replace('.json', '')
+            rule_set.append({
+                "tag": tag,
+                "type": "remote",
+                "format": "binary",
+                "url": f"https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/{srs_file}",
+                "download_detour": "direct",
+                "update_interval": "2h"
+            })
     
     config = {
         "log": {"level": "info"},
@@ -624,21 +660,8 @@ def generate_karing_config():
         ],
         "outbounds": outbounds,
         "route": {
-            "rules": [
-                {"protocol": "dns", "outbound": "dns-out"},
-                {"domain_suffix": ["localhost", "local"], "outbound": "direct"},
-                {"ip_is_private": True, "outbound": "direct"},
-                {"rule_set": "geoip-cn", "outbound": "direct"},
-                {"rule_set": "geosite-cn", "outbound": "direct"},
-                {"rule_set": "geosite-ad", "outbound": "block"},
-                {"rule_set": "my-rules", "outbound": "Proxy"}
-            ],
-            "rule_set": [
-                {"tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://github.com/SagerNet/sing-geoip/raw/rule-set/geoip-cn.srs", "download_detour": "direct", "update_interval": "24h"},
-                {"tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-cn.srs", "download_detour": "direct", "update_interval": "24h"},
-                {"tag": "geosite-ad", "type": "remote", "format": "binary", "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-ad.srs", "download_detour": "direct", "update_interval": "24h"},
-                {"tag": "my-rules", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/my_rules_proxy.srs", "download_detour": "direct", "update_interval": "2h"}
-            ],
+            "rules": rules,
+            "rule_set": rule_set,
             "auto_detect_interface": True,
             "final": "Proxy"
         },
@@ -662,8 +685,15 @@ def step_compile_srs():
         if jf == "karing_config.json":
             continue
         srs_file = jf.replace('.json', '.srs')
+        if os.path.exists(os.path.join(current_dir, srs_file)):
+            os.remove(os.path.join(current_dir, srs_file))
         try:
-            subprocess.run(["sing-box", "rule-set", "compile", os.path.join(current_dir, jf), "--output", os.path.join(current_dir, srs_file)], check=True, capture_output=True, text=True)
+            subprocess.run(
+                ["sing-box", "rule-set", "compile", os.path.join(current_dir, jf), "--output", os.path.join(current_dir, srs_file)],
+                check=True,
+                capture_output=True,
+                text=True
+            )
             print(f"Скомпилировано: {jf} -> {srs_file}")
         except Exception as e:
             print(f"Ошибка компиляции {jf}: {e}")
@@ -681,7 +711,7 @@ def create_proxy_list_json():
     proxy_links = [p for p in proxy_links if p and not any(bad in p.lower() for bad in BAD_KEYWORDS)]
     working_proxies = []
     print("  Проверка прокси (может занять время):")
-    for i, link in enumerate(proxy_links[:100]):
+    for i, link in enumerate(proxy_links):
         node = parse_proxy_to_singbox(link)
         if not node:
             continue
@@ -698,8 +728,6 @@ def create_proxy_list_json():
                 print(f"    ✗ {node['server']}:{node['server_port']} - не отвечает")
         except Exception:
             print(f"    ✗ {node['server']} - ошибка проверки")
-        if len(working_proxies) >= 30:
-            break
     with open("proxy_list.json", "w", encoding="utf-8") as f:
         json.dump(working_proxies, f, indent=2, ensure_ascii=False)
     print(f"Создан proxy_list.json с {len(working_proxies)} рабочими прокси")
