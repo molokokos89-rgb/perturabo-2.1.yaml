@@ -200,7 +200,7 @@ def is_domestic_service(domain):
     domain_lower = domain.lower()
     if any(dom in domain_lower for dom in DOMESTIC_EXCLUSIONS):
         return True
-    if any(domain_lower.endswith(zone) for zone in [".ru", ".su", ".by", ".xn--p1ai"]):
+    if re.search(r'(^|\.)(ru|su|by|xn--p1ai)(\.|$)', domain_lower):
         return True
     return False
 
@@ -251,9 +251,11 @@ def _extract_from_json(data, domains_set, cidrs_set=None):
                 if isinstance(items, list):
                     for item in items:
                         if isinstance(item, str):
-                            cidrs_set.add(item)
+                            if cidrs_set is not None:
+                                cidrs_set.add(item)
                 elif isinstance(items, str):
-                    cidrs_set.add(items)
+                    if cidrs_set is not None:
+                        cidrs_set.add(items)
         
         # Рекурсивный обход вложенных структур
         for key, value in data.items():
@@ -313,6 +315,7 @@ def save_mixed_rules_file(filename, domains, cidrs):
                 if "rules" in data and data["rules"]:
                     for rule in data["rules"]:
                         existing_domains.update(rule.get("domain_suffix", []))
+                        existing_domains.update(rule.get("domain", []))
                         existing_cidrs.update(rule.get("ip_cidr", []))
         except Exception:
             pass
@@ -563,6 +566,65 @@ def step_parse_rules_and_sorting():
     proxy_domains = set()
     proxy_cidrs = set()
 
+    # --- РУЧНЫЕ ПРАВИЛА ИЗ KARING (DIRECT + forever yes) ---
+    manual_direct_domains = [
+        "yabs.yandex.ru", "yastatic.net", "api.browser.yandex.ru",
+        "init.itunes.apple.com", "bag.itunes.apple.com", "polaris-iot.com",
+        "tk-kit.net", "boosty.to", "max.ru", "max.dev", "bitrix24.ru",
+        "b24.ru", "bitrix24.com", "bitrix24.net", "bitrixlabs.ru",
+        "bx24.net", "bx24.ru", "gosuslugi.ru", "mos.ru", "pgu.mos.ru",
+        "rt.ru", "bio.rt.ru", "edu.ru", "sber.ru", "sberbank.ru",
+        "tbank.ru", "tinkoff.ru", "vtb.ru", "cbr.ru", "alfabank.ru",
+        "gazprombank.ru", "rshb.ru", "raiffeisen.ru", "nalog.ru",
+        "nalog.gov.ru", "pfr.gov.ru", "sfr.gov.ru", "wb.ru",
+        "wildberries.ru", "wbstatic.net", "wbbasket.ru", "ozon.ru",
+        "ozon.com", "avito.ru", "ya.ru", "yandex.ru", "yandex.net",
+        "yandex.com", "yandex.org", "dzen.ru", "vk.com", "vk.ru",
+        "vk.me", "vk.org", "vk-cdn.net", "userapi.com", "vkuseraudio.net",
+        "vk.cc", "vk-portal.net", "vkuserconnect.com", "vkat.me",
+        "vk.company", "oneme.ru", "okcdn.ru", "ok.ru", "ok.me",
+        "mail.ru", "inappstory.ru", "mindbox.ru", "magnit.ru",
+        "kazanexpress.ru", "mm.ru", "kaspersky-labs.com", "dadata.ru",
+        "flocktory.com", "selectel.ru", "selectel.com", "beget.com",
+        "timeweb.ru", "reg.ru", "nic.ru", "rostelecom.ru", "megafon.ru",
+        "mts.ru", "beeline.ru", "tele2.ru", "rutube.ru", "2gis.ru",
+        "dgis.ru", "rzhd.ru", "rjd.ru", "aeroflot.ru", "s7.ru",
+        "yoomoney.ru", "kinopoisk.ru", "afisha.ru", "odnoklassniki.ru",
+        "lamoda.ru", "megamarket.ru", "api.okcdn.ru", "api.vk.ru",
+        "eh.vk.com", "internal.api.vk.ru", "queuev4.vk.ru",
+        "sun1-23.vkuserphoto.ru", "api.remanga.org", "dbankcloud.com",
+        "dbankcdn.com", "huawei.com", "amazonaws.com", "ably.io",
+        "pusher.com", "pubnub.com", "unity3d.com", "globalsign.com",
+        "globalsign.dev", "digicert.com", "comodo.com", "letsencrypt.org",
+        "sectigo.com"
+    ]
+    for d in manual_direct_domains:
+        direct_domains.add(d)
+
+    # --- РУЧНЫЕ ПРАВИЛА ИЗ KARING (PROXY) ---
+    manual_proxy_domains = [
+        "gstatic.gemini.com", "gemini.google.com", "aistudio.google.com",
+        "generativelanguage.googleapis.com", "alkalimining-pa.googleapis.com",
+        "proactivebackend-pa.googleapis.com", "google.ru", "google.com",
+        "googleapis.com", "googleusercontent.com", "gstatic.com",
+        "ggpht.com", "p76prod.systems", "bethesda.net", "zenimax.com",
+        "fallout76.com", "amazongames.com", "g.co", "googleanalytics.com",
+        "googletagmanager.com", "googlesyndication.com", "google-analytics.com",
+        "googleadservices.com", "gvt1.com", "gvt2.com", "goo.gl",
+        "youtube.com", "ytimg.com", "googlelabs.com", "github.com",
+        "githubusercontent.com", "telegram.org", "telegram.me",
+        "telegram.dog", "telegram.space", "tdesktop.org", "tdesktop.com",
+        "telegra.ph", "telega.one", "t.me", "tx.me", "cdn-telegram.org",
+        "telegram-cdn.org", "comments.app", "contest.com", "fragment.com",
+        "graph.org", "quiz.directory", "telesco.pe", "tg.dev", "ton.org",
+        "toncenter.com", "usercontent.dev", "apple.com", "icloud.com",
+        "icloud-content.com", "me.com", "mzstatic.com", "apple-cloudkit.com",
+        "apple-livephotoskit.com", "cdn-apple.com", "ampaeservices.com",
+        "netflix.com", "facebook.com", "meta.com"
+    ]
+    for d in manual_proxy_domains:
+        proxy_domains.add(d)
+
     for tg_dom in TELEGRAM_DOMAINS:
         proxy_domains.add(tg_dom)
     for tg_cidr in TELEGRAM_CIDRS:
@@ -597,38 +659,47 @@ def step_parse_rules_and_sorting():
         print(f"  Обработка: {url}")
         process_rule_source(url, reject_domains, reject_cidrs)
 
+    # --- DROPBOX ЛОГИ: ОТПРАВЛЯЕМ ТОЛЬКО В REJECT ---
     dropbox_content = fetch_url(DROPBOX_URL)
     if dropbox_content:
-        print("  Обработка Dropbox-логов:")
+        print("  Обработка Dropbox-логов (только для REJECT):")
         for line in dropbox_content.splitlines():
             line = line.strip()
             if not line or line.startswith(("#", "!", ";", "//")):
                 continue
-            if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(/\d+)?$', line):
-                reject_cidrs.add(line.split(",")[-1].strip())
+            
+            parts = line.split(',')
+            if len(parts) < 6:
                 continue
-            d = clean_domain(line)
+            
+            domain = parts[4].strip()
+            if not domain or domain.startswith('.'):
+                continue
+            
+            if not re.match(r'^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*\.[a-z]{2,}$', domain, re.IGNORECASE):
+                continue
+            
+            d = clean_domain(domain)
             if not d:
                 continue
+            
+            # Проверяем, не является ли домен российским или уже в direct/proxy
             if d in direct_domains or d in proxy_domains:
                 print(f"    {d} -> ПРОПУЩЕН (уже в Direct/Proxy)")
                 continue
-            if is_telegram_domain(d):
+            
+            if is_domestic_service(d):
+                direct_domains.add(d)
+                print(f"    {d} -> в DIRECT (Российский сервис)")
+            elif is_telegram_domain(d):
                 proxy_domains.add(d)
                 print(f"    {d} -> в PROXY (Telegram)")
-            elif is_domestic_service(d):
-                direct_domains.add(d)
-                print(f"    {d} -> в DIRECT (РФ-сервис)")
             elif is_ad_or_tracker(d):
                 reject_domains.add(d)
                 print(f"    {d} -> в REJECT (реклама/трекер)")
             else:
-                if ru_proxies and check_domain_via_proxy(d, ru_proxies):
-                    direct_domains.add(d)
-                    print(f"    {d} -> в DIRECT (доступен через РФ)")
-                else:
-                    reject_domains.add(d)
-                    print(f"    {d} -> в REJECT (неизвестный/недоступный)")
+                # Если не реклама и не российский — пропускаем (не добавляем в proxy)
+                print(f"    {d} -> ПРОПУЩЕН (не реклама, не РФ)")
 
     proxy_domains = {d for d in proxy_domains if d not in reject_domains}
     proxy_cidrs = {c for c in proxy_cidrs if c not in reject_cidrs}
@@ -636,6 +707,21 @@ def step_parse_rules_and_sorting():
     direct_cidrs = {c for c in direct_cidrs if c not in reject_cidrs}
     direct_domains = {d for d in direct_domains if d not in proxy_domains}
     direct_cidrs = {c for c in direct_cidrs if c not in proxy_cidrs}
+
+    # --- ИСКЛЮЧЕНИЯ (домены, которые никогда не должны попадать в REJECT) ---
+    EXCLUDED_DOMAINS = [
+        "roblox.com",
+        "roblox.net",
+        "rbxcdn.com",
+        "discord.com",
+        "steam.com",
+        "steampowered.com"
+    ]
+
+    for domain in EXCLUDED_DOMAINS:
+        if domain in reject_domains:
+            reject_domains.remove(domain)
+            print(f"  {domain} -> УДАЛЁН из REJECT (исключение)")
 
     save_mixed_rules_file(REJECT_JSON, reject_domains, reject_cidrs)
     save_mixed_rules_file(RUS_JSON, direct_domains, direct_cidrs)
