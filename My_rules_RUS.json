@@ -112,14 +112,6 @@
         "yandex.ru",
         "yastatic.net"
       ],
-      "domain": [
-        "yabs.yandex.ru",
-        "api.browser.yandex.ru",
-        "api.remanga.org"
-      ],
-      "domain_regex": [
-        "^.*manga.*$"
-      ],
       "ip_cidr": [
         "109.207.0.0/19",
         "128.140.128.0/18",

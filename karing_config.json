@@ -5460,6 +5460,7 @@
           "vk.com",
           "vk.company",
           "vk.me",
+          "vk.net",
           "vk.org",
           "vk.ru",
           "vkat.me",
@@ -5474,7 +5475,8 @@
           "yandex.com",
           "yandex.net",
           "yandex.org",
-          "yandex.ru"
+          "yandex.ru",
+          "yastatic.net"
         ],
         "outbound": "direct"
       },
