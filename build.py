@@ -12,20 +12,40 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 RUS_JSON = "My_rules_RUS.json"
 REJECT_JSON = "reject_rules.json"
 PROXY_JSON = "my_rules_proxy.json"
+URLS_FILE = "urls.txt"
 
 PROXY_MANUAL_TXT = "proxy_manual.txt"
 DIRECT_MANUAL_TXT = "direct_manual.txt"
 REJECT_MANUAL_TXT = "reject_manual.txt"
 
+DROPBOX_URL = "https://www.dropbox.com/scl/fi/759t1a2us3y0kblgat0xr/log-for-reject.txt?rlkey=zr2uqv81lx89rdl6q55geyucy&st=8lc13ygu&dl=1"
+
 SOURCES = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt",
     "https://raw.githubusercontent.com/sevcator/5ubscrpt10n/main/protocols/hy2.txt",
     "https://raw.githubusercontent.com/yebekhe/TelegramV2rayCollector/main/sub/normal/mix",
-    "https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/All_Configs_Sub.txt"
+    "https://raw.githubusercontent.com/freefq/free/master/v2ray",
+    "https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/All_Configs_Sub.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt"
 ]
 
-DROPBOX_URL = "https://www.dropbox.com/scl/fi/759t1a2us3y0kblgat0xr/log-for-reject.txt?rlkey=zr2uqv81lx89rdl6q55geyucy&st=8lc13ygu&dl=1"
+RULE_SOURCES = {
+    "telegram": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/telegramcidr.txt",
+    "google": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/google.txt",
+    "apple": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/apple.txt",
+    "youtube": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/youtube.txt",
+    "tiktok": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/tiktok.txt",
+    "proxy_media": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/proxy.txt",
+    "reject": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt",
+    "adguard_dns": "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/DNSFilter/sections/adservers.txt",
+    "adguard_trackers": "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/DNSFilter/sections/spyware.txt",
+    "oisd_small": "https://small.oisd.nl/domainswild",
+    "stevenblack": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+}
+
+HEAVY_SOURCES = [
+    "https://raw.githubusercontent.com/roskomkod/ru-blocked-domains/main/domains.txt"
+]
 
 PROTOCOLS = ["ss://", "vmess://", "trojan://", "hy2://", "hysteria2://", "vless://"]
 BAD_KEYWORDS = ["russia", "anycast", "fixnet", "fixcord", "cloudflare", "warp", "cf-"]
