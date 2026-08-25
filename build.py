@@ -605,14 +605,16 @@ def generate_karing_config():
     outbounds[1]["outbounds"] = auto_outbounds
     
     rules = [
-        {"domain_suffix": sorted(list(reject_domains)), "outbound": "block"},
-        {"domain_suffix": sorted(list(proxy_domains)), "outbound": "Proxy"},
-        {"domain_suffix": sorted(list(rus_domains)), "outbound": "direct"},
-        {"domain_suffix": [".google.com", ".google.ru", ".youtube.com"], "outbound": "Proxy"},
-        {"protocol": ["dns"], "outbound": "direct"},
+        {"protocol": ["dns"], "outbound": "dns-out"},
+        {"domain_suffix": ["localhost", "local"], "outbound": "direct"},
+        {"ip_is_private": True, "outbound": "direct"},
         {"rule_set": "geoip-cn", "outbound": "direct"},
         {"rule_set": "geosite-cn", "outbound": "direct"},
         {"rule_set": "geosite-ad", "outbound": "block"},
+        {"domain_suffix": sorted(list(reject_domains)), "outbound": "block"},
+        {"domain_suffix": sorted(list(proxy_domains)), "outbound": "Proxy"},
+        {"domain_suffix": [".google.com", ".google.ru", ".youtube.com"], "outbound": "Proxy"},
+        {"domain_suffix": sorted(list(rus_domains)), "outbound": "direct"},
         {"rule_set": "my_rules_proxy", "outbound": "Proxy"}
     ]
     
