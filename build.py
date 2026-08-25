@@ -8,6 +8,7 @@ import urllib.request
 import urllib.parse
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import yaml
 
 RUS_JSON = "My_rules_RUS.json"
 REJECT_JSON = "reject_rules.json"
@@ -168,11 +169,17 @@ def clean_domain(line):
     line = line.strip().lower()
     if not line or line.startswith(("#", "!", ";", "//", "@")):
         return None
+    
+    # Убираем AdGuard-префиксы
+    line = re.sub(r'^(\|\||@@\|\||\+\.)', '', line)
+    # Убираем IP-адреса в начале
     line = re.sub(r'^(127\.0\.0\.1|0\.0\.0\.0|::1)\s+', '', line)
+    
     if "#" in line:
         line = line.split("#")[0]
-    line = line.strip().replace("||", "").replace("^", "").strip(".-")
+    line = line.strip().replace("^", "").strip(".-")
     line = re.sub(r'^[a-z0-9]+://', '', line).split('/')[0].split('?')[0].split(':')[0]
+    
     if not line or len(line) < 4 or len(line) > 60:
         return None
     if re.search(r'\.(js|css|png|jpg|jpeg|svg|gif|woff|woff2|json|ico|xml)$', line):
@@ -212,6 +219,48 @@ def load_links_from_txt(filename):
                     urls.append(line)
     return urls
 
+def _extract_from_json(data, domains_set, cidrs_set=None):
+    """Рекурсивно извлекает домены и CIDR из JSON/YAML"""
+    if isinstance(data, list):
+        for item in data:
+            _extract_from_json(item, domains_set, cidrs_set)
+    elif isinstance(data, dict):
+        # Прямые поля
+        for key in ["domain_suffix", "domain", "domains", "host", "hosts"]:
+            if key in data:
+                items = data[key]
+                if isinstance(items, list):
+                    for item in items:
+                        if isinstance(item, str):
+                            if "/" in item and re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d+$', item):
+                                if cidrs_set is not None:
+                                    cidrs_set.add(item)
+                            else:
+                                d = clean_domain(item)
+                                if d:
+                                    domains_set.add(d)
+                elif isinstance(items, str):
+                    d = clean_domain(items)
+                    if d:
+                        domains_set.add(d)
+        
+        # CIDR
+        for key in ["ip_cidr", "cidr", "ip"]:
+            if key in data:
+                items = data[key]
+                if isinstance(items, list):
+                    for item in items:
+                        if isinstance(item, str):
+                            cidrs_set.add(item)
+                elif isinstance(items, str):
+                    cidrs_set.add(items)
+        
+        # Рекурсивный обход вложенных структур
+        for key, value in data.items():
+            if key not in ["domain_suffix", "domain", "domains", "host", "hosts", "ip_cidr", "cidr", "ip"]:
+                if isinstance(value, (dict, list)):
+                    _extract_from_json(value, domains_set, cidrs_set)
+
 def process_url_content(url, domains_set, cidrs_set=None):
     content = fetch_url(url)
     if not content:
@@ -219,29 +268,10 @@ def process_url_content(url, domains_set, cidrs_set=None):
     if content.strip().startswith(("{", "[")):
         try:
             data = json.loads(content)
-            items = []
-            if isinstance(data, list):
-                items = data
-            elif isinstance(data, dict):
-                if "payload" in data:
-                    items = data["payload"]
-                elif "rules" in data:
-                    for rule in data["rules"]:
-                        items.extend(rule.get("domain_suffix", []))
-                        items.extend(rule.get("domain", []))
-                        items.extend(rule.get("ip_cidr", []))
-            for item in items:
-                if isinstance(item, str):
-                    if "/" in item and re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d+$', item):
-                        if cidrs_set is not None:
-                            cidrs_set.add(item)
-                    else:
-                        d = clean_domain(item)
-                        if d:
-                            domains_set.add(d)
+            _extract_from_json(data, domains_set, cidrs_set)
+            return
         except Exception:
             pass
-        return
     for line in content.splitlines():
         line = line.strip()
         if not line or line.startswith(("#", "!", ";", "//")):
@@ -447,43 +477,37 @@ def process_rule_source(url, domains_set, cidrs_set=None):
     if not content:
         return
     
+    # --- ПРОБУЕМ ПАРСИТЬ КАК JSON ---
     if content.strip().startswith(("{", "[")):
         try:
             data = json.loads(content)
-            items = []
-            if isinstance(data, list):
-                items = data
-            elif isinstance(data, dict):
-                if "payload" in data:
-                    items = data["payload"]
-                elif "rules" in data:
-                    for rule in data["rules"]:
-                        items.extend(rule.get("domain_suffix", []))
-                        items.extend(rule.get("domain", []))
-                        items.extend(rule.get("ip_cidr", []))
-            for item in items:
-                if isinstance(item, str):
-                    if "/" in item and re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d+$', item):
-                        if cidrs_set is not None:
-                            cidrs_set.add(item)
-                    else:
-                        d = clean_domain(item)
-                        if d:
-                            domains_set.add(d)
+            _extract_from_json(data, domains_set, cidrs_set)
             return
         except Exception:
             pass
     
+    # --- ПРОБУЕМ ПАРСИТЬ КАК YAML ---
+    try:
+        data = yaml.safe_load(content)
+        if isinstance(data, (dict, list)):
+            _extract_from_json(data, domains_set, cidrs_set)
+            return
+    except Exception:
+        pass
+    
+    # --- ИНАЧЕ — ОБРАБАТЫВАЕМ КАК ТЕКСТ (TXT, hosts, AdGuard) ---
     for line in content.splitlines():
         line = line.strip()
         if not line or line.startswith(("#", "!", ";", "//")):
             continue
         
+        # Проверяем CIDR
         if cidrs_set is not None and re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(/\d+)?$', line.split(',')[0].strip()):
             cidr = line.split(",")[-1].strip()
             cidrs_set.add(cidr)
             continue
         
+        # Чистим домен (убираем IP, AdGuard-префиксы)
         d = clean_domain(line)
         if d:
             domains_set.add(d)
