@@ -1,13 +1,4 @@
 {
   "version": 1,
-  "rules": [
-    {
-      "domain_suffix": [
-        "j.rf",
-        "o.uzr",
-        "om.jx",
-        "oz.ruru"
-      ]
-    }
-  ]
+  "rules": []
 }
