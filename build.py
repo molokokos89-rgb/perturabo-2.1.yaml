@@ -481,19 +481,9 @@ def step_parse_rules_and_sorting():
     
     direct_urls = load_links_from_txt(DIRECT_MANUAL_TXT)
     print(f"DIRECT: загружено {len(direct_urls)} ссылок из {DIRECT_MANUAL_TXT}")
-    temp_direct_domains = set()
-    temp_direct_cidrs = set()
     for url in direct_urls:
         print(f"  Обработка: {url}")
-        process_rule_source(url, temp_direct_domains, temp_direct_cidrs)
-    
-    for domain in list(temp_direct_domains):
-        if ru_proxies and not check_domain_via_proxy(domain, ru_proxies):
-            proxy_domains.add(domain)
-            print(f"  {domain} -> в PROXY (недоступен через РФ)")
-        else:
-            direct_domains.add(domain)
-    direct_cidrs.update(temp_direct_cidrs)
+        process_rule_source(url, direct_domains, direct_cidrs)
     
     reject_urls = load_links_from_txt(REJECT_MANUAL_TXT)
     print(f"REJECT: загружено {len(reject_urls)} ссылок из {REJECT_MANUAL_TXT}")
@@ -710,24 +700,35 @@ def create_proxy_list_json():
                 proxy_links = []
     proxy_links = [p for p in proxy_links if p and not any(bad in p.lower() for bad in BAD_KEYWORDS)]
     working_proxies = []
-    print("  Проверка прокси (может занять время):")
-    for i, link in enumerate(proxy_links):
+    print("  Проверка прокси (20 потоков):")
+    
+    def check_proxy(link):
         node = parse_proxy_to_singbox(link)
         if not node:
-            continue
+            return None
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(2)
             result = sock.connect_ex((node["server"], node["server_port"]))
             sock.close()
             if result == 0:
+                return node
+        except Exception:
+            pass
+        return None
+    
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        futures = {executor.submit(check_proxy, link): link for link in proxy_links}
+        for future in as_completed(futures):
+            node = future.result()
+            if node:
                 node["tag"] = f"proxy-{len(working_proxies)}"
                 working_proxies.append(node)
                 print(f"    ✓ {node['server']}:{node['server_port']} - работает")
             else:
-                print(f"    ✗ {node['server']}:{node['server_port']} - не отвечает")
-        except Exception:
-            print(f"    ✗ {node['server']} - ошибка проверки")
+                link = futures[future]
+                print(f"    ✗ {link[:50]}... - не работает")
+    
     with open("proxy_list.json", "w", encoding="utf-8") as f:
         json.dump(working_proxies, f, indent=2, ensure_ascii=False)
     print(f"Создан proxy_list.json с {len(working_proxies)} рабочими прокси")
