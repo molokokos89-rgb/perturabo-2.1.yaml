@@ -5,26 +5,57 @@
   "dns": {
     "servers": [
       {
-        "tag": "cloudflare",
-        "address": "https://1.1.1.1/dns-query",
-        "address_resolver": "local"
+        "tag": "fakeip",
+        "address": "fake-ip",
+        "strategy": "ipv4_only"
       },
       {
-        "tag": "local",
-        "address": "223.5.5.5",
+        "tag": "direct",
+        "address": "77.88.8.8",
+        "address_resolver": "fakeip",
         "detour": "direct"
+      },
+      {
+        "tag": "proxy",
+        "address": "https://dns.google/dns-query",
+        "address_resolver": "fakeip",
+        "detour": "Proxy"
       }
     ],
     "rules": [
       {
-        "outbound": "any",
-        "server": "local"
+        "domain_suffix": [
+          ".ru",
+          ".su",
+          ".by",
+          ".xn--p1ai"
+        ],
+        "server": "direct"
       },
       {
-        "domain_suffix": ".cn",
-        "server": "local"
+        "domain_suffix": [
+          ".nalog.ru",
+          ".gosuslugi.ru",
+          ".vk.com",
+          ".yandex.ru",
+          ".mail.ru",
+          ".ok.ru"
+        ],
+        "server": "direct"
+      },
+      {
+        "server": "fakeip",
+        "query_type": [
+          "A",
+          "AAAA"
+        ]
       }
-    ]
+    ],
+    "fakeip": {
+      "enabled": true,
+      "inet4_range": "198.18.0.0/15",
+      "inet6_range": "2001:db8::/32"
+    }
   },
   "inbounds": [
     {
@@ -48,7 +79,8 @@
       "type": "selector",
       "tag": "Proxy",
       "outbounds": [
-        "auto"
+        "auto",
+        "direct"
       ],
       "default": "auto"
     },
@@ -108,7 +140,8 @@
         "proxy-49"
       ],
       "url": "http://www.gstatic.com/generate_204",
-      "interval": "5m"
+      "interval": "30m",
+      "tolerance": 300
     },
     {
       "type": "direct",
