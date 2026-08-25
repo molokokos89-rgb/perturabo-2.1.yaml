@@ -191,12 +191,12 @@
   },
   {
     "type": "trojan",
-    "server": "58.152.46.127",
-    "server_port": 28443,
-    "password": "a80dd76d-bf0f-47fe-8b66-c89572cf7e38",
+    "server": "lv01.botovod.space",
+    "server_port": 510,
+    "password": "8qCNZU2XdtefT7uB4uPxgRR839btqMG8",
     "tls": {
       "enabled": true,
-      "server_name": "vpn-node.internal"
+      "server_name": "www.icloud.com"
     },
     "tag": "proxy-18"
   },
@@ -235,6 +235,17 @@
   },
   {
     "type": "trojan",
+    "server": "58.152.46.127",
+    "server_port": 28443,
+    "password": "a80dd76d-bf0f-47fe-8b66-c89572cf7e38",
+    "tls": {
+      "enabled": true,
+      "server_name": "vpn-node.internal"
+    },
+    "tag": "proxy-22"
+  },
+  {
+    "type": "trojan",
     "server": "64.118.128.180",
     "server_port": 28443,
     "password": "ac9521a8-1cc5-495c-981c-3a61a2f25ca1",
@@ -242,7 +253,7 @@
       "enabled": true,
       "server_name": "vpn-node.internal"
     },
-    "tag": "proxy-22"
+    "tag": "proxy-23"
   },
   {
     "type": "vless",
@@ -259,7 +270,7 @@
       },
       "server_name": "pl.node.ghostsyvpn.org"
     },
-    "tag": "proxy-23"
+    "tag": "proxy-24"
   },
   {
     "type": "vless",
@@ -276,6 +287,6 @@
       },
       "server_name": "pl.node.ghostsyvpn.org"
     },
-    "tag": "proxy-24"
+    "tag": "proxy-25"
   }
 ]
