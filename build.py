@@ -564,12 +564,26 @@ def generate_karing_config():
     proxy_domains = load_json_domains(PROXY_JSON)
     rus_domains = load_json_domains(RUS_JSON)
     proxy_links = [p for p in proxy_links if p and not any(bad in p.lower() for bad in BAD_KEYWORDS)]
+    
     outbounds = [
-        {"type": "selector", "tag": "Proxy", "outbounds": ["auto"], "default": "auto"},
-        {"type": "urltest", "tag": "auto", "outbounds": [], "url": "http://www.gstatic.com/generate_204", "interval": "5m"},
+        {
+            "type": "selector",
+            "tag": "Proxy",
+            "outbounds": ["auto", "direct"],
+            "default": "auto"
+        },
+        {
+            "type": "urltest",
+            "tag": "auto",
+            "outbounds": [],
+            "url": "http://www.gstatic.com/generate_204",
+            "interval": "30m",
+            "tolerance": 300
+        },
         {"type": "direct", "tag": "direct"},
         {"type": "block", "tag": "block"}
     ]
+    
     auto_outbounds = []
     for i, link in enumerate(proxy_links[:50]):
         node = parse_proxy_to_singbox(link)
@@ -578,24 +592,31 @@ def generate_karing_config():
             node["tag"] = tag
             outbounds.append(node)
             auto_outbounds.append(tag)
+    
     outbounds[1]["outbounds"] = auto_outbounds
+    
     rules = [
         {"domain_suffix": sorted(list(reject_domains)), "outbound": "block"},
         {"domain_suffix": sorted(list(proxy_domains)), "outbound": "Proxy"},
         {"domain_suffix": sorted(list(rus_domains)), "outbound": "direct"},
+        {"domain_suffix": [".google.com", ".google.ru", ".youtube.com"], "outbound": "Proxy"},
         {"protocol": ["dns"], "outbound": "direct"}
     ]
+    
     config = {
         "log": {"level": "info"},
         "dns": {
             "servers": [
-                {"tag": "cloudflare", "address": "https://1.1.1.1/dns-query", "address_resolver": "local"},
-                {"tag": "local", "address": "223.5.5.5", "detour": "direct"}
+                {"tag": "fakeip", "address": "fake-ip", "strategy": "ipv4_only"},
+                {"tag": "direct", "address": "77.88.8.8", "address_resolver": "fakeip", "detour": "direct"},
+                {"tag": "proxy", "address": "https://dns.google/dns-query", "address_resolver": "fakeip", "detour": "Proxy"}
             ],
             "rules": [
-                {"outbound": "any", "server": "local"},
-                {"domain_suffix": ".cn", "server": "local"}
-            ]
+                {"domain_suffix": [".ru", ".su", ".by", ".xn--p1ai"], "server": "direct"},
+                {"domain_suffix": [".nalog.ru", ".gosuslugi.ru", ".vk.com", ".yandex.ru", ".mail.ru", ".ok.ru"], "server": "direct"},
+                {"server": "fakeip", "query_type": ["A", "AAAA"]}
+            ],
+            "fakeip": {"enabled": True, "inet4_range": "198.18.0.0/15", "inet6_range": "2001:db8::/32"}
         },
         "inbounds": [
             {"type": "tun", "tag": "tun-in", "interface_name": "utun0", "inet4_address": "172.19.0.1/30", "auto_route": True, "strict_route": True, "sniff": True},
@@ -658,15 +679,30 @@ def create_proxy_list_json():
             except Exception:
                 proxy_links = []
     proxy_links = [p for p in proxy_links if p and not any(bad in p.lower() for bad in BAD_KEYWORDS)]
-    proxy_list = []
-    for i, link in enumerate(proxy_links[:50]):
+    working_proxies = []
+    print("  Проверка прокси (может занять время):")
+    for i, link in enumerate(proxy_links[:100]):
         node = parse_proxy_to_singbox(link)
-        if node:
-            node["tag"] = f"proxy-{i}"
-            proxy_list.append(node)
+        if not node:
+            continue
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(2)
+            result = sock.connect_ex((node["server"], node["server_port"]))
+            sock.close()
+            if result == 0:
+                node["tag"] = f"proxy-{len(working_proxies)}"
+                working_proxies.append(node)
+                print(f"    ✓ {node['server']}:{node['server_port']} - работает")
+            else:
+                print(f"    ✗ {node['server']}:{node['server_port']} - не отвечает")
+        except Exception:
+            print(f"    ✗ {node['server']} - ошибка проверки")
+        if len(working_proxies) >= 30:
+            break
     with open("proxy_list.json", "w", encoding="utf-8") as f:
-        json.dump(proxy_list, f, indent=2, ensure_ascii=False)
-    print(f"Создан proxy_list.json с {len(proxy_list)} прокси")
+        json.dump(working_proxies, f, indent=2, ensure_ascii=False)
+    print(f"Создан proxy_list.json с {len(working_proxies)} рабочими прокси")
 
 def main():
     print("==================================================")
