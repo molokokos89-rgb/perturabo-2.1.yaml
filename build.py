@@ -570,10 +570,10 @@ def step_collect_proxies():
             foreign_nodes.append(node)
     if foreign_nodes:
         with open("proxy.txt", "w", encoding="utf-8") as f:
-            f.write(base64.b64encode("\n".join(sorted(list(set(foreign_nodes)))).encode('utf-8')).decode('utf-8'))
+            f.write("\n".join(sorted(list(set(foreign_nodes)))))  # БЕЗ BASE64!
     if ru_nodes:
         with open("ru_proxies.txt", "w", encoding="utf-8") as rf:
-            rf.write(base64.b64encode("\n".join(sorted(list(set(ru_nodes)))).encode('utf-8')).decode('utf-8'))
+            rf.write("\n".join(sorted(list(set(ru_nodes)))))  # БЕЗ BASE64!
     print(f"Готово! Записано: proxy.txt ({len(foreign_nodes)} нод), ru_proxies.txt ({len(ru_nodes)} нод)")
 
 def step_parse_rules_and_sorting():
@@ -753,7 +753,7 @@ def generate_karing_config():
     proxy_domains = load_json_domains(PROXY_JSON)
     rus_domains = load_json_domains(RUS_JSON)
     
-    # Ссылка на proxy.txt (подписка)
+    # Ссылка на proxy.txt (подписка) — теперь в чистом тексте!
     proxy_providers = {
         "my-subscription": {
             "type": "remote",
@@ -866,7 +866,7 @@ def generate_karing_config():
     }
     with open("karing_config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
-    print(f"Готов karing_config.json (подписка на proxy.txt)")
+    print(f"Готов karing_config.json (подписка на proxy.txt в чистом тексте)")
 
 def step_compile_srs():
     print("\n--- 4. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
