@@ -171,13 +171,9 @@ def clean_domain(line):
         return None
     
     # --- УДАЛЯЕМ ВСЕ ПРЕФИКСЫ GFWList ---
-    # Убираем AdGuard-префиксы
     line = re.sub(r'^(\|\||@@\|\||\+\.|\+|\|\||@@)', '', line)
-    # Убираем префиксы с цифрами (+0@, +1@, +2@, ...)
     line = re.sub(r'^\+[0-9]+@', '', line)
-    # Убираем префиксы без цифр (+@)
     line = re.sub(r'^\+@', '', line)
-    # Убираем IP-адреса в начале
     line = re.sub(r'^(127\.0\.0\.1|0\.0\.0\.0|::1)\s+', '', line)
     
     if "#" in line:
@@ -225,12 +221,10 @@ def load_links_from_txt(filename):
     return urls
 
 def _extract_from_json(data, domains_set, cidrs_set=None):
-    """Рекурсивно извлекает домены и CIDR из JSON/YAML"""
     if isinstance(data, list):
         for item in data:
             _extract_from_json(item, domains_set, cidrs_set)
     elif isinstance(data, dict):
-        # Прямые поля
         for key in ["domain_suffix", "domain", "domains", "host", "hosts"]:
             if key in data:
                 items = data[key]
@@ -249,7 +243,6 @@ def _extract_from_json(data, domains_set, cidrs_set=None):
                     if d:
                         domains_set.add(d)
         
-        # CIDR
         for key in ["ip_cidr", "cidr", "ip"]:
             if key in data:
                 items = data[key]
@@ -262,7 +255,6 @@ def _extract_from_json(data, domains_set, cidrs_set=None):
                     if cidrs_set is not None:
                         cidrs_set.add(items)
         
-        # Рекурсивный обход вложенных структур
         for key, value in data.items():
             if key not in ["domain_suffix", "domain", "domains", "host", "hosts", "ip_cidr", "cidr", "ip"]:
                 if isinstance(value, (dict, list)):
@@ -499,7 +491,6 @@ def process_rule_source(url, domains_set, cidrs_set=None):
     if not content:
         return
     
-    # --- ПРОБУЕМ ПАРСИТЬ КАК JSON ---
     if content.strip().startswith(("{", "[")):
         try:
             data = json.loads(content)
@@ -508,7 +499,6 @@ def process_rule_source(url, domains_set, cidrs_set=None):
         except Exception:
             pass
     
-    # --- ПРОБУЕМ ПАРСИТЬ КАК YAML ---
     try:
         data = yaml.safe_load(content)
         if isinstance(data, (dict, list)):
@@ -517,19 +507,16 @@ def process_rule_source(url, domains_set, cidrs_set=None):
     except Exception:
         pass
     
-    # --- ИНАЧЕ — ОБРАБАТЫВАЕМ КАК ТЕКСТ (TXT, hosts, AdGuard) ---
     for line in content.splitlines():
         line = line.strip()
         if not line or line.startswith(("#", "!", ";", "//")):
             continue
         
-        # Проверяем CIDR
         if cidrs_set is not None and re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(/\d+)?$', line.split(',')[0].strip()):
             cidr = line.split(",")[-1].strip()
             cidrs_set.add(cidr)
             continue
         
-        # Чистим домен (убираем IP, AdGuard-префиксы)
         d = clean_domain(line)
         if d:
             domains_set.add(d)
@@ -585,7 +572,6 @@ def step_parse_rules_and_sorting():
     proxy_domains = set()
     proxy_cidrs = set()
 
-    # --- РУЧНЫЕ ПРАВИЛА ИЗ KARING (DIRECT + forever yes) ---
     manual_direct_domains = [
         "yabs.yandex.ru", "yastatic.net", "api.browser.yandex.ru",
         "init.itunes.apple.com", "bag.itunes.apple.com", "polaris-iot.com",
@@ -620,7 +606,6 @@ def step_parse_rules_and_sorting():
     for d in manual_direct_domains:
         direct_domains.add(d)
 
-    # --- РУЧНЫЕ ПРАВИЛА ИЗ KARING (PROXY) ---
     manual_proxy_domains = [
         "gstatic.gemini.com", "gemini.google.com", "aistudio.google.com",
         "generativelanguage.googleapis.com", "alkalimining-pa.googleapis.com",
@@ -747,95 +732,8 @@ def step_parse_rules_and_sorting():
     print(f" -> Прямой доступ (Direct): {len(direct_domains)} доменов, {len(direct_cidrs)} CIDR")
     print(f" -> Прокси: {len(proxy_domains)} доменов, {len(proxy_cidrs)} CIDR")
 
-def generate_karing_config():
-    print("\n--- 3. ГЕНЕРАЦИЯ KARING_CONFIG.JSON ---")
-    reject_domains = load_json_domains(REJECT_JSON)
-    proxy_domains = load_json_domains(PROXY_JSON)
-    rus_domains = load_json_domains(RUS_JSON)
-    
-    proxy_providers = {
-        "vless-sub-1": {
-            "type": "http",
-            "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/proxy.txt",
-            "interval": 3600,
-            "path": "./vless_sub_1.txt",
-            "health-check": {"enable": False}
-        }
-    }
-
-    outbounds = [
-        {"type": "selector", "tag": "Proxy", "outbounds": ["auto", "direct"], "default": "auto"},
-        {"type": "urltest", "tag": "auto", "outbounds": ["vless-sub-1"], "url": "http://www.gstatic.com/generate_204", "interval": "30m", "tolerance": 300},
-        {"type": "direct", "tag": "direct"},
-        {"type": "block", "tag": "block"}
-    ]
-
-    rules = [
-        {"protocol": ["dns"], "outbound": "dns-out"},
-        {"domain_suffix": ["localhost", "local"], "outbound": "direct"},
-        {"ip_is_private": True, "outbound": "direct"},
-        {"rule_set": "reject_rules", "outbound": "block"},
-        {"rule_set": "my_rules_proxy", "outbound": "Proxy"},
-        {"rule_set": "My_rules_RUS", "outbound": "direct"}
-    ]
-
-    rule_set = [
-        {"tag": "reject_rules", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/reject_rules.srs", "download_detour": "direct", "update_interval": "2h"},
-        {"tag": "my_rules_proxy", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/my_rules_proxy.srs", "download_detour": "direct", "update_interval": "2h"},
-        {"tag": "My_rules_RUS", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/My_rules_RUS.srs", "download_detour": "direct", "update_interval": "2h"}
-    ]
-
-    config = {
-        "log": {"level": "error"},
-        "dns": {
-            "servers": [
-                {"tag": "fakeip", "address": "fake-ip", "strategy": "ipv4_only"},
-                {"tag": "direct", "address": "77.88.8.8", "address_resolver": "fakeip", "detour": "direct"},
-                {"tag": "proxy-dns-1", "address": "https://dns.google/dns-query", "address_resolver": "fakeip", "detour": "Proxy"},
-                {"tag": "proxy-dns-2", "address": "tls://8.8.8.8", "address_resolver": "fakeip", "detour": "Proxy"}
-            ],
-            "rules": [
-                {"domain_suffix": [".ru", ".su", ".by", ".xn--p1ai"], "server": "direct"},
-                {"domain_suffix": [".nalog.ru", ".gosuslugi.ru", ".vk.com", ".yandex.ru", ".mail.ru", ".ok.ru"], "server": "direct"},
-                {"server": "fakeip", "query_type": ["A", "AAAA"]}
-            ],
-            "fakeip": {
-                "enabled": True,
-                "inet4_range": "198.18.0.0/15",
-                "inet6_range": ""
-            }
-        },
-        "inbounds": [
-            {
-                "type": "mixed",
-                "tag": "mixed-in",
-                "listen": "127.0.0.1",
-                "listen_port": 7890
-            }
-        ],
-        "outbounds": outbounds,
-        "proxy-providers": proxy_providers,
-        "route": {
-            "rules": rules,
-            "rule_set": rule_set,
-            "auto_detect_interface": True,
-            "final": "Proxy"
-        },
-        "experimental": {
-            "cache_file": {
-                "enabled": True,
-                "path": "cache.db",
-                "store_fakeip": True,
-                "store_rdrc": True
-            }
-        }
-    }
-    with open("karing_config.json", "w", encoding="utf-8") as f:
-        json.dump(config, f, indent=2, ensure_ascii=False)
-    print(f"Готов karing_config.json (с кэшированием и proxy-providers)")
-
 def step_compile_srs():
-    print("\n--- 4. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
+    print("\n--- 3. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
     current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
     for jf in [f for f in os.listdir(current_dir) if f.endswith('.json')]:
         if jf == "karing_config.json":
@@ -860,7 +758,6 @@ def main():
     print("==================================================")
     step_collect_proxies()
     step_parse_rules_and_sorting()
-    generate_karing_config()
     step_compile_srs()
     print("\n==================================================")
     print("=== ГОТОВО! ===")
