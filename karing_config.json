@@ -1,0 +1,183 @@
+{
+  "log": {
+    "level": "error"
+  },
+  "dns": {
+    "servers": [
+      {
+        "tag": "fakeip",
+        "address": "fake-ip",
+        "strategy": "ipv4_only"
+      },
+      {
+        "tag": "direct",
+        "address": "77.88.8.8",
+        "address_resolver": "fakeip",
+        "detour": "direct"
+      },
+      {
+        "tag": "proxy-dns-1",
+        "address": "https://dns.google/dns-query",
+        "address_resolver": "fakeip",
+        "detour": "Proxy"
+      },
+      {
+        "tag": "proxy-dns-2",
+        "address": "tls://8.8.8.8",
+        "address_resolver": "fakeip",
+        "detour": "Proxy"
+      }
+    ],
+    "rules": [
+      {
+        "domain_suffix": [
+          ".ru",
+          ".su",
+          ".by",
+          ".xn--p1ai"
+        ],
+        "server": "direct"
+      },
+      {
+        "domain_suffix": [
+          ".nalog.ru",
+          ".gosuslugi.ru",
+          ".vk.com",
+          ".yandex.ru",
+          ".mail.ru",
+          ".ok.ru"
+        ],
+        "server": "direct"
+      },
+      {
+        "server": "fakeip",
+        "query_type": [
+          "A",
+          "AAAA"
+        ]
+      }
+    ],
+    "fakeip": {
+      "enabled": true,
+      "inet4_range": "198.18.0.0/15",
+      "inet6_range": ""
+    }
+  },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "tag": "mixed-in",
+      "listen": "127.0.0.1",
+      "listen_port": 7890
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "selector",
+      "tag": "Proxy",
+      "outbounds": [
+        "auto",
+        "direct"
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "urltest",
+      "tag": "auto",
+      "outbounds": [
+        "vless-sub-1"
+      ],
+      "url": "http://www.gstatic.com/generate_204",
+      "interval": "30m",
+      "tolerance": 300
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
+      "type": "block",
+      "tag": "block"
+    }
+  ],
+  "proxy-providers": {
+    "vless-sub-1": {
+      "type": "http",
+      "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/proxy.txt",
+      "interval": 3600,
+      "path": "./vless_sub_1.txt",
+      "health-check": {
+        "enable": false
+      }
+    }
+  },
+  "route": {
+    "rules": [
+      {
+        "protocol": [
+          "dns"
+        ],
+        "outbound": "dns-out"
+      },
+      {
+        "domain_suffix": [
+          "localhost",
+          "local"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "ip_is_private": true,
+        "outbound": "direct"
+      },
+      {
+        "rule_set": "reject_rules",
+        "outbound": "block"
+      },
+      {
+        "rule_set": "my_rules_proxy",
+        "outbound": "Proxy"
+      },
+      {
+        "rule_set": "My_rules_RUS",
+        "outbound": "direct"
+      }
+    ],
+    "rule_set": [
+      {
+        "tag": "reject_rules",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/reject_rules.srs",
+        "download_detour": "direct",
+        "update_interval": "2h"
+      },
+      {
+        "tag": "my_rules_proxy",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/my_rules_proxy.srs",
+        "download_detour": "direct",
+        "update_interval": "2h"
+      },
+      {
+        "tag": "My_rules_RUS",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/My_rules_RUS.srs",
+        "download_detour": "direct",
+        "update_interval": "2h"
+      }
+    ],
+    "auto_detect_interface": true,
+    "final": "Proxy"
+  },
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "path": "cache.db",
+      "store_fakeip": true,
+      "store_rdrc": true
+    }
+  }
+}
