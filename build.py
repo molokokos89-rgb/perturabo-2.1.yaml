@@ -773,47 +773,16 @@ def generate_karing_config():
         {"protocol": ["dns"], "outbound": "dns-out"},
         {"domain_suffix": ["localhost", "local"], "outbound": "direct"},
         {"ip_is_private": True, "outbound": "direct"},
-        {"rule_set": "geoip-cn", "outbound": "direct"},
-        {"rule_set": "geosite-cn", "outbound": "direct"},
-        {"rule_set": "geosite-ad", "outbound": "block"},
-        {"domain_suffix": sorted(list(reject_domains)), "outbound": "block"},
-        {"domain_suffix": sorted(list(proxy_domains)), "outbound": "Proxy"},
-        {"domain_suffix": [".google.com", ".google.ru", ".youtube.com"], "outbound": "Proxy"},
-        {"domain_suffix": sorted(list(rus_domains)), "outbound": "direct"},
-        {"rule_set": "my_rules_proxy", "outbound": "Proxy"}
+        {"rule_set": "reject_rules", "outbound": "block"},
+        {"rule_set": "my_rules_proxy", "outbound": "Proxy"},
+        {"rule_set": "My_rules_RUS", "outbound": "direct"}
     ]
 
-    current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
-    rule_set = []
-
-    base_rules = [
-        {"tag": "geoip-cn", "url": "https://github.com/SagerNet/sing-geoip/raw/rule-set/geoip-cn.srs"},
-        {"tag": "geosite-cn", "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-cn.srs"},
-        {"tag": "geosite-ad", "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-ad.srs"}
+    rule_set = [
+        {"tag": "reject_rules", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/reject_rules.srs", "download_detour": "direct", "update_interval": "2h"},
+        {"tag": "my_rules_proxy", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/my_rules_proxy.srs", "download_detour": "direct", "update_interval": "2h"},
+        {"tag": "My_rules_RUS", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/My_rules_RUS.srs", "download_detour": "direct", "update_interval": "2h"}
     ]
-
-    for base in base_rules:
-        rule_set.append({
-            "tag": base["tag"],
-            "type": "remote",
-            "format": "binary",
-            "url": base["url"],
-            "download_detour": "direct",
-            "update_interval": "24h"
-        })
-
-    for json_file in [f for f in os.listdir(current_dir) if f.endswith('.json') and f != "karing_config.json"]:
-        srs_file = json_file.replace('.json', '.srs')
-        if os.path.exists(os.path.join(current_dir, srs_file)):
-            tag = json_file.replace('.json', '')
-            rule_set.append({
-                "tag": tag,
-                "type": "remote",
-                "format": "binary",
-                "url": f"https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/{srs_file}",
-                "download_detour": "direct",
-                "update_interval": "2h"
-            })
 
     config = {
         "log": {"level": "info"},
@@ -854,7 +823,7 @@ def generate_karing_config():
     }
     with open("karing_config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
-    print(f"Готов karing_config.json (DNS: Google + Quad9, без Cloudflare)")
+    print(f"Готов karing_config.json (только rule_set, без встроенных доменов)")
 
 def step_compile_srs():
     print("\n--- 4. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
