@@ -16,8 +16,38 @@
         "detour": "direct"
       },
       {
-        "tag": "proxy",
+        "tag": "proxy-dns-1",
         "address": "https://dns.google/dns-query",
+        "address_resolver": "fakeip",
+        "detour": "Proxy"
+      },
+      {
+        "tag": "proxy-dns-2",
+        "address": "https://8.8.8.8/dns-query",
+        "address_resolver": "fakeip",
+        "detour": "Proxy"
+      },
+      {
+        "tag": "proxy-dns-3",
+        "address": "https://8.8.4.4/dns-query",
+        "address_resolver": "fakeip",
+        "detour": "Proxy"
+      },
+      {
+        "tag": "proxy-dns-4",
+        "address": "tls://8.8.8.8",
+        "address_resolver": "fakeip",
+        "detour": "Proxy"
+      },
+      {
+        "tag": "proxy-dns-5",
+        "address": "tls://8.8.4.4",
+        "address_resolver": "fakeip",
+        "detour": "Proxy"
+      },
+      {
+        "tag": "proxy-dns-6",
+        "address": "https://dns.quad9.net/dns-query",
         "address_resolver": "fakeip",
         "detour": "Proxy"
       }
@@ -57,23 +87,6 @@
       "inet6_range": "2001:db8::/32"
     }
   },
-  "inbounds": [
-    {
-      "type": "tun",
-      "tag": "tun-in",
-      "interface_name": "utun0",
-      "inet4_address": "172.19.0.1/30",
-      "auto_route": true,
-      "strict_route": true,
-      "sniff": true
-    },
-    {
-      "type": "mixed",
-      "tag": "mixed-in",
-      "listen": "127.0.0.1",
-      "listen_port": 7890
-    }
-  ],
   "outbounds": [
     {
       "type": "selector",
