@@ -85,7 +85,7 @@
       "type": "urltest",
       "tag": "auto",
       "outbounds": [
-        "provider"
+        "vless-sub-1"
       ],
       "url": "http://www.gstatic.com/generate_204",
       "interval": "30m",
@@ -101,11 +101,11 @@
     }
   ],
   "proxy-providers": {
-    "my-subscription": {
+    "vless-sub-1": {
       "type": "http",
       "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/proxy.txt",
-      "interval": "3600",
-      "path": "./proxy.db",
+      "interval": 3600,
+      "path": "./vless_sub_1.txt",
       "health-check": {
         "enable": false
       }
