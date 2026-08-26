@@ -1,2 +1,4 @@
+hysteria2://BWAFlp8g53@hys28.wba-pn.ru:443?insecure=1&sni=hys28.wba-pn.ru#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%2C%20Amsterdam%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
 hysteria2://BWAFlp8g53@hys28.wba-pn.ru:443?security=tls&fp=chrome#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%2C%20Amsterdam%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
-hysteria2://BWAFlp8g53@hys28.wba-pn.ru:443?security=tls&fp=chrome&alpn=h3#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%2C%20Amsterdam%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
+vless://9aff0732-7ce4-4b34-ba20-e67c6df64fdd@gr2.panel11.ru:443?type=tcp&security=reality&sni=gr2.panel11.ru&pbk=2fZTX_b8h4Cdf2xJCID00BqFzsjtKAAws4Y-OZtNLnE&sid=56f57b965ff599bf&encryption=none&flow=xtls-rprx-vision&fp=firefox#%F0%9F%87%A6%F0%9F%87%AA%20United%20Arab%20Emirates%2C%20Warisan%20%7C%20%5BBL%5D
+vless://9aff0732-7ce4-4b34-ba20-e67c6df64fdd@gr2.panel11.ru:443?type=tcp&security=reality&sni=gr2.panel11.ru&pbk=2fZTX_b8h4Cdf2xJCID00BqFzsjtKAAws4Y-OZtNLnE&sid=56f57b965ff599bf&encryption=none&flow=xtls-rprx-vision&fp=safari#%F0%9F%87%A6%F0%9F%87%AA%20United%20Arab%20Emirates%2C%20Warisan%20%7C%20%5BBL%5D
