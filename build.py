@@ -754,18 +754,18 @@ def generate_karing_config():
     rus_domains = load_json_domains(RUS_JSON)
     
     proxy_providers = {
-        "my-subscription": {
+        "vless-sub-1": {
             "type": "http",
             "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/proxy.txt",
-            "interval": "3600",
-            "path": "./proxy.db",
+            "interval": 3600,
+            "path": "./vless_sub_1.txt",
             "health-check": {"enable": False}
         }
     }
 
     outbounds = [
         {"type": "selector", "tag": "Proxy", "outbounds": ["auto", "direct"], "default": "auto"},
-        {"type": "urltest", "tag": "auto", "outbounds": ["provider"], "url": "http://www.gstatic.com/generate_204", "interval": "30m", "tolerance": 300},
+        {"type": "urltest", "tag": "auto", "outbounds": ["vless-sub-1"], "url": "http://www.gstatic.com/generate_204", "interval": "30m", "tolerance": 300},
         {"type": "direct", "tag": "direct"},
         {"type": "block", "tag": "block"}
     ]
@@ -832,7 +832,7 @@ def generate_karing_config():
     }
     with open("karing_config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
-    print(f"Готов karing_config.json (с mixed-port 7890, как в YAML)")
+    print(f"Готов karing_config.json (с кэшированием и proxy-providers)")
 
 def step_compile_srs():
     print("\n--- 4. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
