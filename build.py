@@ -755,10 +755,11 @@ def generate_karing_config():
     
     proxy_providers = {
         "my-subscription": {
-            "type": "remote",
+            "type": "http",
             "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/proxy.txt",
-            "interval": "24h",
-            "path": "proxy.db"
+            "interval": "3600",
+            "path": "./proxy.db",
+            "health-check": {"enable": False}
         }
     }
 
@@ -785,25 +786,33 @@ def generate_karing_config():
     ]
 
     config = {
-        "log": {"level": "info"},
+        "log": {"level": "error"},
         "dns": {
             "servers": [
                 {"tag": "fakeip", "address": "fake-ip", "strategy": "ipv4_only"},
                 {"tag": "direct", "address": "77.88.8.8", "address_resolver": "fakeip", "detour": "direct"},
                 {"tag": "proxy-dns-1", "address": "https://dns.google/dns-query", "address_resolver": "fakeip", "detour": "Proxy"},
-                {"tag": "proxy-dns-2", "address": "https://8.8.8.8/dns-query", "address_resolver": "fakeip", "detour": "Proxy"},
-                {"tag": "proxy-dns-3", "address": "https://8.8.4.4/dns-query", "address_resolver": "fakeip", "detour": "Proxy"},
-                {"tag": "proxy-dns-4", "address": "tls://8.8.8.8", "address_resolver": "fakeip", "detour": "Proxy"},
-                {"tag": "proxy-dns-5", "address": "tls://8.8.4.4", "address_resolver": "fakeip", "detour": "Proxy"},
-                {"tag": "proxy-dns-6", "address": "https://dns.quad9.net/dns-query", "address_resolver": "fakeip", "detour": "Proxy"}
+                {"tag": "proxy-dns-2", "address": "tls://8.8.8.8", "address_resolver": "fakeip", "detour": "Proxy"}
             ],
             "rules": [
                 {"domain_suffix": [".ru", ".su", ".by", ".xn--p1ai"], "server": "direct"},
                 {"domain_suffix": [".nalog.ru", ".gosuslugi.ru", ".vk.com", ".yandex.ru", ".mail.ru", ".ok.ru"], "server": "direct"},
                 {"server": "fakeip", "query_type": ["A", "AAAA"]}
             ],
-            "fakeip": {"enabled": True, "inet4_range": "198.18.0.0/15", "inet6_range": "2001:db8::/32"}
+            "fakeip": {
+                "enabled": True,
+                "inet4_range": "198.18.0.0/15",
+                "inet6_range": ""
+            }
         },
+        "inbounds": [
+            {
+                "type": "mixed",
+                "tag": "mixed-in",
+                "listen": "127.0.0.1",
+                "listen_port": 7890
+            }
+        ],
         "outbounds": outbounds,
         "proxy-providers": proxy_providers,
         "route": {
@@ -823,7 +832,7 @@ def generate_karing_config():
     }
     with open("karing_config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
-    print(f"Готов karing_config.json (только rule_set, без встроенных доменов)")
+    print(f"Готов karing_config.json (с mixed-port 7890, как в YAML)")
 
 def step_compile_srs():
     print("\n--- 4. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
