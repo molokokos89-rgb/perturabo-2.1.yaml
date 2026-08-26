@@ -1,3 +1,4 @@
 https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/refs/heads/main/reject_rules.json
-https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/DNSFilter/sections/adservers.txt
-https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/DNSFilter/sections/spyware.txt
+https://raw.githubusercontent.com/217heidai/adblockfilters/refs/heads/main/rules/adblocksingboxlite.json
+https://raw.githubusercontent.com/217heidai/adblockfilters/refs/heads/main/rules/adblockloonlite.list
+https://raw.githubusercontent.com/217heidai/adblockfilters/refs/heads/main/rules/AdGuard_Base_filter.txt
