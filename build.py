@@ -570,10 +570,10 @@ def step_collect_proxies():
             foreign_nodes.append(node)
     if foreign_nodes:
         with open("proxy.txt", "w", encoding="utf-8") as f:
-            f.write("\n".join(sorted(list(set(foreign_nodes)))))  # БЕЗ BASE64!
+            f.write("\n".join(sorted(list(set(foreign_nodes)))))
     if ru_nodes:
         with open("ru_proxies.txt", "w", encoding="utf-8") as rf:
-            rf.write("\n".join(sorted(list(set(ru_nodes)))))  # БЕЗ BASE64!
+            rf.write("\n".join(sorted(list(set(ru_nodes)))))
     print(f"Готово! Записано: proxy.txt ({len(foreign_nodes)} нод), ru_proxies.txt ({len(ru_nodes)} нод)")
 
 def step_parse_rules_and_sorting():
@@ -753,7 +753,6 @@ def generate_karing_config():
     proxy_domains = load_json_domains(PROXY_JSON)
     rus_domains = load_json_domains(RUS_JSON)
     
-    # Ссылка на proxy.txt (подписка) — теперь в чистом тексте!
     proxy_providers = {
         "my-subscription": {
             "type": "remote",
@@ -764,20 +763,8 @@ def generate_karing_config():
     }
 
     outbounds = [
-        {
-            "type": "selector",
-            "tag": "Proxy",
-            "outbounds": ["auto", "direct"],
-            "default": "auto"
-        },
-        {
-            "type": "urltest",
-            "tag": "auto",
-            "outbounds": ["provider"],
-            "url": "http://www.gstatic.com/generate_204",
-            "interval": "30m",
-            "tolerance": 300
-        },
+        {"type": "selector", "tag": "Proxy", "outbounds": ["auto", "direct"], "default": "auto"},
+        {"type": "urltest", "tag": "auto", "outbounds": ["provider"], "url": "http://www.gstatic.com/generate_204", "interval": "30m", "tolerance": 300},
         {"type": "direct", "tag": "direct"},
         {"type": "block", "tag": "block"}
     ]
@@ -834,7 +821,12 @@ def generate_karing_config():
             "servers": [
                 {"tag": "fakeip", "address": "fake-ip", "strategy": "ipv4_only"},
                 {"tag": "direct", "address": "77.88.8.8", "address_resolver": "fakeip", "detour": "direct"},
-                {"tag": "proxy", "address": "https://dns.google/dns-query", "address_resolver": "fakeip", "detour": "Proxy"}
+                {"tag": "proxy-dns-1", "address": "https://dns.google/dns-query", "address_resolver": "fakeip", "detour": "Proxy"},
+                {"tag": "proxy-dns-2", "address": "https://8.8.8.8/dns-query", "address_resolver": "fakeip", "detour": "Proxy"},
+                {"tag": "proxy-dns-3", "address": "https://8.8.4.4/dns-query", "address_resolver": "fakeip", "detour": "Proxy"},
+                {"tag": "proxy-dns-4", "address": "tls://8.8.8.8", "address_resolver": "fakeip", "detour": "Proxy"},
+                {"tag": "proxy-dns-5", "address": "tls://8.8.4.4", "address_resolver": "fakeip", "detour": "Proxy"},
+                {"tag": "proxy-dns-6", "address": "https://dns.quad9.net/dns-query", "address_resolver": "fakeip", "detour": "Proxy"}
             ],
             "rules": [
                 {"domain_suffix": [".ru", ".su", ".by", ".xn--p1ai"], "server": "direct"},
@@ -843,10 +835,6 @@ def generate_karing_config():
             ],
             "fakeip": {"enabled": True, "inet4_range": "198.18.0.0/15", "inet6_range": "2001:db8::/32"}
         },
-        "inbounds": [
-            {"type": "tun", "tag": "tun-in", "interface_name": "utun0", "inet4_address": "172.19.0.1/30", "auto_route": True, "strict_route": True, "sniff": True},
-            {"type": "mixed", "tag": "mixed-in", "listen": "127.0.0.1", "listen_port": 7890}
-        ],
         "outbounds": outbounds,
         "proxy-providers": proxy_providers,
         "route": {
@@ -866,7 +854,7 @@ def generate_karing_config():
     }
     with open("karing_config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
-    print(f"Готов karing_config.json (подписка на proxy.txt в чистом тексте)")
+    print(f"Готов karing_config.json (DNS: Google + Quad9, без Cloudflare)")
 
 def step_compile_srs():
     print("\n--- 4. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
