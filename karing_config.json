@@ -1,6 +1,6 @@
 {
   "log": {
-    "level": "info"
+    "level": "error"
   },
   "dns": {
     "servers": [
@@ -23,31 +23,7 @@
       },
       {
         "tag": "proxy-dns-2",
-        "address": "https://8.8.8.8/dns-query",
-        "address_resolver": "fakeip",
-        "detour": "Proxy"
-      },
-      {
-        "tag": "proxy-dns-3",
-        "address": "https://8.8.4.4/dns-query",
-        "address_resolver": "fakeip",
-        "detour": "Proxy"
-      },
-      {
-        "tag": "proxy-dns-4",
         "address": "tls://8.8.8.8",
-        "address_resolver": "fakeip",
-        "detour": "Proxy"
-      },
-      {
-        "tag": "proxy-dns-5",
-        "address": "tls://8.8.4.4",
-        "address_resolver": "fakeip",
-        "detour": "Proxy"
-      },
-      {
-        "tag": "proxy-dns-6",
-        "address": "https://dns.quad9.net/dns-query",
         "address_resolver": "fakeip",
         "detour": "Proxy"
       }
@@ -84,9 +60,17 @@
     "fakeip": {
       "enabled": true,
       "inet4_range": "198.18.0.0/15",
-      "inet6_range": "2001:db8::/32"
+      "inet6_range": ""
     }
   },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "tag": "mixed-in",
+      "listen": "127.0.0.1",
+      "listen_port": 7890
+    }
+  ],
   "outbounds": [
     {
       "type": "selector",
@@ -118,10 +102,13 @@
   ],
   "proxy-providers": {
     "my-subscription": {
-      "type": "remote",
+      "type": "http",
       "url": "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/proxy.txt",
-      "interval": "24h",
-      "path": "proxy.db"
+      "interval": "3600",
+      "path": "./proxy.db",
+      "health-check": {
+        "enable": false
+      }
     }
   },
   "route": {
