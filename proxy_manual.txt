@@ -1,5 +1,5 @@
 https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/refs/heads/main/my_rules_proxy.json
-https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/gfw.txt
+https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/ruls/proxy/gwf.txt
+https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/ruls/proxy/proxy.txt
+https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/ruls/proxy/google.txt
 https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/telegramcidr.txt
-https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/google.txt
-https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/youtube.txt
