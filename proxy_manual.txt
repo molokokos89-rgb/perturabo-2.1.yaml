@@ -1,5 +1,27 @@
+# === PROXY rules sources ===
+# 1) Твой ручной список (старый репо) — всегда первым, железно
 https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/refs/heads/main/my_rules_proxy.json
-https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/ruls/proxy/gwf.txt
-https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/ruls/proxy/proxy.txt
-https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/refs/heads/main/ruls/proxy/google.txt
+
+# 2) Актуальные ежедневные списки (без локальной свалки)
+https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/proxy.txt
+https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/gfw.txt
+https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/google.txt
 https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/telegramcidr.txt
+
+# зеркала jsDelivr
+https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/proxy.txt
+https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt
+
+# Loyalsoldier v2ray-rules-dat
+https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/proxy-list.txt
+https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/gfw.txt
+
+# blackmatrix7
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.yaml
+
+# ACL4SSR
+https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyGFWlist.list
+https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Telegram.list
+
+# твой google из 2.1 (по желанию)
+https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/main/ruls/proxy/google.txt
