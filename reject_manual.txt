@@ -1,34 +1,4 @@
-# === REJECT sources (ads / trackers / metrics) ===
-# Твой старый reject из 2.0 — оставляем
 https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/refs/heads/main/reject_rules.json
-
-# 217heidai (уже были у тебя)
 https://raw.githubusercontent.com/217heidai/adblockfilters/refs/heads/main/rules/adblocksingboxlite.json
 https://raw.githubusercontent.com/217heidai/adblockfilters/refs/heads/main/rules/adblockloonlite.list
 https://raw.githubusercontent.com/217heidai/adblockfilters/refs/heads/main/rules/AdGuard_Base_filter.txt
-
-# Loyalsoldier — ежедневно, проверенный reject
-https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt
-https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt
-https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/reject-list.txt
-
-# oisd small — компактный, мало ложных срабатываний
-https://small.oisd.nl/domainswild
-
-# anti-AD (CN + universal trackers)
-https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-domains.txt
-
-# blackmatrix7 Advertising (domain)
-https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Advertising/Advertising_Domain.txt
-
-# ACL4SSR — реклама + privacy
-https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanAD.list
-https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanEasyList.list
-https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanEasyPrivacy.list
-
-# AdGuard DNS filter
-https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_15_DnsFilter/filter.txt
-https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt
-
-# telemetry / spyware (WindowsSpyBlocker hosts)
-https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt
