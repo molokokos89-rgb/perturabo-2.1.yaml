@@ -32,21 +32,24 @@ DROPBOX_URL = "https://www.dropbox.com/scl/fi/759t1a2us3y0kblgat0xr/log-for-reje
 # SOURCES — старые оставлены (даже если часть 404), добавлены рабочие 2026
 # ---------------------------------------------------------------------------
 SOURCES = [
-    # EbraSha hy2 (рабочие пути 2026)
-    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/separated-protocols/hysteria2_configs.txt",
-    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/separated-protocols-chunks/hysteria2/EbraSha-Protocol-Chunks-hysteria2-001.txt",
-    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/separated-protocols/trojan_configs.txt",
-    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/trojan_configs.txt",
-    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/ss_configs.txt",
-    # barry-far
-    "https://raw.githubusercontent.com/barry-far/V2ray-config/main/Sub1.txt",
-    "https://raw.githubusercontent.com/barry-far/V2ray-config/main/Sub2.txt",
-    "https://raw.githubusercontent.com/barry-far/V2ray-config/main/Splitted-By-Protocol/trojan.txt",
-    "https://raw.githubusercontent.com/barry-far/V2ray-config/main/Splitted-By-Protocol/ss.txt",
-    # прочее (без гигантских all-in-one дампов)
-    "https://raw.githubusercontent.com/Alirewa/V2ray-Configs/main/config.txt",
+    # === ОСНОВА ПОД РФ (уже кто-то проверял) ===
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
-    "https://raw.githubusercontent.com/sevcator/5ubscrpt10n/main/protocols/hy2.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS_WEAK_DPI_RUS.txt",
+    "https://raw.githubusercontent.com/aviamastersgh/vpn-free-russia/main/verified_configs.txt",
+    "https://raw.githubusercontent.com/nikita29a/FreeProxyList/main/mirror/1.txt",
+    "https://raw.githubusercontent.com/nikita29a/FreeProxyList/main/mirror/2.txt",
+    "https://raw.githubusercontent.com/Subzio/subzio/main/HYSTERIA2.txt",
+    "https://raw.githubusercontent.com/3inker/v2ray-subscription/main/all_ru.txt",
+
+    # === ДОБОР HY2 / короткие полки (не гиганты) ===
+    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/separated-protocols/hysteria2_configs.txt",
+    "https://raw.githubusercontent.com/morpheusadam/v2ray-config/main/subs/bundles/hysteria2.txt",
+    "https://raw.githubusercontent.com/morpheusadam/v2ray-config/main/subs/bundles/lite.txt",
+    "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub",
+
+    # === небольшой добор trojan/ss (с лимитом MAX_PER_SOURCE) ===
+    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/separated-protocols/trojan_configs.txt",
+    "https://raw.githubusercontent.com/barry-far/V2ray-config/main/Sub1.txt",
 ]
 
 RULE_SOURCES = {
@@ -71,7 +74,7 @@ HEAVY_SOURCES = [
 PROTOCOLS = ["hy2://", "hysteria2://", "trojan://", "ss://", "vmess://"]  # без vless (ТПУ)
 PROTOCOL_PRIORITY = {"hy2://": 0, "hysteria2://": 0, "trojan://": 1, "ss://": 2, "vmess://": 3}
 MAX_PER_SOURCE = 150
-MAX_FOREIGN_TOTAL = 700
+MAX_FOREIGN_TOTAL = 250
 GEO_WORKERS = 32
 _geo_cache = {}
 BAD_KEYWORDS = ["russia", "anycast", "offnet", "offcord", "cloudflare", "warp", "cf-"]
@@ -773,6 +776,126 @@ def check_domain_via_proxy(domain, proxy_list):
     return False
 
 
+
+# --- проверка «похоже на путь из РФ» перед записью в proxy.txt ---
+RU_PROXY_LIST_URLS = [
+    "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies.json",
+]
+
+def load_ru_exits(max_exits=20):
+    """Бесплатные RU HTTP/SOCKS для попытки проверки с «российской» стороны."""
+    exits = []  # list of ("http"|"socks5", "host:port")
+    for url in RU_PROXY_LIST_URLS:
+        try:
+            raw = fetch_url(url)
+            if not raw:
+                continue
+            data = json.loads(raw)
+            items = data if isinstance(data, list) else data.get("proxies", data.get("data", []))
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                geo = item.get("geolocation") or {}
+                country = (geo.get("country") or {}).get("iso_code") or item.get("country") or ""
+                if str(country).upper() != "RU":
+                    continue
+                host = item.get("host") or item.get("ip")
+                port = item.get("port")
+                if not host or not port:
+                    continue
+                proto = (item.get("protocol") or "http").lower()
+                if "socks" in proto:
+                    exits.append(("socks5", f"{host}:{port}"))
+                else:
+                    exits.append(("http", f"{host}:{port}"))
+        except Exception:
+            continue
+    # unique preserve order
+    seen = set()
+    out = []
+    for p in exits:
+        if p[1] not in seen:
+            seen.add(p[1])
+            out.append(p)
+        if len(out) >= max_exits:
+            break
+    print(f"  RU exits loaded: {len(out)}")
+    return out
+
+
+def tcp_open(host, port, timeout=3):
+    try:
+        with socket.create_connection((host, int(port)), timeout=timeout):
+            return True
+    except Exception:
+        return False
+
+
+def node_reachable(link, ru_exits):
+    """
+    1) TCP host:port — иначе сразу нет
+    2) если есть живой RU HTTP-exit — пробуем HTTP CONNECT/прокси-запрос
+       (полный hy2-handshake без клиента не делаем; цель — отсев явно мёртвых
+        и тех, кто не отвечает с «RU-подобной» стороны хотя бы по TCP-пути)
+    """
+    host, port = extract_host_port(link)
+    if not host or not port:
+        return False
+    if not tcp_open(host, port, timeout=3):
+        return False
+    # TCP ок — считаем кандидатом; доп. проверка через RU HTTP если возможно
+    for kind, hp in ru_exits[:8]:
+        if kind != "http":
+            continue
+        try:
+            eh, ep = hp.split(":")
+            if not tcp_open(eh, ep, timeout=2):
+                continue
+            # HTTP-прокси: CONNECT к target (urllib)
+            proxy_handler = urllib.request.ProxyHandler({
+                "http": f"http://{hp}",
+                "https": f"http://{hp}",
+            })
+            opener = urllib.request.build_opener(proxy_handler)
+            req = urllib.request.Request(
+                "http://www.gstatic.com/generate_204",
+                headers={"User-Agent": "Mozilla/5.0"},
+            )
+            with opener.open(req, timeout=5) as resp:
+                # если RU-прокси вообще выходит в мир — exit живой;
+                # ноду мы уже проверили TCP. Ужесточать до «hy2 через socks» без pysocks нельзя.
+                pass
+            return True
+        except Exception:
+            continue
+    # нет живых RU HTTP — оставляем по TCP (лучше, чем ничего)
+    return True
+
+
+def filter_nodes_before_final(links, workers=24):
+    """Параллельно отфильтровать ноды ДО записи в proxy.txt."""
+    if not links:
+        return []
+    ru_exits = load_ru_exits()
+    print(f"  pre-check {len(links)} nodes (TCP + RU exits), workers={workers}")
+    alive = []
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        futs = {ex.submit(node_reachable, link, ru_exits): link for link in links}
+        done = 0
+        for fut in as_completed(futs):
+            link = futs[fut]
+            done += 1
+            try:
+                if fut.result():
+                    alive.append(link)
+            except Exception:
+                pass
+            if done % 40 == 0 or done == len(links):
+                print(f"    pre-check progress: {done}/{len(links)}, alive={len(alive)}")
+    print(f"  pre-check done: {len(alive)}/{len(links)} passed")
+    return alive
+
+
 def step_collect_proxies():
     print("\n--- 1. СБОР И ФИЛЬТРАЦИЯ ПРОКСИ (hy2>trojan>ss, no vless, parallel geo) ---")
     from collections import defaultdict
@@ -829,12 +952,21 @@ def step_collect_proxies():
     def sort_key(link):
         return (PROTOCOL_PRIORITY.get(protocol_of(link), 99), link)
 
-    foreign_nodes = sorted(set(foreign_nodes), key=sort_key)[:MAX_FOREIGN_TOTAL]
+    foreign_nodes = sorted(set(foreign_nodes), key=sort_key)
     ru_nodes = sorted(set(ru_nodes), key=sort_key)
+
+    # СНАЧАЛА проверка, ПОТОМ лимит и запись в итоговый список
+    foreign_nodes = filter_nodes_before_final(foreign_nodes)
+    foreign_nodes = sorted(foreign_nodes, key=sort_key)[:MAX_FOREIGN_TOTAL]
 
     if foreign_nodes:
         with open("proxy.txt", "w", encoding="utf-8") as f:
             f.write("\n".join(foreign_nodes) + "\n")
+    else:
+        with open("proxy.txt", "w", encoding="utf-8") as f:
+            f.write("")
+        print("  WARNING: ни одна foreign-нода не прошла pre-check")
+
     if ru_nodes:
         with open("ru_proxies.txt", "w", encoding="utf-8") as rf:
             rf.write("\n".join(ru_nodes) + "\n")
