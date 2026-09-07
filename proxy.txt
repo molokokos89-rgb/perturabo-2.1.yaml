@@ -66,7 +66,7 @@ hysteria2://a307dbfd-1069-4880-950a-b5f5e82c3478@vault.ressel-radar.shop:443?sec
 hysteria2://a7c5d30b-ce9b-4e34-b5cb-66f8308790ef@bt5iibdl.zf-mix-2.9999231.xyz:2035?insecure=1&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D&sni=az-wy.9999231.xyz#%F0%9F%87%AF%F0%9F%87%B5_JP_%E6%97%A5%E6%9C%AC-%3E%F0%9F%87%A6%F0%9F%87%BF_AZ_%E9%98%BF%E5%A1%9E%E6%8B%9C%E7%96%86
 hysteria2://a7c5d30b-ce9b-4e34-b5cb-66f8308790ef@vmt2k5g7.zf-mix-2.9999231.xyz:2039?insecure=1&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D&sni=ro-wy.9999231.xyz#%F0%9F%87%AF%F0%9F%87%B5_JP_%E6%97%A5%E6%9C%AC-%3E%F0%9F%87%B7%F0%9F%87%B4_RO_%E7%BD%97%E9%A9%AC%E5%B0%BC%E4%BA%9A
 hysteria2://b52ca44f-835b-4862-baed-e5e91e5865dc@decdn-724.aiai-rkp.net:443?sni=decdn-724.aiai-rkp.net#%F0%9F%87%AB%F0%9F%87%B7%20France%2C%20Paris%20%7C%20%5BBL%5D
-hysteria2://c-E0lamG8OnEj9M_uh3oJPmIXqYIVGctO-NHELF1TmNYs7Jl@fast.news.gazette.help:443?sni=cz.h2.cleanersaz.help&alpn=h3#%F0%9F%87%A8%F0%9F%87%BF%20Czechia%20%5B%2ACIDR%5D
+hysteria2://cd74c0a406664a5bc0bac098220a2468@144.31.49.138:443?insecure=0&sni=ru1.sferavpn.pro&obfs=salamander&obfs-password=44f1c1e2f8b99e792ceed574627a1eb0#%F0%9F%87%B7%F0%9F%87%BA%40FreakConfig
 hysteria2://cd74c0a406664a5bc0bac098220a2468@2.27.249.79:443?insecure=0&sni=nl1.sferavpn.pro&obfs=salamander&obfs-password=44f1c1e2f8b99e792ceed574627a1eb0#TELEGRAM%20%40MTMVPN
 hysteria2://cd74c0a406664a5bc0bac098220a2468@nl1.sferavpn.pro:443/?insecure=1&obfs=salamander&obfs-password=44f1c1e2f8b99e792ceed574627a1eb0&sni=nl1.sferavpn.pro#SS44-143
 hysteria2://cd74c0a406664a5bc0bac098220a2468@ru1.sferavpn.pro:443/?obfs=salamander&obfs-password=44f1c1e2f8b99e792ceed574627a1eb0&sni=ru1.sferavpn.pro#
