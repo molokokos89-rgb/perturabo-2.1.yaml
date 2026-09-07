@@ -1,9 +1,9 @@
-hy2://585b7bfe-6269-4149-ae22-ff07c57b5510@157.228.137.81:443/?insecure=1&sni=msk2.nebuchadnezzar.ink&obfs=salamander&obfs-password=Xydh1mcz51VQHbbJ#德国
 hy2://sxc15led4b0vp5fy@musicclips.videolinks.ru:8443/?sni=musicclips.videolinks.ru&obfs=salamander&obfs-password=8zzng75tz4tf82pj#芬兰
-hy2://umnDU7jgFYUjpVjVM2sW9HL0rRYLJNgzVwRu2HzWEhyZKkRx@hold.wwwinternetvideo.click:443/?insecure=1&sni=germany1.h2corp.local#德国
-hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443/?sni=hy2-latvia2.unlimited-access.ru# By EbraSha 👾
-hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@144.31.49.47:443/?insecure=1&sni=admin.wwwinternetvideo.click# By EbraSha 🎛️
-hysteria2://sOiWCQ2AdIV0OWNuqQVyWp4JZnRxdyLROSjX@31.76.71.63:443/?insecure=1&sni=cabinet.wwwinternetvideo.click# By EbraSha 🦇
-hysteria2://umnDU7jgFYUjpVjVM2sW9HL0rRYLJNgzVwRu2HzWEhyZKkRx@144.31.93.173:443/?insecure=1&sni=germany1.h2corp.local# By EbraSha 🌌
-ss://053440e6-fc8d-48d9-bb4f-2675e367f64f@wsnl7.wba-pn.ru:443?path=%2F&security=tls&encryption=none&insecure=0&type=ws&allowInsecure=0# By EbraSha 🌃
-vmess://ewogICAgImFkZCI6ICI0NS4xMzYuMjQ0LjE4MSIsCiAgICAiYWlkIjogMCwKICAgICJob3N0IjogIiIsCiAgICAiaWQiOiAiYTI1ODgxZjMtOTY3Zi0zMjY1LWJjN2YtOWU2Njg1N2IwMTZiIiwKICAgICJuZXQiOiAid3MiLAogICAgInBhdGgiOiAiL2ZyLXVubGltaXR4eHgiLAogICAgInBvcnQiOiA4MCwKICAgICJwcyI6ICLwn4e38J+HulJVLTQ1LjEzNi4yNDQuMTgxLTAzNjEiLAogICAgInRscyI6ICIiLAogICAgInR5cGUiOiAiYXV0byIsCiAgICAic2VjdXJpdHkiOiAiYXV0byIsCiAgICAic2tpcC1jZXJ0LXZlcmlmeSI6IHRydWUsCiAgICAic25pIjogIiIKfQ==#@Alirewa-775
+hysteria2://0db4a6c709ca4a46153af8a401b7138a@se.allgoodvpn.su:8443/?insecure=0&sni=se.allgoodvpn.su#%F0%9F%87%B8%F0%9F%87%AA%20Sweden%2C%20Stockholm%20%7C%20%5BBL%5D
+hysteria2://617z9r1mbzbm1t5z@giftcard.gisora.ir:52000?security=tls&obfs=salamander&obfs-password=09p333uviv2qal0y&insecure=0&sni=giftcard.gisora.ir# By EbraSha ⚔️
+hysteria2://8d722acb-d6ed-468c-af31-7ce0710fa425@tw1.tokervpn.ru:443?sni=tw1.tokervpn.ru&fm=%7B%22quicParams%22%3A%7B%22debug%22%3Afalse%2C%22congestion%22%3A%22bbr%22%2C%22disablePathMTUDiscovery%22%3Atrue%7D%7D#%F0%9F%87%AE%F0%9F%87%B9%20Italy%20%5B%2ACIDR%5D
+hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443/?sni=hy2-latvia2.unlimited-access.ru# By EbraSha 🛡️
+hysteria2://ca4f51fcfae16c802d52@x-ui-ge.havalvpn.ru:44312?sni=x-ui-ge.havalvpn.ru#%F0%9F%87%A9%F0%9F%87%AA%20Germany%2C%20Frankfurt%20am%20Main%20%7C%20%5BBL%5D
+hysteria2://cd74c0a406664a5bc0bac098220a2468@144.31.49.138:443?insecure=0&sni=ru1.sferavpn.pro&obfs=salamander&obfs-password=44f1c1e2f8b99e792ceed574627a1eb0#%F0%9F%87%B7%F0%9F%87%BA%40FreakConfig
+hysteria2://hysteria2_fastlane_f6dt3q19m:vqCgcZnSL76jftd4853Sq8pUCmsYIjTJ@87.239.111.109:1935/?sni=ru2.h.smartaisupport.ru&insecure=0#%F0%9F%87%A9%F0%9F%87%AA%20Germany%20%5B%2ACIDR%5D%20VK
+hysteria2://kVfzhSpshc@hys1.wba-pn.ru:443?insecure=0&security=tls&sni=hys1.wba-pn.ru#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%2C%20Amsterdam%20%7C%20%5BBL%5D
