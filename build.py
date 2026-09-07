@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 Сборка правил для Karing (perturabo).
-Основа — оригинальный build.py, только дополнения и починка мёртвых ссылок.
-Ничего не удалено из рабочей логики.
+Сборка правил + прокси для Karing (perturabo 2.1).
+Прокси: hy2 > trojan > ss, без vless, дедуп host:port, лимиты, parallel geo.
+Правила: whitelist TikTok/FB/Rutube/YT/VK/Yandex, pure-ad reject, Dropbox-логи.
 """
 
 import os
@@ -32,22 +33,21 @@ DROPBOX_URL = "https://www.dropbox.com/scl/fi/759t1a2us3y0kblgat0xr/log-for-reje
 # SOURCES — старые оставлены (даже если часть 404), добавлены рабочие 2026
 # ---------------------------------------------------------------------------
 SOURCES = [
-    # --- старые (могут быть 404, не мешают) ---
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
-    "https://raw.githubusercontent.com/sevcator/5ubscrpt10n/main/protocols/hy2.txt",
-    "https://raw.githubusercontent.com/yebekhe/TelegramV2rayCollector/main/sub/normal/mix",
-    "https://raw.githubusercontent.com/freefq/free/master/v2ray",
-    "https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/All_Configs_Sub.txt",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt",
-    # --- рабочие замены / дополнения ---
+    # EbraSha hy2 (рабочие пути 2026)
+    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/separated-protocols/hysteria2_configs.txt",
+    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/separated-protocols-chunks/hysteria2/EbraSha-Protocol-Chunks-hysteria2-001.txt",
+    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/separated-protocols/trojan_configs.txt",
+    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/trojan_configs.txt",
+    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/ss_configs.txt",
+    # barry-far
     "https://raw.githubusercontent.com/barry-far/V2ray-config/main/Sub1.txt",
-    "https://raw.githubusercontent.com/barry-far/V2ray-config/main/Splitted-By-Protocol/vless.txt",
-    "https://raw.githubusercontent.com/barry-far/V2ray-config/main/Splitted-By-Protocol/vmess.txt",
+    "https://raw.githubusercontent.com/barry-far/V2ray-config/main/Sub2.txt",
     "https://raw.githubusercontent.com/barry-far/V2ray-config/main/Splitted-By-Protocol/trojan.txt",
     "https://raw.githubusercontent.com/barry-far/V2ray-config/main/Splitted-By-Protocol/ss.txt",
+    # прочее (без гигантских all-in-one дампов)
     "https://raw.githubusercontent.com/Alirewa/V2ray-Configs/main/config.txt",
-    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/all_extracted_configs.txt",
-    "https://raw.githubusercontent.com/3inker/v2ray-subscription/main/all_not_ru.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
+    "https://raw.githubusercontent.com/sevcator/5ubscrpt10n/main/protocols/hy2.txt",
 ]
 
 RULE_SOURCES = {
@@ -69,7 +69,12 @@ HEAVY_SOURCES = [
     "https://raw.githubusercontent.com/roskomkod/ru-blocked-domains/main/domains.txt",
 ]
 
-PROTOCOLS = ["ss://", "vmess://", "trojan://", "hy2://", "hysteria2://", "vless://"]
+PROTOCOLS = ["hy2://", "hysteria2://", "trojan://", "ss://", "vmess://"]  # без vless (ТПУ)
+PROTOCOL_PRIORITY = {"hy2://": 0, "hysteria2://": 0, "trojan://": 1, "ss://": 2, "vmess://": 3}
+MAX_PER_SOURCE = 150
+MAX_FOREIGN_TOTAL = 700
+GEO_WORKERS = 32
+_geo_cache = {}
 BAD_KEYWORDS = ["russia", "anycast", "offnet", "offcord", "cloudflare", "warp", "cf-"]
 
 TELEGRAM_DOMAINS = [
@@ -194,6 +199,7 @@ def fetch_url(url):
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req, timeout=10) as response:
             content = response.read().decode('utf-8', errors='ignore')
+        content = content.replace('&amp;', '&')
         if not any(proto in content for proto in PROTOCOLS):
             try:
                 clean_content = content.strip().replace("\n", "").replace("\r", "")
@@ -261,21 +267,95 @@ def is_valid_reality(proxy_link):
     return True
 
 
-def check_is_russia(host):
+def extract_host_port(proxy_link):
+    """(host, port) для дедупа."""
+    try:
+        line = proxy_link.strip()
+        if "%" in line:
+            try:
+                line = urllib.parse.unquote(line)
+            except Exception:
+                pass
+        if line.startswith("ss://"):
+            part = line.split("://")[1].split("#")[0]
+            if "@" in part:
+                hp = part.split("@")[1]
+            else:
+                hp = safe_b64decode(part).split("@")[1]
+            host = hp.split(":")[0].strip("[]")
+            port = hp.split(":")[1].split("/")[0].split("?")[0]
+            return host, port
+        if line.startswith(("trojan://", "hy2://", "hysteria2://", "vless://")):
+            rest = line.split("://")[1]
+            hp = rest.split("@")[1] if "@" in rest else rest
+            host = hp.split(":")[0].split("?")[0].strip("[]")
+            port = hp.split(":")[1].split("/")[0].split("?")[0].split("#")[0]
+            return host, port
+        if line.startswith("vmess://"):
+            data = json.loads(safe_b64decode(line.split("://")[1].split("?")[0]))
+            return str(data.get("add", "")).strip("[]"), str(data.get("port", ""))
+    except Exception:
+        return None, None
+    return None, None
+
+
+def protocol_of(link):
+    low = link.lower()
+    for p in PROTOCOLS:
+        if low.startswith(p):
+            return p
+    return "unknown://"
+
+
+def _check_is_russia_uncached(host):
     if not host:
         return False
-    if host.lower().endswith(('.ru', '.su', '.by')):
+    if host.lower().endswith((".ru", ".su", ".by", ".рф")):
         return True
     try:
-        ip = host if re.match(r'^\d{1,3}(\.\d{1,3}){3}$', host) else socket.gethostbyname(host)
-        req = urllib.request.Request(f"http://ip-api.com/json/{ip}", headers={'User-Agent': 'Mozilla/5.0'})
+        try:
+            socket.inet_aton(host)
+            ip = host
+        except OSError:
+            ip = socket.gethostbyname(host)
+        req = urllib.request.Request(
+            f"http://ip-api.com/json/{ip}?fields=status,countryCode",
+            headers={"User-Agent": "Mozilla/5.0"},
+        )
         with urllib.request.urlopen(req, timeout=3) as response:
-            data = json.loads(response.read().decode('utf-8'))
+            data = json.loads(response.read().decode("utf-8"))
             if data.get("status") == "success" and data.get("countryCode") == "RU":
                 return True
     except Exception:
         pass
     return False
+
+
+def check_is_russia(host):
+    if host in _geo_cache:
+        return _geo_cache[host]
+    result = _check_is_russia_uncached(host)
+    _geo_cache[host] = result
+    return result
+
+
+def batch_geo_check(hosts):
+    unique = [h for h in set(hosts) if h and h not in _geo_cache]
+    if not unique:
+        return
+    print(f"  geo-check: {len(unique)} hosts, workers={GEO_WORKERS}")
+    with ThreadPoolExecutor(max_workers=GEO_WORKERS) as ex:
+        futs = {ex.submit(_check_is_russia_uncached, h): h for h in unique}
+        done = 0
+        for fut in as_completed(futs):
+            h = futs[fut]
+            try:
+                _geo_cache[h] = fut.result()
+            except Exception:
+                _geo_cache[h] = False
+            done += 1
+            if done % 50 == 0 or done == len(unique):
+                print(f"    geo progress: {done}/{len(unique)}")
 
 
 def clean_domain(line):
@@ -695,271 +775,73 @@ def check_domain_via_proxy(domain, proxy_list):
 
 
 def step_collect_proxies():
-    print("\n--- 1. СБОР И ФИЛЬТРАЦИЯ ПРОКСИ-УЗЛОВ ---")
-    raw_nodes = []
+    print("\n--- 1. СБОР И ФИЛЬТРАЦИЯ ПРОКСИ (hy2>trojan>ss, no vless, parallel geo) ---")
+    from collections import defaultdict
+    per_source = defaultdict(int)
+    candidates = {}  # host:port -> link
+
     for source in SOURCES:
+        print(f"  Source: {source}")
         data = fetch_url(source)
-        if data:
-            for line in data.splitlines():
-                line = line.strip()
-                if any(line.startswith(proto) for proto in PROTOCOLS):
-                    raw_nodes.append(line)
-        else:
-            print(f"  [skip/404] {source}")
-    unique_nodes = list(set(raw_nodes))
+        if not data:
+            print("    [skip/404]")
+            continue
+        seen = set()
+        for line in data.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if line.lower().startswith("vless://"):
+                continue
+            if not any(line.startswith(p) for p in PROTOCOLS):
+                continue
+            if any(bad in line.lower() for bad in BAD_KEYWORDS):
+                continue
+            host, port = extract_host_port(line)
+            if not host or not port:
+                continue
+            key = f"{host}:{port}"
+            if key in seen:
+                continue
+            if per_source[source] >= MAX_PER_SOURCE:
+                break
+            seen.add(key)
+            per_source[source] += 1
+            prio = PROTOCOL_PRIORITY.get(protocol_of(line), 99)
+            if key not in candidates or prio < PROTOCOL_PRIORITY.get(protocol_of(candidates[key]), 99):
+                candidates[key] = line
+        print(f"    taken: {per_source[source]}")
+
+    hosts = []
+    for key, link in candidates.items():
+        h, _ = extract_host_port(link)
+        if h:
+            hosts.append(h)
+    batch_geo_check(hosts)
+
     foreign_nodes, ru_nodes = [], []
-    for node in unique_nodes:
-        if not is_valid_reality(node) or any(bad in node.lower() for bad in BAD_KEYWORDS):
-            continue
-        host = extract_host(node) or extract_ip_or_domain(node)
-        if not host:
-            continue
-        if check_is_russia(host):
-            ru_nodes.append(node)
+    for key, link in candidates.items():
+        h, _ = extract_host_port(link)
+        if check_is_russia(h):
+            ru_nodes.append(link)
         else:
-            foreign_nodes.append(node)
+            foreign_nodes.append(link)
+
+    def sort_key(link):
+        return (PROTOCOL_PRIORITY.get(protocol_of(link), 99), link)
+
+    foreign_nodes = sorted(set(foreign_nodes), key=sort_key)[:MAX_FOREIGN_TOTAL]
+    ru_nodes = sorted(set(ru_nodes), key=sort_key)
+
     if foreign_nodes:
         with open("proxy.txt", "w", encoding="utf-8") as f:
-            f.write("\n".join(sorted(list(set(foreign_nodes)))))
+            f.write("\n".join(foreign_nodes) + "\n")
     if ru_nodes:
         with open("ru_proxies.txt", "w", encoding="utf-8") as rf:
-            rf.write("\n".join(sorted(list(set(ru_nodes)))))
-    print(f"Готово! Записано: proxy.txt ({len(foreign_nodes)} нод), ru_proxies.txt ({len(ru_nodes)} нод)")
+            rf.write("\n".join(ru_nodes) + "\n")
+
+    hy2_n = sum(1 for x in foreign_nodes if protocol_of(x) in ("hy2://", "hysteria2://"))
+    print(f"Готово! proxy.txt={len(foreign_nodes)} (hy2={hy2_n}), ru_proxies.txt={len(ru_nodes)}")
 
 
-def step_parse_rules_and_sorting():
-    print("\n--- 2. ЗАГРУЗКА И СОРТИРОВКА ПРАВИЛ ИЗ TXT-ФАЙЛОВ ---")
-    reject_domains = set()
-    reject_cidrs = set()
-    direct_domains = set()
-    direct_cidrs = set()
-    proxy_domains = set()
-    proxy_cidrs = set()
-
-    manual_direct_domains = [
-        "yabs.yandex.ru", "yastatic.net", "api.browser.yandex.ru",
-        "init.itunes.apple.com", "bag.itunes.apple.com", "polaris-iot.com",
-        "tk-kit.net", "boosty.to", "max.ru", "max.dev", "bitrix24.ru",
-        "b24.ru", "bitrix24.com", "bitrix24.net", "bitrixlabs.ru",
-        "bx24.net", "bx24.ru", "gosuslugi.ru", "mos.ru", "pgu.mos.ru",
-        "rt.ru", "bio.rt.ru", "edu.ru", "sber.ru", "sberbank.ru",
-        "tbank.ru", "tinkoff.ru", "vtb.ru", "cbr.ru", "alfabank.ru",
-        "gazprombank.ru", "rshb.ru", "raiffeisen.ru", "nalog.ru",
-        "nalog.gov.ru", "pfr.gov.ru", "sfr.gov.ru", "wb.ru",
-        "wildberries.ru", "wbstatic.net", "wbbasket.ru", "ozon.ru",
-        "ozon.com", "avito.ru", "ya.ru", "yandex.ru", "yandex.net",
-        "yandex.com", "yandex.org", "dzen.ru", "vk.com", "vk.ru",
-        "vk.me", "vk.org", "vk-cdn.net", "userapi.com", "vkuseraudio.net",
-        "vk.cc", "vk-portal.net", "vkuserconnect.com", "vkat.me",
-        "vk.company", "oneme.ru", "okcdn.ru", "ok.ru", "ok.me",
-        "mail.ru", "inappstory.ru", "mindbox.ru", "magnit.ru",
-        "kazanexpress.ru", "mm.ru", "kaspersky-labs.com", "dadata.ru",
-        "flocktory.com", "selectel.ru", "selectel.com", "beget.com",
-        "timeweb.ru", "reg.ru", "nic.ru", "rostelecom.ru", "megafon.ru",
-        "mts.ru", "beeline.ru", "tele2.ru", "rutube.ru", "2gis.ru",
-        "dgis.ru", "rzhd.ru", "rjd.ru", "aeroflot.ru", "s7.ru",
-        "yoomoney.ru", "kinopoisk.ru", "afisha.ru", "odnoklassniki.ru",
-        "lamoda.ru", "megamarket.ru", "api.okcdn.ru", "api.vk.ru",
-        "eh.vk.com", "internal.api.vk.ru", "queuev4.vk.ru",
-        "sun1-23.vkuserphoto.ru", "api.remanga.org", "dbankcloud.com",
-        "dbankcdn.com", "huawei.com", "amazonaws.com", "ably.io",
-        "pusher.com", "pubnub.com", "unity3d.com", "globalsign.com",
-        "globalsign.dev", "digicert.com", "comodo.com", "letsencrypt.org",
-        "sectigo.com"
-    ]
-    for d in manual_direct_domains:
-        direct_domains.add(d)
-
-    manual_proxy_domains = [
-        "gstatic.gemini.com", "gemini.google.com", "aistudio.google.com",
-        "generativelanguage.googleapis.com", "alkalimining-pa.googleapis.com",
-        "proactivebackend-pa.googleapis.com", "google.ru", "google.com",
-        "googleapis.com", "googleusercontent.com", "gstatic.com",
-        "ggpht.com", "p76prod.systems", "bethesda.net", "zenimax.com",
-        "fallout76.com", "amazongames.com", "g.co", "googleanalytics.com",
-        "googletagmanager.com", "googlesyndication.com", "google-analytics.com",
-        "googleadservices.com", "gvt1.com", "gvt2.com", "goo.gl",
-        "youtube.com", "ytimg.com", "googlelabs.com", "github.com",
-        "githubusercontent.com", "telegram.org", "telegram.me",
-        "telegram.dog", "telegram.space", "tdesktop.org", "tdesktop.com",
-        "telegra.ph", "telega.one", "t.me", "tx.me", "cdn-telegram.org",
-        "telegram-cdn.org", "comments.app", "contest.com", "fragment.com",
-        "graph.org", "quiz.directory", "telesco.pe", "tg.dev", "ton.org",
-        "toncenter.com", "usercontent.dev", "apple.com", "icloud.com",
-        "icloud-content.com", "me.com", "mzstatic.com", "apple-cloudkit.com",
-        "apple-livephotoskit.com", "cdn-apple.com", "ampaeservices.com",
-        "netflix.com", "facebook.com", "meta.com"
-    ]
-    for d in manual_proxy_domains:
-        proxy_domains.add(d)
-
-    for tg_dom in TELEGRAM_DOMAINS:
-        proxy_domains.add(tg_dom)
-    for tg_cidr in TELEGRAM_CIDRS:
-        proxy_cidrs.add(tg_cidr)
-    for wb_cidr in WILDBERRIES_CIDRS:
-        proxy_cidrs.add(wb_cidr)
-
-    # ДОПОЛНЕНИЕ: сразу кладём pure-ad в reject
-    for ad in PURE_AD_DOMAINS:
-        reject_domains.add(ad)
-
-    ru_proxies = []
-    if os.path.exists("ru_proxies.txt"):
-        with open("ru_proxies.txt", "r", encoding="utf-8") as f:
-            ru_b64 = f.read().strip()
-            try:
-                ru_proxies = base64.b64decode(ru_b64).decode('utf-8').splitlines()
-            except Exception:
-                ru_proxies = []
-
-    proxy_urls = load_links_from_txt(PROXY_MANUAL_TXT)
-    print(f"PROXY: загружено {len(proxy_urls)} ссылок из {PROXY_MANUAL_TXT}")
-    for url in proxy_urls:
-        print(f"  Обработка: {url}")
-        process_rule_source(url, proxy_domains, proxy_cidrs)
-
-    direct_urls = load_links_from_txt(DIRECT_MANUAL_TXT)
-    print(f"DIRECT: загружено {len(direct_urls)} ссылок из {DIRECT_MANUAL_TXT}")
-    for url in direct_urls:
-        print(f"  Обработка: {url}")
-        process_rule_source(url, direct_domains, direct_cidrs)
-
-    reject_urls = load_links_from_txt(REJECT_MANUAL_TXT)
-    print(f"REJECT: загружено {len(reject_urls)} ссылок из {REJECT_MANUAL_TXT}")
-    for url in reject_urls:
-        print(f"  Обработка: {url}")
-        process_rule_source(url, reject_domains, reject_cidrs)
-
-    # ДОПОЛНЕНИЕ: RULE_SOURCES (если не прописаны в manual-txt)
-    for name, url in RULE_SOURCES.items():
-        if name in ("reject", "adguard_dns", "adguard_trackers", "oisd_small", "stevenblack"):
-            print(f"  RULE reject-source [{name}]: {url}")
-            process_rule_source(url, reject_domains, reject_cidrs)
-        elif name in ("telegram", "google", "youtube", "tiktok", "proxy_media"):
-            print(f"  RULE proxy-source [{name}]: {url}")
-            process_rule_source(url, proxy_domains, proxy_cidrs)
-        elif name == "apple":
-            print(f"  RULE direct/proxy-source [{name}]: {url}")
-            process_rule_source(url, direct_domains, direct_cidrs)
-
-    dropbox_content = fetch_url(DROPBOX_URL)
-    if dropbox_content:
-        print("  Обработка Dropbox-логов (только для REJECT, с whitelist):")
-        for line in dropbox_content.splitlines():
-            line = line.strip()
-            if not line or line.startswith(("#", "!", ";", "//")):
-                continue
-
-            parts = line.split(',')
-            if len(parts) < 6:
-                continue
-
-            domain = parts[4].strip()
-            if not domain or domain.startswith('.'):
-                continue
-
-            if not re.match(r'^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*\.[a-z]{2,}$', domain, re.IGNORECASE):
-                continue
-
-            d = clean_domain(domain)
-            if not d:
-                continue
-
-            if d in direct_domains or d in proxy_domains:
-                print(f"    {d} -> ПРОПУЩЕН (уже в Direct/Proxy)")
-                continue
-
-            # ДОПОЛНЕНИЕ: whitelist контента — никогда в reject
-            if is_content_whitelisted(d):
-                if is_domestic_service(d):
-                    direct_domains.add(d)
-                    print(f"    {d} -> в DIRECT (whitelist + РФ)")
-                else:
-                    proxy_domains.add(d)
-                    print(f"    {d} -> в PROXY (whitelist контент)")
-                continue
-
-            if is_domestic_service(d):
-                direct_domains.add(d)
-                print(f"    {d} -> в DIRECT (Российский сервис)")
-            elif is_telegram_domain(d):
-                proxy_domains.add(d)
-                print(f"    {d} -> в PROXY (Telegram)")
-            elif is_ad_or_tracker(d):
-                reject_domains.add(d)
-                print(f"    {d} -> в REJECT (реклама/трекер)")
-            else:
-                print(f"    {d} -> ПРОПУЩЕН (не реклама, не РФ)")
-
-    # Финальная очистка: whitelist вычищаем из reject
-    before = len(reject_domains)
-    reject_domains = {d for d in reject_domains if not is_content_whitelisted(d)}
-    print(f"  Очистка reject от whitelist: убрано {before - len(reject_domains)} доменов")
-
-    proxy_domains = {d for d in proxy_domains if d not in reject_domains}
-    proxy_cidrs = {c for c in proxy_cidrs if c not in reject_cidrs}
-    direct_domains = {d for d in direct_domains if d not in reject_domains}
-    direct_cidrs = {c for c in direct_cidrs if c not in reject_cidrs}
-    direct_domains = {d for d in direct_domains if d not in proxy_domains}
-    direct_cidrs = {c for c in direct_cidrs if c not in proxy_cidrs}
-
-    EXCLUDED_DOMAINS = [
-        "roblox.com",
-        "roblox.net",
-        "rbxcdn.com",
-        "discord.com",
-        "steam.com",
-        "steampowered.com"
-    ]
-
-    for domain in EXCLUDED_DOMAINS:
-        if domain in reject_domains:
-            reject_domains.remove(domain)
-            print(f"  {domain} -> УДАЛЁН из REJECT (исключение)")
-
-    save_mixed_rules_file(REJECT_JSON, reject_domains, reject_cidrs)
-    save_mixed_rules_file(RUS_JSON, direct_domains, direct_cidrs)
-    save_mixed_rules_file(PROXY_JSON, proxy_domains, proxy_cidrs)
-
-    print(f"\nСортировка завершена:")
-    print(f" -> Реджекты/Реклама: {len(reject_domains)} доменов, {len(reject_cidrs)} CIDR")
-    print(f" -> Прямой доступ (Direct): {len(direct_domains)} доменов, {len(direct_cidrs)} CIDR")
-    print(f" -> Прокси: {len(proxy_domains)} доменов, {len(proxy_cidrs)} CIDR")
-
-
-def step_compile_srs():
-    print("\n--- 3. КОМПИЛЯЦИЯ В БИНАРНИКИ SING-BOX (.SRS) ---")
-    current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
-    for jf in [f for f in os.listdir(current_dir) if f.endswith('.json')]:
-        if jf == "karing_config.json":
-            continue
-        srs_file = jf.replace('.json', '.srs')
-        if os.path.exists(os.path.join(current_dir, srs_file)):
-            os.remove(os.path.join(current_dir, srs_file))
-        try:
-            subprocess.run(
-                ["sing-box", "rule-set", "compile", os.path.join(current_dir, jf), "--output", os.path.join(current_dir, srs_file)],
-                check=True,
-                capture_output=True,
-                text=True
-            )
-            print(f"Скомпилировано: {jf} -> {srs_file}")
-        except Exception as e:
-            print(f"Ошибка компиляции {jf}: {e}")
-
-
-def main():
-    print("==================================================")
-    print("=== СБОРКА ПРАВИЛ ДЛЯ KARING (улучшенный build) ===")
-    print("==================================================")
-    step_collect_proxies()
-    step_parse_rules_and_sorting()
-    step_compile_srs()
-    print("\n==================================================")
-    print("=== ГОТОВО! ===")
-    print("==================================================")
-
-
-if __name__ == "__main__":
-    main()
+d
