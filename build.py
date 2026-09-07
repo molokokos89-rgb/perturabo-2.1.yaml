@@ -31,26 +31,27 @@ DROPBOX_URL = "https://www.dropbox.com/scl/fi/759t1a2us3y0kblgat0xr/log-for-reje
 # ---------------------------------------------------------------------------
 # SOURCES — старые оставлены (даже если часть 404), добавлены рабочие 2026
 # ---------------------------------------------------------------------------
-SOURCES = [
-    # === ОСНОВА ПОД РФ (уже кто-то проверял) ===
+SOURCES_PINNED = [
+    # Всегда в proxy.txt (уже под РФ) — не режем pre-check'ом
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS_WEAK_DPI_RUS.txt",
+]
+
+SOURCES = [
+    # доп. РФ-ориентир
     "https://raw.githubusercontent.com/aviamastersgh/vpn-free-russia/main/verified_configs.txt",
     "https://raw.githubusercontent.com/nikita29a/FreeProxyList/main/mirror/1.txt",
     "https://raw.githubusercontent.com/nikita29a/FreeProxyList/main/mirror/2.txt",
     "https://raw.githubusercontent.com/Subzio/subzio/main/HYSTERIA2.txt",
     "https://raw.githubusercontent.com/3inker/v2ray-subscription/main/all_ru.txt",
-
-    # === ДОБОР HY2 / короткие полки (не гиганты) ===
+    # короткий hy2 добор
     "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/separated-protocols/hysteria2_configs.txt",
     "https://raw.githubusercontent.com/morpheusadam/v2ray-config/main/subs/bundles/hysteria2.txt",
-    "https://raw.githubusercontent.com/morpheusadam/v2ray-config/main/subs/bundles/lite.txt",
     "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub",
-
-    # === небольшой добор trojan/ss (с лимитом MAX_PER_SOURCE) ===
-    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/separated-protocols/trojan_configs.txt",
-    "https://raw.githubusercontent.com/barry-far/V2ray-config/main/Sub1.txt",
 ]
+
+# совместимость: полный список = pinned + rest
+SOURCES_ALL = SOURCES_PINNED + SOURCES
 
 RULE_SOURCES = {
     "telegram": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/telegramcidr.txt",
@@ -897,82 +898,93 @@ def filter_nodes_before_final(links, workers=24):
 
 
 def step_collect_proxies():
-    print("\n--- 1. СБОР И ФИЛЬТРАЦИЯ ПРОКСИ (hy2>trojan>ss, no vless, parallel geo) ---")
+    print("\n--- 1. СБОР ПРОКСИ (igareck PINNED + добор, no vless) ---")
     from collections import defaultdict
-    per_source = defaultdict(int)
-    candidates = {}  # host:port -> link
 
-    for source in SOURCES:
-        print(f"  Source: {source}")
-        data = fetch_url(source)
-        if not data:
-            print("    [skip/404]")
-            continue
-        seen = set()
-        for line in data.splitlines():
-            line = line.strip()
-            if not line:
+    def collect_from(url_list, label, per_source_limit):
+        per_source = defaultdict(int)
+        out = {}  # host:port -> link
+        for source in url_list:
+            print(f"  [{label}] {source}")
+            data = fetch_url(source)
+            if not data:
+                print("    [skip/404]")
                 continue
-            if line.lower().startswith("vless://"):
-                continue
-            if not any(line.startswith(p) for p in PROTOCOLS):
-                continue
-            if any(bad in line.lower() for bad in BAD_KEYWORDS):
-                continue
-            host, port = extract_host_port(line)
-            if not host or not port:
-                continue
-            key = f"{host}:{port}"
-            if key in seen:
-                continue
-            if per_source[source] >= MAX_PER_SOURCE:
-                break
-            seen.add(key)
-            per_source[source] += 1
-            prio = PROTOCOL_PRIORITY.get(protocol_of(line), 99)
-            if key not in candidates or prio < PROTOCOL_PRIORITY.get(protocol_of(candidates[key]), 99):
-                candidates[key] = line
-        print(f"    taken: {per_source[source]}")
+            seen = set()
+            for line in data.splitlines():
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if line.lower().startswith("vless://"):
+                    continue
+                if not any(line.startswith(p) for p in PROTOCOLS):
+                    continue
+                if any(bad in line.lower() for bad in BAD_KEYWORDS):
+                    continue
+                host, port = extract_host_port(line)
+                if not host or not port:
+                    continue
+                key = f"{host}:{port}"
+                if key in seen:
+                    continue
+                if per_source[source] >= per_source_limit:
+                    break
+                seen.add(key)
+                per_source[source] += 1
+                prio = PROTOCOL_PRIORITY.get(protocol_of(line), 99)
+                if key not in out or prio < PROTOCOL_PRIORITY.get(protocol_of(out[key]), 99):
+                    out[key] = line
+            print(f"    taken: {per_source[source]}")
+        return out
+
+    pinned_map = collect_from(SOURCES_PINNED, "PINNED", per_source_limit=300)
+    rest_map = collect_from(SOURCES, "DOBOR", per_source_limit=MAX_PER_SOURCE)
+
+    # добор не затирает pinned
+    combined = dict(rest_map)
+    combined.update(pinned_map)  # pinned побеждает
 
     hosts = []
-    for key, link in candidates.items():
+    for link in combined.values():
         h, _ = extract_host_port(link)
         if h:
             hosts.append(h)
     batch_geo_check(hosts)
 
-    foreign_nodes, ru_nodes = [], []
-    for key, link in candidates.items():
+    pinned_foreign, other_foreign, ru = [], [], []
+    for key, link in combined.items():
         h, _ = extract_host_port(link)
         if check_is_russia(h):
-            ru_nodes.append(link)
+            ru.append(link)
+            continue
+        if key in pinned_map:
+            pinned_foreign.append(link)
         else:
-            foreign_nodes.append(link)
+            other_foreign.append(link)
 
     def sort_key(link):
         return (PROTOCOL_PRIORITY.get(protocol_of(link), 99), link)
 
-    foreign_nodes = sorted(set(foreign_nodes), key=sort_key)
-    ru_nodes = sorted(set(ru_nodes), key=sort_key)
+    pinned_foreign = sorted(set(pinned_foreign), key=sort_key)
+    # pre-check только добор; igareck не режем
+    other_foreign = filter_nodes_before_final(sorted(set(other_foreign), key=sort_key))
+    room = max(0, MAX_FOREIGN_TOTAL - len(pinned_foreign))
+    other_foreign = sorted(other_foreign, key=sort_key)[:room]
 
-    # СНАЧАЛА проверка, ПОТОМ лимит и запись в итоговый список
-    foreign_nodes = filter_nodes_before_final(foreign_nodes)
-    foreign_nodes = sorted(foreign_nodes, key=sort_key)[:MAX_FOREIGN_TOTAL]
+    final_foreign = pinned_foreign + other_foreign
+    ru = sorted(set(ru), key=sort_key)
 
-    if foreign_nodes:
-        with open("proxy.txt", "w", encoding="utf-8") as f:
-            f.write("\n".join(foreign_nodes) + "\n")
-    else:
-        with open("proxy.txt", "w", encoding="utf-8") as f:
-            f.write("")
-        print("  WARNING: ни одна foreign-нода не прошла pre-check")
-
-    if ru_nodes:
+    with open("proxy.txt", "w", encoding="utf-8") as f:
+        f.write("\n".join(final_foreign) + ("\n" if final_foreign else ""))
+    if ru:
         with open("ru_proxies.txt", "w", encoding="utf-8") as rf:
-            rf.write("\n".join(ru_nodes) + "\n")
+            rf.write("\n".join(ru) + "\n")
 
-    hy2_n = sum(1 for x in foreign_nodes if protocol_of(x) in ("hy2://", "hysteria2://"))
-    print(f"Готово! proxy.txt={len(foreign_nodes)} (hy2={hy2_n}), ru_proxies.txt={len(ru_nodes)}")
+    hy2_n = sum(1 for x in final_foreign if protocol_of(x) in ("hy2://", "hysteria2://"))
+    print(
+        f"Готово! proxy.txt={len(final_foreign)} "
+        f"(pinned={len(pinned_foreign)}, dobor={len(other_foreign)}, hy2={hy2_n}), ru={len(ru)}"
+    )
 
 
 def step_parse_rules_and_sorting():
