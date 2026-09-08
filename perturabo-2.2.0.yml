@@ -1,0 +1,192 @@
+# perturabo 2.2.0 — под Karing: ноды + rule-providers с path/interval (кэш)
+# DNS в YAML Karing почти не применяет — продублируй в Настройки → DNS
+
+port: 0
+socks-port: 0
+redir-port: 0
+tproxy-port: 0
+mixed-port: 7890
+allow-lan: false
+bind-address: '*'
+mode: rule
+log-level: error
+ipv6: false
+global-client-fingerprint: chrome
+keep-alive-idle: 15
+keep-alive-interval: 15
+tcp-concurrent: true
+
+sniffing:
+  enable: true
+  override-destination: true
+  sniff:
+    TLS:
+      ports: [443, 8443]
+    HTTP:
+      ports: [80, 8080]
+
+dns:
+  enable: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  respect-rules: false
+  ipv6: false
+  nameserver:
+    - https://dns.google/dns-query
+    - https://dns.quad9.net/dns-query
+  direct-nameserver:
+    - 77.88.8.8
+    - 77.88.8.1
+  proxy-server-nameserver:
+    - https://dns.google/dns-query
+    - tls://8.8.8.8
+  fake-ip-filter:
+    - '*.nalog.ru'
+    - '*.gosuslugi.ru'
+    - '*.vk.com'
+    - '*.vk.ru'
+    - '*.yandex.ru'
+    - '*.yandex.net'
+    - '*.ya.ru'
+    - '*.dzen.ru'
+    - '*.mail.ru'
+    - '*.ok.ru'
+    - '*.ru'
+    - '*.su'
+    - '*.xn--p1ai'
+    - '*.by'
+    - '*.pool.ntp.org'
+    - '*.ntp.org'
+
+# --- НОДЫ (обновляет build → proxy.txt) ---
+proxy-providers:
+  main-sub:
+    type: http
+    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/main/proxy.txt"
+    interval: 3600
+    path: ./providers/main_sub.txt
+    health-check:
+      enable: false
+
+proxy-groups:
+  - name: PROXY
+    type: urltest
+    url: http://www.gstatic.com/generate_204
+    interval: 600
+    timeout: 5000
+    lazy: false
+    tolerance: 300
+    proxies:
+      - main-sub
+
+  - name: Gemini-Group
+    type: fallback
+    url: http://www.gstatic.com/generate_204
+    interval: 1200
+    timeout: 5000
+    proxies:
+      - main-sub
+      - PROXY
+
+# --- ПРАВИЛА С КЭШЕМ (path + interval обязательны для Karing) ---
+# behavior: domain + текстовые списки Loyalsoldier — Karing их нормально ест и кэширует.
+# Свои JSON (sing-box) с behavior: domain часто игнорируются → поэтому основа Clash domain.
+rule-providers:
+  reject:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt"
+    path: ./rules/reject_loyalsoldier.txt
+    interval: 43200
+
+  proxy:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/proxy.txt"
+    path: ./rules/proxy_loyalsoldier.txt
+    interval: 43200
+
+  direct:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt"
+    path: ./rules/direct_loyalsoldier.txt
+    interval: 43200
+
+  gfw:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt"
+    path: ./rules/gfw.txt
+    interval: 43200
+
+  telegramcidr:
+    type: http
+    behavior: ipcidr
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/telegramcidr.txt"
+    path: ./rules/telegramcidr.txt
+    interval: 43200
+
+  # Твои собранные правила (2.1). Если Karing их не подхватит — всё равно остаются Loyalsoldier выше.
+  my-reject:
+    type: http
+    behavior: classical
+    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/main/reject_rules.json"
+    path: ./rules/my_reject.json
+    interval: 43200
+
+  my-proxy:
+    type: http
+    behavior: classical
+    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/main/my_rules_proxy.json"
+    path: ./rules/my_proxy.json
+    interval: 43200
+
+  my-direct:
+    type: http
+    behavior: classical
+    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/main/My_rules_RUS.json"
+    path: ./rules/my_direct.json
+    interval: 43200
+
+rules:
+  # точечные
+  - DOMAIN,gemini.google.com,Gemini-Group
+  - DOMAIN,aistudio.google.com,Gemini-Group
+  - DOMAIN,generativelanguage.googleapis.com,Gemini-Group
+  - DOMAIN-SUFFIX,bard.google.com,Gemini-Group
+
+  - DOMAIN-SUFFIX,telegram.org,PROXY
+  - DOMAIN-SUFFIX,telegram.me,PROXY
+  - DOMAIN-SUFFIX,t.me,PROXY
+  - DOMAIN-SUFFIX,tdesktop.com,PROXY
+  - RULE-SET,telegramcidr,PROXY
+
+  - DOMAIN-SUFFIX,whatsapp.net,PROXY
+  - DOMAIN-SUFFIX,whatsapp.com,PROXY
+  - DOMAIN-SUFFIX,signal.org,PROXY
+
+  # Apple / РФ-платежи — direct
+  - DOMAIN-SUFFIX,apple.com,DIRECT
+  - DOMAIN-SUFFIX,icloud.com,DIRECT
+  - DOMAIN-SUFFIX,mzstatic.com,DIRECT
+  - IP-CIDR,17.0.0.0/8,DIRECT
+  - DOMAIN-SUFFIX,nspk.ru,DIRECT
+  - DOMAIN-SUFFIX,sbp.ru,DIRECT
+
+  # кэшируемые наборы
+  - RULE-SET,my-reject,REJECT
+  - RULE-SET,reject,REJECT
+  - RULE-SET,my-proxy,PROXY
+  - RULE-SET,proxy,PROXY
+  - RULE-SET,gfw,PROXY
+  - RULE-SET,my-direct,DIRECT
+  - RULE-SET,direct,DIRECT
+
+  # РФ-зоны (без опасного DOMAIN-SUFFIX,org)
+  - DOMAIN-SUFFIX,xn--p1ai,DIRECT
+  - DOMAIN-SUFFIX,ru,DIRECT
+  - DOMAIN-SUFFIX,su,DIRECT
+  - DOMAIN-SUFFIX,by,DIRECT
+
+  - MATCH,PROXY
