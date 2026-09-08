@@ -1,6 +1,3 @@
-# perturabo 2.2.0 — под Karing: ноды + rule-providers с path/interval (кэш)
-# DNS в YAML Karing почти не применяет — продублируй в Настройки → DNS
-
 port: 0
 socks-port: 0
 redir-port: 0
@@ -31,53 +28,79 @@ dns:
   fake-ip-range: 198.18.0.1/16
   respect-rules: false
   ipv6: false
+  
   nameserver:
     - https://dns.google/dns-query
     - https://dns.quad9.net/dns-query
+
   direct-nameserver:
     - 77.88.8.8
     - 77.88.8.1
+
   proxy-server-nameserver:
     - https://dns.google/dns-query
     - tls://8.8.8.8
+
   fake-ip-filter:
     - '*.nalog.ru'
+    - '*.nalog.gov.ru'
+    - '*.boosty.to'
+    - '*.max.ru'
+    - '*.bitrix24.ru'
+    - '*.bitrix24.net'
+    - '*.bitrix24.com'
+    - '*.b24.ru'
+    - '*.b24.net'
     - '*.gosuslugi.ru'
+    - '*.pgu.mos.ru'
+    - '*.rostelecom.ru'
+    - '*.rt.ru'
+    - '*.edu.ru'
     - '*.vk.com'
     - '*.vk.ru'
+    - '*.vk.me'
+    - '*.vk.net'
+    - '*.vk.org'
+    - '*.vk-cdn.net'
     - '*.yandex.ru'
     - '*.yandex.net'
-    - '*.ya.ru'
+    - '*.yandex.com'
+    - '*.yandex.org'
     - '*.dzen.ru'
+    - '*.yoomoney.ru'
     - '*.mail.ru'
     - '*.ok.ru'
     - '*.ru'
     - '*.su'
     - '*.xn--p1ai'
     - '*.by'
+    - '*.org.ru'
+    - '*.net.ru'
+    - '*.pp.ru'
     - '*.pool.ntp.org'
     - '*.ntp.org'
 
-# --- НОДЫ (обновляет build → proxy.txt) ---
 proxy-providers:
-  main-sub:
+  vless-sub-1:
     type: http
     url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/main/proxy.txt"
     interval: 3600
-    path: ./providers/main_sub.txt
+    path: ./vless_sub_1.txt
+    ua: "clash"
     health-check:
       enable: false
 
 proxy-groups:
-  - name: PROXY
+  - name: VLESS-Auto
     type: urltest
     url: http://www.gstatic.com/generate_204
     interval: 600
     timeout: 5000
     lazy: false
     tolerance: 300
+    idle-timeout: 1800
     proxies:
-      - main-sub
+      - vless-sub-1
 
   - name: Gemini-Group
     type: fallback
@@ -85,108 +108,90 @@ proxy-groups:
     interval: 1200
     timeout: 5000
     proxies:
-      - main-sub
-      - PROXY
+      - vless-sub-1
 
-# --- ПРАВИЛА С КЭШЕМ (path + interval обязательны для Karing) ---
-# behavior: domain + текстовые списки Loyalsoldier — Karing их нормально ест и кэширует.
-# Свои JSON (sing-box) с behavior: domain часто игнорируются → поэтому основа Clash domain.
 rule-providers:
-  reject:
+  my-reject-rules:
     type: http
     behavior: domain
-    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt"
-    path: ./rules/reject_loyalsoldier.txt
+    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/main/reject_rules.json"
+    path: ./rules/reject.json
     interval: 43200
 
-  proxy:
+  nsfw-rules:
     type: http
     behavior: domain
-    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/proxy.txt"
-    path: ./rules/proxy_loyalsoldier.txt
+    url: "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/gfw.txt"
+    path: ./rules/nsfw.txt
     interval: 43200
 
-  direct:
+  my-proxy-rules:
     type: http
     behavior: domain
-    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt"
-    path: ./rules/direct_loyalsoldier.txt
+    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/main/my_rules_proxy.json"
+    path: ./rules/proxy.json
     interval: 43200
 
-  gfw:
+  my-direct-rules:
     type: http
     behavior: domain
-    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt"
-    path: ./rules/gfw.txt
-    interval: 43200
-
-  telegramcidr:
-    type: http
-    behavior: ipcidr
-    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/telegramcidr.txt"
-    path: ./rules/telegramcidr.txt
-    interval: 43200
-
-  # Твои собранные правила (2.1). Если Karing их не подхватит — всё равно остаются Loyalsoldier выше.
-  my-reject:
-    type: http
-    behavior: classical
-    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/main/reject_rules.json"
-    path: ./rules/my_reject.json
-    interval: 43200
-
-  my-proxy:
-    type: http
-    behavior: classical
-    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/main/my_rules_proxy.json"
-    path: ./rules/my_proxy.json
-    interval: 43200
-
-  my-direct:
-    type: http
-    behavior: classical
-    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.1.yaml/main/My_rules_RUS.json"
-    path: ./rules/my_direct.json
+    url: "https://raw.githubusercontent.com/molokokos89-rgb/perturabo-2.0.yaml/main/My_rules_RUS.json"
+    path: ./rules/direct.json
     interval: 43200
 
 rules:
-  # точечные
+  - AND,((CONN-ANT,UDP),(DST-PORT,443),(DOMAIN-KEYWORD,cloudflare)),REJECT
+  - AND,((CONN-ANT,UDP),(DST-PORT,80), (DOMAIN-KEYWORD,cloudflare)),REJECT
   - DOMAIN,gemini.google.com,Gemini-Group
   - DOMAIN,aistudio.google.com,Gemini-Group
   - DOMAIN,generativelanguage.googleapis.com,Gemini-Group
+  - DOMAIN,alkalimining-pa.googleapis.com,Gemini-Group
+  - DOMAIN,proactivebackend-pa.googleapis.com,Gemini-Group
+  - DOMAIN-KEYWORD,alkalimakersuite,Gemini-Group
   - DOMAIN-SUFFIX,bard.google.com,Gemini-Group
 
-  - DOMAIN-SUFFIX,telegram.org,PROXY
-  - DOMAIN-SUFFIX,telegram.me,PROXY
-  - DOMAIN-SUFFIX,t.me,PROXY
-  - DOMAIN-SUFFIX,tdesktop.com,PROXY
-  - RULE-SET,telegramcidr,PROXY
-
-  - DOMAIN-SUFFIX,whatsapp.net,PROXY
-  - DOMAIN-SUFFIX,whatsapp.com,PROXY
-  - DOMAIN-SUFFIX,signal.org,PROXY
-
-  # Apple / РФ-платежи — direct
+  - DOMAIN-KEYWORD,cloudflare,VLESS-Auto
+  - DOMAIN-SUFFIX,cloudflare.com,VLESS-Auto
+  - DOMAIN-SUFFIX,cloudflare-dns.com,VLESS-Auto
+  - DOMAIN-SUFFIX,browserleaks.com,VLESS-Auto
+  - DOMAIN-SUFFIX,telegram.org,VLESS-Auto
+  - DOMAIN-SUFFIX,telegram.dog,VLESS-Auto
+  - DOMAIN-SUFFIX,telegram.me,VLESS-Auto
+  - DOMAIN-SUFFIX,t.me,VLESS-Auto
+  - DOMAIN-SUFFIX,tdesktop.com,VLESS-Auto
+  - IP-CIDR,149.154.160.0/20,VLESS-Auto
+  - IP-CIDR,149.154.164.0/22,VLESS-Auto
+  - IP-CIDR,149.154.172.0/22,VLESS-Auto
+  - IP-CIDR,91.108.4.0/22,VLESS-Auto
+  - IP-CIDR,91.108.8.0/22,VLESS-Auto
+  - IP-CIDR,91.108.12.0/22,VLESS-Auto
+  - IP-CIDR,91.108.16.0/22,VLESS-Auto
+  - IP-CIDR,91.108.20.0/22,VLESS-Auto
+  - IP-CIDR,91.108.36.0/23,VLESS-Auto
+  - IP-CIDR,91.108.38.0/23,VLESS-Auto
+  - IP-CIDR,91.108.56.0/22,VLESS-Auto
+  - DOMAIN-SUFFIX,whatsapp.net,VLESS-Auto
+  - DOMAIN-SUFFIX,whatsapp.com,VLESS-Auto
+  - DOMAIN-SUFFIX,whatsapp.biz,VLESS-Auto
+  - DOMAIN-SUFFIX,viber.com,VLESS-Auto
+  - DOMAIN-SUFFIX,signal.org,VLESS-Auto
+  - DOMAIN-SUFFIX,whispersystems.org,VLESS-Auto
+  - IP-CIDR,157.240.0.0/16,VLESS-Auto
+  - IP-CIDR,31.13.0.0/16,VLESS-Auto
+  - IP-CIDR,18.244.0.0/15,VLESS-Auto
   - DOMAIN-SUFFIX,apple.com,DIRECT
   - DOMAIN-SUFFIX,icloud.com,DIRECT
   - DOMAIN-SUFFIX,mzstatic.com,DIRECT
   - IP-CIDR,17.0.0.0/8,DIRECT
   - DOMAIN-SUFFIX,nspk.ru,DIRECT
   - DOMAIN-SUFFIX,sbp.ru,DIRECT
-
-  # кэшируемые наборы
-  - RULE-SET,my-reject,REJECT
-  - RULE-SET,reject,REJECT
-  - RULE-SET,my-proxy,PROXY
-  - RULE-SET,proxy,PROXY
-  - RULE-SET,gfw,PROXY
-  - RULE-SET,my-direct,DIRECT
-  - RULE-SET,direct,DIRECT
-
-  # РФ-зоны (без опасного DOMAIN-SUFFIX,org)
+  - DOMAIN-KEYWORD,sbp,DIRECT
   - DOMAIN-SUFFIX,xn--p1ai,DIRECT
   - DOMAIN-SUFFIX,ru,DIRECT
   - DOMAIN-SUFFIX,su,DIRECT
-  - DOMAIN-SUFFIX,by,DIRECT
-
-  - MATCH,PROXY
+  - DOMAIN-SUFFIX,org,DIRECT
+  - RULE-SET,my-reject-rules,REJECT
+  - RULE-SET,my-proxy-rules,VLESS-Auto
+  - RULE-SET,nsfw-rules,VLESS-Auto
+  - RULE-SET,my-direct-rules,DIRECT
+  - MATCH,VLESS-Auto
