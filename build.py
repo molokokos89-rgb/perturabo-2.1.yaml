@@ -35,6 +35,8 @@ SOURCES_PINNED = [
     # Всегда в proxy.txt (уже под РФ) — не режем pre-check'ом
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS_WEAK_DPI_RUS.txt",
+    # полный VLESS igareck (не mobile) — только отсюда, не из добора
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt",
 ]
 
 SOURCES = [
@@ -72,13 +74,25 @@ HEAVY_SOURCES = [
     "https://raw.githubusercontent.com/roskomkod/ru-blocked-domains/main/domains.txt",
 ]
 
-PROTOCOLS = ["hy2://", "hysteria2://", "trojan://", "ss://", "vmess://"]  # без vless (ТПУ)
-PROTOCOL_PRIORITY = {"hy2://": 0, "hysteria2://": 0, "trojan://": 1, "ss://": 2, "vmess://": 3}
+PROTOCOLS = ["hy2://", "hysteria2://", "trojan://", "ss://", "vmess://", "vless://"]
+PROTOCOL_PRIORITY = {"hy2://": 0, "hysteria2://": 0, "trojan://": 1, "ss://": 2, "vmess://": 3, "vless://": 4}
 MAX_PER_SOURCE = 150
 MAX_FOREIGN_TOTAL = 250
 GEO_WORKERS = 32
 _geo_cache = {}
-BAD_KEYWORDS = ["russia", "anycast", "offnet", "offcord", "cloudflare", "warp", "cf-"]
+MAX_REJECT_DOMAINS = 25000  # потолок reject, иначе JSON на 10MB+
+REJECT_REBUILD = True  # не копить старый reject бесконечно
+BAD_KEYWORDS = [
+    "russia", "russian", "росси", "москва", "moscow", "россия",
+    "anycast", "offnet", "offcord", "cloudflare", "warp", "cf-",
+]
+# флаги/маркеры РФ в имени (#remark)
+RU_NAME_MARKERS = [
+    "🇷🇺", "рф", " rf ", "-ru-", "_ru_", " ru ", "[ru]", "russia", "russian",
+    "moscow", "москва", "россия", "росси", "yandex-cloud", "selectel",
+    "vk-cloud", "timeweb",
+]
+
 
 TELEGRAM_DOMAINS = [
     "t.me", "telegram.org", "telegram.me", "tdesktop.com", "telegra.ph",
@@ -334,6 +348,25 @@ def _check_is_russia_uncached(host):
     return False
 
 
+
+def is_russian_by_name(link):
+    """Отсев по имени/remark: флаг РФ, moscow, russia и т.п."""
+    low = link.lower()
+    # emoji flag not lowercased the same - check raw too
+    if "🇷🇺" in link or "флаг" in low:
+        return True
+    for m in RU_NAME_MARKERS:
+        if m in low or m in link:
+            return True
+    # #remark tail
+    if "#" in link:
+        remark = link.split("#", 1)[1].lower()
+        for m in RU_NAME_MARKERS:
+            if m.strip() in remark:
+                return True
+    return False
+
+
 def check_is_russia(host):
     if host in _geo_cache:
         return _geo_cache[host]
@@ -540,48 +573,62 @@ def load_json_domains(filename):
     return domains
 
 
-def save_mixed_rules_file(filename, domains, cidrs):
-    existing_data = {}
-    if os.path.exists(filename):
-        try:
-            with open(filename, "r", encoding="utf-8") as f:
-                existing_data = json.load(f)
-        except Exception:
-            pass
-
+def save_mixed_rules_file(filename, domains, cidrs, rebuild=False, max_domains=None, compact=False):
+    """
+    rebuild=True  — не сливать со старым файлом (для reject, чтобы не рос до 10MB)
+    max_domains   — потолок domain_suffix
+    compact       — без indent (меньше вес)
+    """
     existing_domains = set()
     existing_cidrs = set()
     existing_keywords = set()
     existing_regex = set()
 
-    if "rules" in existing_data and existing_data["rules"]:
-        for rule in existing_data["rules"]:
-            existing_domains.update(rule.get("domain_suffix", []))
-            existing_domains.update(rule.get("domain", []))
-            existing_cidrs.update(rule.get("ip_cidr", []))
-            existing_keywords.update(rule.get("domain_keyword", []))
-            existing_regex.update(rule.get("domain_regex", []))
+    if not rebuild and os.path.exists(filename):
+        try:
+            with open(filename, "r", encoding="utf-8") as f:
+                existing_data = json.load(f)
+            if "rules" in existing_data and existing_data["rules"]:
+                for rule in existing_data["rules"]:
+                    existing_domains.update(rule.get("domain_suffix", []))
+                    existing_domains.update(rule.get("domain", []))
+                    existing_cidrs.update(rule.get("ip_cidr", []))
+                    existing_keywords.update(rule.get("domain_keyword", []))
+                    existing_regex.update(rule.get("domain_regex", []))
+        except Exception:
+            pass
 
     combined_domains = existing_domains | set(domains)
     combined_cidrs = existing_cidrs | set(cidrs)
 
+    # точный отсев: whitelist контента наружу
+    combined_domains = {d for d in combined_domains if d and not is_content_whitelisted(d)}
+
+    if max_domains and len(combined_domains) > max_domains:
+        # приоритет: pure-ad сначала, потом короткие имена, потом остальные
+        pure = sorted(d for d in combined_domains if is_pure_ad_domain(d))
+        rest = sorted(d for d in combined_domains if not is_pure_ad_domain(d))
+        combined_domains = pure + rest
+        combined_domains = combined_domains[:max_domains]
+        combined_domains = set(combined_domains)
+
     rule_item = {}
     if combined_domains:
-        rule_item["domain_suffix"] = sorted(list(combined_domains))
+        rule_item["domain_suffix"] = sorted(combined_domains)
     if combined_cidrs:
-        rule_item["ip_cidr"] = sorted(list(combined_cidrs))
-    if existing_keywords:
-        rule_item["domain_keyword"] = sorted(list(existing_keywords))
-    if existing_regex:
-        rule_item["domain_regex"] = sorted(list(existing_regex))
+        rule_item["ip_cidr"] = sorted(combined_cidrs)
+    if existing_keywords and not rebuild:
+        rule_item["domain_keyword"] = sorted(existing_keywords)
+    if existing_regex and not rebuild:
+        rule_item["domain_regex"] = sorted(existing_regex)
 
-    data = {
-        "version": 1,
-        "rules": [rule_item] if rule_item else []
-    }
+    data = {"version": 1, "rules": [rule_item] if rule_item else []}
 
     with open(filename, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+        if compact:
+            json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+        else:
+            json.dump(data, f, indent=2, ensure_ascii=False)
 
 
 def parse_proxy_to_singbox(link):
@@ -915,11 +962,14 @@ def step_collect_proxies():
                 line = line.strip()
                 if not line or line.startswith("#"):
                     continue
-                if line.lower().startswith("vless://"):
+                # vless только из PINNED (igareck full); из добора — нет
+                if line.lower().startswith("vless://") and label != "PINNED":
                     continue
                 if not any(line.startswith(p) for p in PROTOCOLS):
                     continue
                 if any(bad in line.lower() for bad in BAD_KEYWORDS):
+                    continue
+                if is_russian_by_name(line):
                     continue
                 host, port = extract_host_port(line)
                 if not host or not port:
@@ -954,7 +1004,7 @@ def step_collect_proxies():
     pinned_foreign, other_foreign, ru = [], [], []
     for key, link in combined.items():
         h, _ = extract_host_port(link)
-        if check_is_russia(h):
+        if check_is_russia(h) or is_russian_by_name(link):
             ru.append(link)
             continue
         if key in pinned_map:
@@ -1152,6 +1202,11 @@ def step_parse_rules_and_sorting():
             else:
                 print(f"    {d} -> ПРОПУЩЕН (не реклама, не РФ)")
 
+    # Точный фильтр reject: только ad/tracker (не весь oisd/hosts подряд)
+    before_prec = len(reject_domains)
+    reject_domains = {d for d in reject_domains if is_ad_or_tracker(d) or is_pure_ad_domain(d)}
+    print(f"  Точный фильтр reject (только ads/trackers): {before_prec} -> {len(reject_domains)}")
+
     # Финальная очистка: whitelist вычищаем из reject
     before = len(reject_domains)
     reject_domains = {d for d in reject_domains if not is_content_whitelisted(d)}
@@ -1178,7 +1233,12 @@ def step_parse_rules_and_sorting():
             reject_domains.remove(domain)
             print(f"  {domain} -> УДАЛЁН из REJECT (исключение)")
 
-    save_mixed_rules_file(REJECT_JSON, reject_domains, reject_cidrs)
+    # reject: пересобираем с нуля + потолок + compact (не копить 300k доменов)
+    save_mixed_rules_file(
+        REJECT_JSON, reject_domains, reject_cidrs,
+        rebuild=REJECT_REBUILD, max_domains=MAX_REJECT_DOMAINS, compact=True,
+    )
+    # proxy/direct — как раньше, можно сливать с ручным
     save_mixed_rules_file(RUS_JSON, direct_domains, direct_cidrs)
     save_mixed_rules_file(PROXY_JSON, proxy_domains, proxy_cidrs)
 
