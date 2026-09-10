@@ -74,8 +74,8 @@ HEAVY_SOURCES = [
     "https://raw.githubusercontent.com/roskomkod/ru-blocked-domains/main/domains.txt",
 ]
 
-PROTOCOLS = ["hy2://", "hysteria2://", "trojan://", "ss://", "vmess://", "vless://"]
-PROTOCOL_PRIORITY = {"hy2://": 0, "hysteria2://": 0, "trojan://": 1, "ss://": 2, "vmess://": 3, "vless://": 4}
+PROTOCOLS = ["hy2://", "hysteria2://", "vless://", "ss://"]  # без trojan/vmess
+PROTOCOL_PRIORITY = {"hy2://": 0, "hysteria2://": 0, "vless://": 1, "ss://": 2}
 MAX_PER_SOURCE = 150
 MAX_FOREIGN_TOTAL = 250
 GEO_WORKERS = 32
