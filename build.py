@@ -40,19 +40,18 @@ SOURCES_PINNED = [
 ]
 
 SOURCES = [
-    # доп. РФ-ориентир
+    # доп. РФ-ориентир + добор hy2/vless/ss
     "https://raw.githubusercontent.com/aviamastersgh/vpn-free-russia/main/verified_configs.txt",
-    "https://raw.githubusercontent.com/nikita29a/FreeProxyList/main/mirror/1.txt",
-    "https://raw.githubusercontent.com/nikita29a/FreeProxyList/main/mirror/2.txt",
     "https://raw.githubusercontent.com/Subzio/subzio/main/HYSTERIA2.txt",
-    "https://raw.githubusercontent.com/3inker/v2ray-subscription/main/all_ru.txt",
-    # короткий hy2 добор
     "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/main/separated-protocols/hysteria2_configs.txt",
     "https://raw.githubusercontent.com/morpheusadam/v2ray-config/main/subs/bundles/hysteria2.txt",
+    "https://raw.githubusercontent.com/morpheusadam/v2ray-config/main/subs/bundles/mini.txt",
+    "https://raw.githubusercontent.com/Epodonios/v2ray-configs/main/Splitted-By-Protocol/ss.txt",
     "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub",
+    # nikita огромный — только с MAX_PER_SOURCE
+    "https://raw.githubusercontent.com/nikita29a/FreeProxyList/main/mirror/1.txt",
 ]
 
-# совместимость: полный список = pinned + rest
 SOURCES_ALL = SOURCES_PINNED + SOURCES
 
 RULE_SOURCES = {
