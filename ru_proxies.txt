@@ -3,14 +3,9 @@ hysteria2://8d722acb-d6ed-468c-af31-7ce0710fa425@tw1.tokervpn.ru:443?sni=tw1.tok
 hysteria2://BWAFlp8g53@hys28.wba-pn.ru:443?sni=hys28.wba-pn.ru&insecure=1#hysteria2-940612423
 hysteria2://CnVfXXvMzh@hys13.wba-pn.ru:443?sni=hys13.wba-pn.ru&insecure=1#hysteria2-964103028
 hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443/?sni=hy2-latvia2.unlimited-access.ru# By EbraSha 🛰️
-hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@144.31.49.47:443/?insecure=1&sni=admin.wwwinternetvideo.click# By EbraSha 🧲
-hysteria2://c-E0lamG8OnEj9M_uh3oJPmIXqYIVGctO-NHELF1TmNYs7Jl@fast.news.gazette.help:443?sni=cz.h2.cleanersaz.help&alpn=h3#%F0%9F%87%A8%F0%9F%87%BF%20Czechia%20%5B%2ACIDR%5D
 hysteria2://ca4f51fcfae16c802d52@x-ui-ge.havalvpn.ru:44312?sni=x-ui-ge.havalvpn.ru#%F0%9F%87%A9%F0%9F%87%AA%20Germany%2C%20Frankfurt%20am%20Main%20%7C%20%5BBL%5D
-hysteria2://e0b9fb0f-1bbd-478b-9580-c2294778338b@cdncache.pleiades.codes:8443?descriptions=СвободуИнтернету252&seq=you_are_beautiful3086&descriptions=люби_себя6cfdda&descriptions=%D0%BB%D1%8E%D0%B1%D0%B8_%D1%81%D0%B5%D0%B1%D1%8F5dd5e1&__rand=f9c00fb3&seq=you_are_beautiful4799&sni=cdncache.pleiades.codes&nonce=J9qxArQL&seq=you_are_beautiful8902&_t=91735d4c&burmalda=0dd99f31&seq=you_are_beautiful9144&seq=you_are_beautiful6908&descriptions=СвободуИнтернету412&descriptions=люби_себя600edd&_t=23b73eaf&alpn=h3&descriptions=люби_себя2f3bb5&__rand=ba941d1d&seq=you_are_beautiful3251&freeinternet=kizyak_vpn1788793436896&__rand=dc6563f8&descriptions=люби_себяa28864&burmalda=dd4aaba9&burmalda=96a6e03e&descriptions=СвободуИнтернету41&freeinternet=kizyak_vpn1788938980803&_t=079ee924#[317ms
 hysteria2://kVfzhSpshc@hys1.wba-pn.ru:443?insecure=0&security=tls&sni=hys1.wba-pn.ru#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%2C%20Amsterdam%20%7C%20%5BBL%5D
 hysteria2://oCYFcbOo8s@hys22.wba-pn.ru:443?security=tls&fp=chrome#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%2C%20Amsterdam%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
-hysteria2://sOiWCQ2AdIV0OWNuqQVyWp4JZnRxdyLROSjX@31.76.71.63:443/?insecure=1&sni=cabinet.wwwinternetvideo.click# By EbraSha 🛡️
 hysteria2://sxc15led4b0vp5fy@musicclips.videolinks.ru:8443?sni=musicclips.videolinks.ru&obfs=salamander&obfs-password=8zzng75tz4tf82pj# By EbraSha 💎
-hysteria2://umnDU7jgFYUjpVjVM2sW9HL0rRYLJNgzVwRu2HzWEhyZKkRx@144.31.93.173:443/?insecure=1&sni=germany1.h2corp.local# By EbraSha 🖥️
 hysteria2://wrSuBorIlf@hys9.wba-pn.ru:443?security=tls&fp=chrome#0303
-ss://4bdb673a-56ba-43d3-a9b9-ef5aef990644@185.178.208.176:443?path=/stream/615428/socket&security=tls&alpn=h3,h2&encryption=none&insecure=0&fp=chrome&type=ws&allowInsecure=0&sni=founders-blog.online#EPODONIOS
+ss://1c332eae-7e02-4acd-996d-4eb3e652401c@prep.wwwinternetvideo.click:443?security=reality&encryption=none&pbk=uitO4Z8t9TplwwYaqwLqh5rfxDh_X8bOBiNuPbzvaEM&headerType=none&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=yandex.ru&sid=bbe46bd8f6b96839#REALITY|US🇺🇸
