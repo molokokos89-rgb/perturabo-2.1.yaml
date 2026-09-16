@@ -74,9 +74,9 @@ HEAVY_SOURCES = [
 ]
 
 PROTOCOLS = ["hy2://", "hysteria2://", "vless://", "ss://"]  # без trojan/vmess
-PROTOCOL_PRIORITY = {"hy2://": 0, "hysteria2://": 0, "vless://": 0, "ss://": 0}
-MAX_PER_SOURCE = 400
-MAX_FOREIGN_TOTAL = 350
+PROTOCOL_PRIORITY = {"hy2://": 0, "hysteria2://": 0, "vless://": 1, "ss://": 2}
+MAX_PER_SOURCE = 150
+MAX_FOREIGN_TOTAL = 250
 GEO_WORKERS = 32
 _geo_cache = {}
 MAX_REJECT_DOMAINS = 25000  # потолок reject, иначе JSON на 10MB+
