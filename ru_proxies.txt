@@ -1,9 +1,12 @@
-hy2://mkL3AfdSZIpTWRB9TcWPn9vywPGN89MRHg3ToRDj@gta.internet-card.sbs:443/?insecure=1&sni=gta.internet-card.sbs#俄罗斯
+hy2://9ca78a86-07bb-4eaf-a47d-1a7bb40928e3@46.17.40.117:443?insecure=1&sni=music.apple.com#🔒
+hy2://sysadmin.sysadmin@194.36.209.54:443?insecure=1#🔒
 hysteria2://0db4a6c709ca4a46153af8a401b7138a@se.allgoodvpn.su:8443/?insecure=0&sni=se.allgoodvpn.su#%F0%9F%87%B8%F0%9F%87%AA%20Sweden%2C%20Stockholm%20%7C%20%5BBL%5D
+hysteria2://2a3b101d-d8f9-40e7-9373-b0ef487c0035@46.8.210.129:22443?sni=disk.api-yandex.net#%F0%9F%87%B3%F0%9F%87%B4%20Norway%20%5B%2ACIDR%5D
+hysteria2://41edb44c8e@srv-17e124.21freedom.net:11592?insecure=1&security=tls&sni=off#India
 hysteria2://57a9cf7d-bb6c-414e-97be-1985f7123c61@errorgr.zapret-tg.ru:443?sni=errorgr.zapret-tg.ru&fm=%7B#%F0%9F%87%A9%F0%9F%87%AA%20Germany%2C%20Frankfurt%20am%20Main%20%7C%20%5BBL%5D
 hysteria2://57a9cf7d-bb6c-414e-97be-1985f7123c61@telenl.zapret-tg.ru:443#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%2C%20Eygelshoven%20%7C%20%5BBL%5D
 hysteria2://5a7655f8-969e-4738-a7f8-12f327dd1b65@edge.nordcache.ru:9443?sni=edge.nordcache.ru#%F0%9F%87%A9%F0%9F%87%AA%20Germany%2C%20Frankfurt%20am%20Main%20%28Innenstadt%20I%29%20%7C%20%5BBL%5D
-hysteria2://5bcodmhjtyfyyrqh@91.142.73.159:36758?security=tls&obfs=salamander&obfs-password=dzcb7hv6i2kx2zze&insecure=1&sni=cdn77.dmtr.ru# By EbraSha 🔌
+hysteria2://5bcodmhjtyfyyrqh@91.142.73.159:36758?security=tls&obfs=salamander&obfs-password=dzcb7hv6i2kx2zze&insecure=1&sni=cdn77.dmtr.ru# By EbraSha 🌑
 hysteria2://771d283f-868e-4ac4-8a88-074af8b0a9c9@zisvpn.ru:1452?fm=%257B%250A%2520%2520%2522quicParams%2522%2520%3A%2520%257B%250A%2520%2520%2520%2520%2522congestion%2522%2520%3A%2520%2522brutal%2522%250A%2520%2520%257D%250A%257D&type=hysteria&security=tls&sni=zisvpn.ru&alpn=h3#%F0%9F%87%B5%F0%9F%87%B1%20Poland%2C%20Warsaw%20%7C%20%5BBL%5D
 hysteria2://771d283f-868e-4ac4-8a88-074af8b0a9c9@zisvpn.ru:1453?fm=%257B%250A%2520%2520%2522quicParams%2522%2520%3A%2520%257B%250A%2520%2520%2520%2520%2522congestion%2522%2520%3A%2520%2522brutal%2522%250A%2520%2520%257D%250A%257D&type=hysteria&security=tls&sni=zisvpn.ru&alpn=h3#%F0%9F%87%AD%F0%9F%87%B0%20Hong%20Kong%2C%20Chai%20Wan%20%7C%20%5BBL%5D
 hysteria2://8569e507-8ef7-481d-9108-6bc7f040c2ff@cns.dodostarscoffee.ru:9443#%F0%9F%87%A9%F0%9F%87%AA%20Germany%20%5B%2ACIDR%5D
@@ -16,7 +19,8 @@ hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia1.unlimited-access.ru:443
 hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443?sni=hy2-latvia2.unlimited-access.ru&fp=chrome#%F0%9F%87%B1%F0%9F%87%BB%20Latvia%2C%20Riga%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
 hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-wien.unlimited-access.ru:8443?sni=hy2-wien.unlimited-access.ru&fp=chrome#%F0%9F%87%A6%F0%9F%87%B9%20Austria%2C%20Vienna%20%7C%20%5BBL%5D
 hysteria2://OD6gGbGU9a@hys26.wba-pn.ru:443?sni=hys26.wba-pn.ru#🇳🇱
-hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@go2.wwwinternetvideo.click:443?sni=admin.wwwinternetvideo.click#%F0%9F%87%B5%F0%9F%87%B1%20Poland%2C%20Warsaw%20%7C%20%5BBL%5D
+hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@144.31.49.47:443/?insecure=1&sni=admin.wwwinternetvideo.click# By EbraSha 🦇
+hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@go1.wwwinternetvideo.click:443?sni=admin.wwwinternetvideo.click#%F0%9F%87%B5%F0%9F%87%B1%20Poland%20%5B%2ACIDR%5D
 hysteria2://ac7fb60f-0b7a-465d-a002-05160ec04ed6@dora1.api3-max.ru:443?sni=dora1.api3-max.ru#%F0%9F%87%AC%F0%9F%87%A7GB_109%7C181KB%2Fs%7CA004-260618
 hysteria2://ac7fb60f-0b7a-465d-a002-05160ec04ed6@dora2.api3-max.ru:443?sni=dora2.api3-max.ru#%F0%9F%87%AB%F0%9F%87%B7%20France%2C%20Aubervilliers%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
 hysteria2://ac7fb60f-0b7a-465d-a002-05160ec04ed6@dora4.api3-max.ru:443?sni=dora4.api3-max.ru#%F0%9F%87%AB%F0%9F%87%B7%20France%2C%20Aubervilliers%20%7C%20%5BBL%5D
@@ -39,7 +43,6 @@ hysteria2://kVfzhSpshc@hys1.wba-pn.ru:443?insecure=0&security=tls&sni=hys1.wba-p
 hysteria2://oCYFcbOo8s@hys22.wba-pn.ru:443?security=tls&fp=chrome#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%2C%20Amsterdam%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
 hysteria2://sxc15led4b0vp5fy@musicclips.videolinks.ru:8443?sni=musicclips.videolinks.ru&obfs=salamander&obfs-password=8zzng75tz4tf82pj#HYSTERIA2%20%7C%20%40PulseConfigs%20%7C%20c19db3
 hysteria2://wrSuBorIlf@hys9.wba-pn.ru:443?sni=hys9.wba-pn.ru&insecure=1#hysteria2-738935847
-ss://YWVzLTI1Ni1nY206MWVhZGQ0ZTRhMzdiNjYwMQ@45.8.158.176:10801#EPODONIOS
-ss://YWVzLTI1Ni1nY206ODk1YjRiNzk2YTM1NzU3MA@195.133.5.102:10900#EPODONIOS
-ss://YWVzLTI1Ni1nY206ODk1YjRiNzk2YTM1NzU3MA@195.133.5.102:7018#EPODONIOS
+ss://YWVzLTI1Ni1nY206NmIzOWFlMzIzNGRmZDY4Yg==@185.22.155.162:10808#EPODONIOS
+vless://1397981f-401f-4896-a60c-898b359f4bde@us.1905vpn.ru:443?encryption=none&type=tcp&flow=xtls-rprx-vision&security=reality&sni=us.1905vpn.ru&fp=firefox&pbk=J8BwNe_VefsV7CU7NVyCSAXiOGqA_juUdifl1f0NIQg&sid=9292a8cb3ba284d3&allowInsecure=1#%F0%9F%87%BA%F0%9F%87%B8%20United%20States%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
 vless://9c64f1aa-da4d-4c3e-9617-9bfbf1657a75@ge-a.sarky.ru:443?security=reality&encryption=none&pbk=RpjjScd4SIWgDGPtR_FJPRENMyWaPzb_hyA2cY98CDs&headerType=none&fp=firefox&type=tcp&flow=xtls-rprx-vision&sni=ge.sarky.ru&sid=e6240b9af8d53c17#%F0%9F%87%A9%F0%9F%87%AA%20Germany%2C%20Frankfurt%20am%20Main%20%7C%20%5BBL%5D
