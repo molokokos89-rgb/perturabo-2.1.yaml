@@ -1,12 +1,21 @@
-hysteria2://44e76f8c-7362-11ec-bb74-f23c9164ca5d@8c05abce-tnhmo0-tohhws-zn8y.hk3.hyhuawei.com:443?insecure=1&sni=8c05abce-tnhmo0-tohhws-zn8y.hk3.hyhuawei.com#%F0%9F%87%AD%F0%9F%87%B0%20Hong%20Kong%2C%20Central%20%7C%20%5BBL%5D
-vless://056405e8-de9f-4d0d-8145-956f13cc34da@263651t.fi3.h1clayd.click:443?encryption=none&pbk=nNe5Y8_G7L0_VO5lqlee3h5UmRH4RXjaRYGCDUkbQz4&security=reality&sid=2892e611785bafd1&sni=263651t.fi3.h1clayd.click&type=tcp&fp=firefox#%F0%9F%87%AB%F0%9F%87%AE%20Finland%2C%20Helsinki%20%7C%20%5BBL%5D
+vless://041b2265-0d0a-4290-9439-25b6a0e15b6e@tun.centeriran.shop:443?security=tls&alpn=http%2F1.1&sni=2sdfsxc.centeriran.shop&type=ws&headerType=none&host=tun.centeriran.shop&path=%2F&fp=chrome#%F0%9F%87%A9%F0%9F%87%AA%20Germany%2C%20Falkenstein%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
 vless://056405e8-de9f-4d0d-8145-956f13cc34da@8fc752g.fi3.h1clayd.click:443?encryption=none&pbk=GJzag9Wrvz_bO9AQaA-Oq0P1kV9btmxxAdzPV-uQB18&security=reality&serviceName=f345a414c040&sid=09d0a94a1c6fc9d5&sni=8fc752g.fi3.h1clayd.click&spx=%2F&type=grpc&fp=chrome#%F0%9F%87%AB%F0%9F%87%AE%20Finland%2C%20Helsinki%20%7C%20%5BBL%5D
 vless://056405e8-de9f-4d0d-8145-956f13cc34da@faf318x.fi3.h1clayd.click:443?encryption=none&mode=auto&path=%2F30ed746037ba&pbk=iZD9niaCQZpjG_ndVq8N2pY4hLNg0n7_oT7qJUMkDEI&security=reality&sid=248965340b604f9c&sni=faf318x.fi3.h1clayd.click&spx=%2F&type=xhttp&fp=chrome#%F0%9F%87%AB%F0%9F%87%AE%20Finland%2C%20Helsinki%20%7C%20%5BBL%5D
-vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@141.193.213.20:8443?security=tls&sni=u.srilankangrill.online&type=ws&host=u.srilankangrill.online&path=%2F&fp=chrome#%F0%9F%87%B8%F0%9F%87%AC%20Singapore%2C%20Singapore%20%28Somapah%29%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
-vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@141.193.213.21:8443?security=tls&sni=u.srilankangrill.online&type=ws&host=u.srilankangrill.online&path=%2F&fp=android#%F0%9F%87%B8%F0%9F%87%AC%20Singapore%2C%20Singapore%20%28Somapah%29%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
-vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@news.zoom.us:8443?&security=tls&fp=safari&sni=u.srilankangrill.online&type=ws&headerType=none&host=u.srilankangrill.online&path=%2F#%F0%9F%87%B8%F0%9F%87%AC%20Singapore%2C%20Singapore%20%28Somapah%29%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
-vless://51a0af77-a60c-4d9b-81a4-f50e1b38d90b@194.58.109.206:8443?security=tls&sni=cf3.schzyc.cc.cd&type=ws&headerType=none&host=cf3.schzyc.cc.cd&path=%2Fproxyip%3DProxyIP.CMLiussss.net&fp=firefox#.%F0%96%A5%94%20%DD%81%20%CB%96%D6%B4%F0%9F%9B%B8%E0%BC%84%CB%96%C2%B0.%20%7C%20%5BBL%5D
-vless://ab4f3e97-27ba-496a-8133-9d7ca285fcba@8.6.112.0:443?security=tls&type=ws&headerType=&path=%2F&host=polshaov.ochmaybrooooo.online&sni=polshaov.ochmaybrooooo.online&fp=chrome&alpn=http%2F1.1#%F0%9F%87%AB%F0%9F%87%B7%20France%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
+vless://24dc22a3-eedf-4cec-8b49-29651516473e@176.122.189.94:8443?flow=xtls-rprx-vision&pbk=BSp7lqhFPK8zS8Qk0lKx238jRiWtP1PtiH3Qbzec9Vs&security=reality&sid=23cfd8bbca369eb1&sni=www.apple.com&encryption=none&type=tcp&fp=chrome#%F0%9F%87%BA%F0%9F%87%B8%20United%20States%2C%20Los%20Angeles%20%28Downtown%20Los%20Angeles%29%20%7C%20%5BBL%5D
+vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@141.193.213.20:8443?host=u.srilankangrill.online&path=%2F&security=tls&sni=u.srilankangrill.online&type=ws&fp=android#%F0%9F%87%B8%F0%9F%87%AC%20Singapore%2C%20Singapore%20%28Somapah%29%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
+vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@141.193.213.21:8443?host=u.srilankangrill.online&path=%2F&security=tls&sni=u.srilankangrill.online&type=ws&fp=android#%F0%9F%87%B8%F0%9F%87%AC%20Singapore%2C%20Singapore%20%28Somapah%29%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
+vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@news.zoom.us:8443?security=tls&sni=u.srilankangrill.online&type=ws&headerType=none&host=u.srilankangrill.online&path=%2F&fp=chrome#%F0%9F%87%B8%F0%9F%87%AC%20Singapore%2C%20Singapore%20%28Somapah%29%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
+vless://2c8c4c3b-4616-400c-a2d4-f3669ea18fe9@pyygg0769.sys-metric-report.com:52804?flow=xtls-rprx-vision&pbk=cCwvNI8D-LX-kLH1IDuBZwnKkkyMPJm_0sJXsxz-_mA&security=reality&sid=68c4f6b0&sni=japp.cfastcdn.com&type=tcp&fp=chrome#%F0%9F%87%AF%F0%9F%87%B5%20Japan%2C%20Chiyoda%20City%20%7C%20%5BBL%5D
+vless://30572b57-f5ab-4eb8-82d4-a24d399b99f6@165.99.222.161:443?security=reality&sni=in1.vkusnews.com&flow=xtls-rprx-vision&pbk=SC6AnZ_BlvDruiGFpDRno9b1V3wMmq9gjB-KEHHUlE4&type=tcp&headerType=none&encryption=none&fp=chrome#%F0%9F%87%AE%F0%9F%87%B3%20India%2C%20Thane%20%7C%20%5BBL%5D
+vless://62b471e0-03f7-9b63-f05a-e91eca6ee82f@nl1-tun.dnetopps.ir:10030?encryption=none&security=reality&sni=reality1.dnetopps.ir&pbk=sVB9wIHUve1uz2qgotNGxhTukER8E79DdEM7AVw9EFM&sid=23&spx=%2F&type=xhttp&host=HostName&path=%2FPath&fp=chrome#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
+vless://62b471e0-03f7-9b63-f05a-e91eca6ee82f@nl2-tun.dnetopps.ir:10040?security=reality&type=xhttp&headerType=none&encryption=none&path=%2FPath&host=HostName&sni=reality2.dnetopps.ir&pbk=1CdQXIXhWDjprJBRAV55Y1lkQyXGoFN-eWVD6FS4fjg&sid=00d97629c7&spx=%2F&fp=chrome#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
+vless://7aec627e-a258-4ded-9fd9-fbd7c024f950@151.242.85.236:443?encryption=none&flow=xtls-rprx-vision&pbk=gUu1n11Ef_GEoatNQzJJucvIjGTt4qxOWdxMzjoHwDM&security=reality&sid=9b6fa4047c24629f&sni=addons.mozilla.org&type=tcp&fp=chrome#%F0%9F%87%AD%F0%9F%87%B0%20Hong%20Kong%2C%20Kwai%20Chung%20%7C%20%5BBL%5D
+vless://XpnTeam-31@199.232.78.160:443?path=%2F&security=tls&alpn=http%2F1.1&encryption=none&insecure=0&host=Appxdn.global.ssl.fastly.net&type=ws&allowInsecure=0&sni=ssl.fastly.com&fp=chrome#%F0%9F%87%AB%F0%9F%87%B7%20France%2C%20Paris%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
+vless://XpnTeam-32@140.248.186.45:443?path=%2F&security=tls&alpn=http%2F1.1&encryption=none&insecure=0&host=Appxdn.global.ssl.fastly.net&type=ws&allowInsecure=0&sni=ssl.fastly.com&fp=chrome#%F0%9F%87%AB%F0%9F%87%B7%20France%2C%20Paris%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
+vless://XpnTeam-32@199.232.78.170:443?path=%2F&security=tls&alpn=http%2F1.1&encryption=none&insecure=0&host=Appxdn.global.ssl.fastly.net&type=ws&allowInsecure=0&sni=ssl.fastly.com&fp=chrome#%F0%9F%87%AB%F0%9F%87%B7%20France%2C%20Paris%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
+vless://aabde722-1242-47bc-9f97-db33c50cfe4c@67.209.190.18:45139?pbk=vpGRfDDlfXFOmWifIIGmKh6pQOTZeTAE8bmJZQE6MQ0&security=reality&sid=70711a4eb1d4&sni=www.apple.com&type=tcp&fp=chrome#%F0%9F%87%BA%F0%9F%87%B8%20United%20States%2C%20Los%20Angeles%20%28Downtown%20Los%20Angeles%29%20%7C%20%5BBL%5D
+vless://c538c9dd-2e3f-488f-a8ca-ac5b7c0773f3@47.237.74.17:16263?security=none&type=tcp&fp=chrome#%F0%9F%87%B8%F0%9F%87%AC%20Singapore%2C%20Singapore%20%7C%20%5BBL%5D
+vless://e53b3d8c-2782-456b-97bc-6bc232bdbaa8@177.202.96.106:443?security=reality&encryption=none&pbk=jIq_COD-tIXTvgDn-TslFGtB_a8HVgUOOIlUByv8fkg&headerType=&type=tcp&flow=xtls-rprx-vision&sni=pl2.spidermanshopping.com&sid=8718c58d3d51db59&fp=chrome#%F0%9F%87%B9%F0%9F%87%B7%20Turkey%2C%20Istanbul%20%7C%20%5BBL%5D
 hy2://4ec98327-3e7d-4eca-8485-92f22ef766d4@82.47.22.174:443?sni=ee.cdn.f0rtuna.fast#%C2%AE%EF%B8%8FSH%CE%9EN%E2%84%A2%E1%B4%A2%E1%B4%87%CA%80%E1%B4%8F%F0%9F%8C%90T.me%2FShervini
 hy2://RN_3f80eeb4bbd0f13f@192.255.128.123:443?insecure=1&sni=192.255.128.123#hysteria2-1532335412
 hy2://gf1%3Agfhysteria2024@5.129.235.85:443?insecure=1#%C2%AE%EF%B8%8FSH%CE%9EN%E2%84%A2%E1%B4%A2%E1%B4%87%CA%80%E1%B4%8F%F0%9F%87%B3%F0%9F%87%B1T.me%2FShervini
@@ -66,17 +75,17 @@ hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@admin.wwwinternetvi
 hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@go.wwwinternetvideo.click:443?insecure=1&sni=admin.wwwinternetvideo.click#%C2%AE%EF%B8%8FSH%CE%9EN%E2%84%A2%E1%B4%A2%E1%B4%87%CA%80%E1%B4%8F%F0%9F%87%B7%F0%9F%87%BAT.me%2FShervini
 hysteria2://a307dbfd-1069-4880-950a-b5f5e82c3478@vault.ressel-radar.shop:443?security=tls&fm=%7B%7D&sni=vault.ressel-radar.shop#%F0%9F%87%B8%F0%9F%87%AA%20Sweden%2C%20Stockholm%20%28Hammarby%20Sj%C3%B6stad%29%20%7C%20%5BBL%5D
 hysteria2://ac0b60b0-8839-4ac0-87db-d0e951937c9a@twru1.gosru.com:443?sni=twru1.gosru.com#%F0%9F%87%B5%F0%9F%87%B1%20Poland%20%7C%20%F0%9F%8C%90%20%5B%2ACIDR%5D
-hysteria2://axP-VNWeg-V-Bd_ZaSJGxWbWEE-t35Y2@45.131.186.202:18443/?sni=mapleledger.gazette.help#%F0%9F%87%B7%F0%9F%87%B4%20Romania%20%5B%2ACIDR%5D
-hysteria2://axP-VNWeg-V-Bd_ZaSJGxWbWEE-t35Y2@45.131.186.202:18445/?sni=mapleledger.gazette.help#%F0%9F%87%AE%F0%9F%87%B9%20Italy%20%7C%20%F0%9F%8C%90%20%5B%2ACIDR%5D
 hysteria2://axP-VNWeg-V-Bd_ZaSJGxWbWEE-t35Y2@45.144.30.154:2087?sni=hazeljournal.gazette.help&alpn=h3#%F0%9F%87%AB%F0%9F%87%AE%20Finland%20%5B%2ACIDR%5D
 hysteria2://axP-VNWeg-V-Bd_ZaSJGxWbWEE-t35Y2@45.144.30.156:8443?sni=hazeljournal.gazette.help&alpn=h3#%F0%9F%87%AE%F0%9F%87%B9%20Italy%20%7C%20%F0%9F%8C%90%20%5B%2ACIDR%5D
 hysteria2://axP-VNWeg-V-Bd_ZaSJGxWbWEE-t35Y2@77.239.107.191:8443/?sni=wata.internet-card.sbs#%F0%9F%87%A9%F0%9F%87%AA%20Germany%20%5B%2ACIDR%5D
 hysteria2://b9e1971f-ba19-4c33-808f-7bc9d2eab835@217.60.179.51:443?sni=de2.nextgencloud.tech&fp=firefox#%F0%9F%87%A6%F0%9F%87%AA%20United%20Arab%20Emirates%2C%20Dubai%20%28Nadd%20ash%20Shib%C4%81%29%20%7C%20%5BBL%5D
+hysteria2://cd74c0a406664a5bc0bac098220a2468@144.31.49.138:443?security=tls&obfs=salamander&obfs-password=44f1c1e2f8b99e792ceed574627a1eb0&insecure=0&sni=ru1.sferavpn.pro#
 hysteria2://cd74c0a406664a5bc0bac098220a2468@2.27.249.79:443/?obfs=salamander&obfs-password=44f1c1e2f8b99e792ceed574627a1eb0&sni=nl1.sferavpn.pro#
 hysteria2://cd74c0a406664a5bc0bac098220a2468@2.27.59.206:443?security=tls&obfs=salamander&obfs-password=44f1c1e2f8b99e792ceed574627a1eb0&insecure=1&sni=de1.sferavpn.pro
 hysteria2://cd74c0a406664a5bc0bac098220a2468@de1.sferavpn.pro:443?sni=de1.sferavpn.pro&obfs=salamander&obfs-password=44f1c1e2f8b99e792ceed574627a1eb0#%F0%94%92%B0%E2%80%8E%20%EF%BC%B3%EF%BC%A5%EF%BC%A7%EF%BC%A1%EF%BC%B2%EF%BC%AF
 hysteria2://cd74c0a406664a5bc0bac098220a2468@ee1.sferavpn.pro:443?sni=ee1.sferavpn.pro&obfs=salamander&obfs-password=44f1c1e2f8b99e792ceed574627a1eb0#%F0%94%92%B0%E2%80%8E%20%EF%BC%B3%EF%BC%A5%EF%BC%A7%EF%BC%A1%EF%BC%B2%EF%BC%AF
 hysteria2://cd74c0a406664a5bc0bac098220a2468@nl1.sferavpn.pro:443/?insecure=1&obfs=salamander&obfs-password=44f1c1e2f8b99e792ceed574627a1eb0&sni=nl1.sferavpn.pro#
+hysteria2://cd74c0a406664a5bc0bac098220a2468@ru1.sferavpn.pro:443/?obfs=salamander&obfs-password=44f1c1e2f8b99e792ceed574627a1eb0&sni=ru1.sferavpn.pro#
 hysteria2://d5530551-5e9a-4ac5-8539-cee87e38d9e2@2.26.3.75:443?sni=fi.67chat.ru#🇫🇮 Финляндия 56 PLAY2GO INTERNATIONAL LIMITED%20t.me%2Frjsxrd
 hysteria2://d8d69a2d-dbc3-4d8d-a896-0425dcd04895@fr.cloudgamings.org:8443?sni=fr.cloudgamings.org#%F0%9F%87%AB%F0%9F%87%B7%20France%2C%20Paris%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
 hysteria2://d9090ce9-388b-45b9-9e84-64eac5522b8a@89.125.48.138:443?sni=nl2.nextgencloud.tech#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%2C%20Amsterdam%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
@@ -107,7 +116,6 @@ hysteria2://kjq3gpn1xom1ted9@assets.gateway-stream.com:52087?security=tls&obfs=s
 hysteria2://kjq3gpn1xom1ted9@assets.gateway-stream.com:52088?security=tls&obfs=salamander&obfs-password=qfsk2h15o2dm0msi&insecure=0&sni=assets.gateway-stream.com#
 hysteria2://kjq3gpn1xom1ted9@assets.gateway-stream.com:52089?security=tls&obfs=salamander&obfs-password=hitar6eeayxd7imh&insecure=0&sni=assets.gateway-stream.com#
 hysteria2://m3bqxk03mg221yi2@95.217.96.131:52000?security=tls&obfs=salamander&obfs-password=gu74jg3ym0e21zco&insecure=0&sni=assets.gateway-stream.com#
-hysteria2://mkL3AfdSZIpTWRB9TcWPn9vywPGN89MRHg3ToRDj@31.76.71.252:443?insecure=0&security=tls&sni=gta.internet-card.sbs#%F0%9F%87%A9%F0%9F%87%AA%20Germany%20%5B%2ACIDR%5D
 hysteria2://mkL3AfdSZIpTWRB9TcWPn9vywPGN89MRHg3ToRDj@64.188.98.171:443?insecure=1&sni=germany3.h2corp.local#%C2%AE%EF%B8%8FSH%CE%9EN%E2%84%A2%E1%B4%A2%E1%B4%87%CA%80%E1%B4%8F%F0%9F%87%A9%F0%9F%87%AAT.me%2FShervini
 hysteria2://mkL3AfdSZIpTWRB9TcWPn9vywPGN89MRHg3ToRDj@91.196.32.163:443?insecure=1&sni=germany3.h2corp.local#%C2%AE%EF%B8%8FSH%CE%9EN%E2%84%A2%E1%B4%A2%E1%B4%87%CA%80%E1%B4%8F%F0%9F%87%A9%F0%9F%87%AAT.me%2FShervini
 hysteria2://mkL3AfdSZIpTWRB9TcWPn9vywPGN89MRHg3ToRDj@de.1.23.h2corp.org:443?insecure=1&sni=germany3.h2corp.local#%C2%AE%EF%B8%8FSH%CE%9EN%E2%84%A2%E1%B4%A2%E1%B4%87%CA%80%E1%B4%8F%F0%9F%87%A9%F0%9F%87%AAT.me%2FShervini
@@ -117,6 +125,7 @@ hysteria2://qQe1z5kU8kN6SlKnDt9Ru3Qp@vpn-sg-001.fastervpn.world:443/?insecure=1&
 hysteria2://qxW-odeprn8NZcCjOyx3fx27Wmr7XLYt@gate-vde.multihost.127-0-0-1.online:443?sni=gate-v1.not-a-projects.xyz#%F0%9F%87%A9%F0%9F%87%AA%20Germany%2C%20Frankfurt%20am%20Main%20%7C%20%5BBL%5D
 hysteria2://sOiWCQ2AdIV0OWNuqQVyWp4JZnRxdyLROSjX@31.76.71.63:443/?insecure=1&sni=cabinet.wwwinternetvideo.click
 hysteria2://sOiWCQ2AdIV0OWNuqQVyWp4JZnRxdyLROSjX@faq.wwwinternetvideo.click:443?insecure=1&sni=cabinet.wwwinternetvideo.click#🇺🇸
+hysteria2://sOiWCQ2AdIV0OWNuqQVyWp4JZnRxdyLROSjX@faq2.wwwinternetvideo.click:443?sni=cabinet.wwwinternetvideo.click#%F0%9F%87%AA%F0%9F%87%AA%20Estonia%2C%20Tallinn%20%7C%20%5BBL%5D
 hysteria2://t8t2qojzsykqazfu@assets.gateway-stream.com:52026?security=tls&obfs=salamander&obfs-password=d6pv15sghiq1onts&insecure=0&sni=assets.gateway-stream.com#
 hysteria2://t8t2qojzsykqazfu@assets.gateway-stream.com:52040?alpn=h3&fm=%7B%22udp%22%3A%5B%7B%22settings%22%3A%7B%22password%22%3A%227206pa46enqqdnmt%22%7D%2C%22type%22%3A%22salamander%22%7D%5D%7D&fp=chrome&obfs=salamander&obfs-password=7206pa46enqqdnmt&security=tls&sni=assets.gateway-stream.com#
 hysteria2://t8t2qojzsykqazfu@assets.gateway-stream.com:52045?alpn=h3&fm=%7B%22udp%22%3A%5B%7B%22settings%22%3A%7B%22password%22%3A%22jg5vvom5svs9rmnx%22%7D%2C%22type%22%3A%22salamander%22%7D%5D%7D&fp=chrome&obfs=salamander&obfs-password=jg5vvom5svs9rmnx&security=tls&sni=assets.gateway-stream.com#
@@ -278,7 +287,6 @@ ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpvWklvQTY5UTh5aGNRVjhrYTNQYTNB@82.38.31.9:808
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpvWklvQTY5UTh5aGNRVjhrYTNQYTNBQDgyLjM4LjMxLjE3MTo0NDM=#%5BOpenRay%5D%20%F0%9F%87%AC%F0%9F%87%A7GB-236
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpvWklvQTY5UTh5aGNRVjhrYTNQYTNBQDgyLjM4LjMxLjExOjgwODA=#%5BOpenRay%5D%20%F0%9F%87%B3%F0%9F%87%B1NL-380
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwTEdDUG5qMldnenhYMUllZFc4eWQ3dHJ3UmxYcWpMYQ@109.122.251.86:20700#EPODONIOS
-ss://Y2hhY2hhMjAtaWV0Zjphc2QxMjM0NTY=@103.141.221.124:8388#%5BOpenRay%5D%20%F0%9F%87%AD%F0%9F%87%B0HK-193
 ss://Y2hhY2hhMjAtaWV0Zjphc2QxMjM0NTY=@103.149.182.79:8388#EPODONIOS
 ss://Y2hhY2hhMjAtaWV0Zjphc2QxMjM0NTY@103.36.91.32:8388#EPODONIOS
 ss://Y2hhY2hhMjAtcG9seTEzMDU6Vzc0WEZBTExMdXc2bTVJQQ==@104.21.32.1:443#🔒
@@ -322,13 +330,11 @@ ss://YWVzLTEyOC1nY206c2hhZG93c29ja3M=@37.19.198.236:443#%F0%9F%87%BA%F0%9F%87%B8
 ss://YWVzLTEyOC1nY206c2hhZG93c29ja3M=@37.19.198.243:443#EPODONIOS
 ss://YWVzLTEyOC1nY206c2hhZG93c29ja3M=@37.19.198.244:443#EPODONIOS
 ss://YWVzLTEyOC1nY206c2hhZG93c29ja3M@141.98.101.181:443#@IRAN_V2RAY1 🌟
-ss://YWVzLTI1Ni1jZmI6MTIzNCFAIyQ=@49.254.204.134:1774#%5BOpenRay%5D%20%F0%9F%87%B0%F0%9F%87%B7KR-10
+ss://YWVzLTI1Ni1jZmI6VWtYUnNYdlI2YnVETUcyWQ==@5.188.181.201:9001#EPODONIOS
 ss://YWVzLTI1Ni1jZmI6cXdlclJFV1FAQA==@p141.panda001.net:4652#EPODONIOS
 ss://YWVzLTI1Ni1jZmI6cXdlclJFV1FAQA@211.178.105.134:6123#EPODONIOS
 ss://YWVzLTI1Ni1jZmI6cXdlclJFV1FAQA@218.237.185.234:4652#%5BOpenRay%5D%20%F0%9F%87%B0%F0%9F%87%B7KR-70
 ss://YWVzLTI1Ni1jZmI6cnBnYk5uVTlyRERVNGFXWg@185.135.86.175:9094#%5BOpenRay%5D%20%F0%9F%87%B1%F0%9F%87%BBLV-9
-ss://YWVzLTI1Ni1nY206M2VPRmVOc3NkZTdQWVlNdg==@84.247.155.196:80#EPODONIOS
-ss://YWVzLTI1Ni1nY206M2VPRmVOc3NkZTdQWVlNdg@84.247.155.196:443#EPODONIOS
 ss://YWVzLTI1Ni1nY206MGRhZDkxMTYtZWI4OC00N2I2LTk4ZGQtNjdjOWVkNDNhZmE2@200.181.82.92:21940#%5BOpenRay%5D%20%F0%9F%87%A7%F0%9F%87%B7BR-15
 ss://YWVzLTI1Ni1nY206MGRhZDkxMTYtZWI4OC00N2I2LTk4ZGQtNjdjOWVkNDNhZmE2QDIwMC4xODEuODIuOTE6MjAwMTM=#%5BOpenRay%5D%20%F0%9F%87%A7%F0%9F%87%B7BR-91
 ss://YWVzLTI1Ni1nY206MGRhZDkxMTYtZWI4OC00N2I2LTk4ZGQtNjdjOWVkNDNhZmE2QDIwMC4xODEuODIuOTE6MjE1MDI=#%5BOpenRay%5D%20%F0%9F%87%A7%F0%9F%87%B7BR-50
@@ -342,9 +348,3 @@ ss://YWVzLTI1Ni1nY206MGRhZDkxMTYtZWI4OC00N2I2LTk4ZGQtNjdjOWVkNDNhZmE2QDIwMC4xODE
 ss://YWVzLTI1Ni1nY206MGRhZDkxMTYtZWI4OC00N2I2LTk4ZGQtNjdjOWVkNDNhZmE2QDIwMC4xODEuODIuOTI6MjIwMjM=#%5BOpenRay%5D%20%F0%9F%87%A7%F0%9F%87%B7BR-102
 ss://YWVzLTI1Ni1nY206NTdkYmM1NDIyZTMxNDNmODhhOTVkNmIyZTFkMDA5YTM@germanone.authortycenter.com:1090#EPODONIOS
 ss://YWVzLTI1Ni1nY206NTdkYmM1NDIyZTMxNDNmODhhOTVkNmIyZTFkMDA5YTM@germanthere.authortycenter.com:1090#EPODONIOS
-ss://YWVzLTI1Ni1nY206NTdkYmM1NDIyZTMxNDNmODhhOTVkNmIyZTFkMDA5YTM@germantwo.authortycenter.com:1090#EPODONIOS
-ss://YWVzLTI1Ni1nY206NTg1ZjBlMTAtN2I1MS00ZjJlLWExM2QtNDc5YjA0NTE3MWJk@ruot.ayucloudservices.nl:22078#%5BOpenRay%5D%20%F0%9F%8C%90XX-143
-ss://YWVzLTI1Ni1nY206QmVhVWY5YzBBRVdINDBQdUAxNTQuMzYuMTU4LjE5Nzo4Mzg4#%5BOpenRay%5D%20%F0%9F%87%AF%F0%9F%87%B5JP-56
-ss://YWVzLTI1Ni1nY206QnpHNE9pZGtMQmlqVDA0WUdJeVZNWEJkOWVTLWNhVmk@Tak.zqpm.ir:8989#@meliproxyy
-ss://YWVzLTI1Ni1nY206QnpHNE9pZGtMQmlqVDA0WUdJeVZNWEJkOWVTLWNhVmk@tak.zqpm.ir:8989#EPODONIOS
-ss://YWVzLTI1Ni1nY206R0Vkb2VlcUxadGtKUmdTYQ==@139.84.166.47:8388#EPODONIOS
