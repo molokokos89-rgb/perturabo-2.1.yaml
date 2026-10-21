@@ -961,6 +961,8 @@ def step_collect_proxies():
                 line = line.strip()
                 if not line or line.startswith("#"):
                     continue
+                if line.lower().startswith(("vmess://", "trojan://")):
+                    continue
                 # vless только из PINNED (igareck full); из добора — нет
                 if line.lower().startswith("vless://") and label != "PINNED":
                     continue
