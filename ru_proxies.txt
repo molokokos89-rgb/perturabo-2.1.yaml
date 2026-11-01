@@ -1,11 +1,9 @@
 hy2://d62s7ghfehm742us@derfderf.ru:12824?sni=derfderf.ru#ProxyRift%20223
-hysteria2://46785352-db89-4839-8079-d4c69ad87996@109.120.183.150:443?sni=gl3.cryposikel.ru#%F0%9F%87%A9%F0%9F%87%AA%20Germany%20%5B%2ACIDR%5D%20VK
 hysteria2://46785352-db89-4839-8079-d4c69ad87996@gl3.cryposikel.ru:443?sni=gl3.cryposikel.ru#%F0%9F%87%A9%F0%9F%87%AA%20Germany%20%5B%2ACIDR%5D%20VK
 hysteria2://46785352-db89-4839-8079-d4c69ad87996@pl4.cryposikel.ru:443?sni=pl4.cryposikel.ru#%F0%9F%87%BA%F0%9F%87%B8%20United%20States%2C%20Orem%20%7C%20%5BBL%5D
 hysteria2://46785352-db89-4839-8079-d4c69ad87996@rugiig.cryposikel.ru:443?sni=rugiig.cryposikel.ru#%F0%9F%87%A9%F0%9F%87%AA%20Germany%20%5B%2ACIDR%5D
 hysteria2://46c16b68-2553-4e5e-8176-f63d6bf6ec0c@fl.solomon-planet.ru:443?insecure=0#%E8%8A%AC%E5%85%B0_102904067%20t.me%2Frjsxrd
 hysteria2://4f155c95-bbff-446b-a093-a18e5a3b2fde@46.254.17.226:9443?sni=filecache.ru#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%20%5B%2ACIDR%5D
-hysteria2://5bcodmhjtyfyyrqh@91.142.73.159:36758?insecure=1&sni=cdn77.dmtr.ru&obfs=salamander&obfs-password=dzcb7hv6i2kx2zze#%40Begoo_VPN%20%C2%B2%E2%81%B9%E2%81%B0
 hysteria2://6da2c981-8c77-4340-bda3-93399b7aea26@blogs.blog-forme.ru:443/?hop_interval=10&sni=blogs.blog-forme.ru#%F0%9F%87%AC%F0%9F%87%A7%20United%20Kingdom%2C%20London%20%7C%20%5BBL%5D
 hysteria2://6da2c981-8c77-4340-bda3-93399b7aea26@store.blog-forme.ru:443?sni=store.blog-forme.ru&insecure=1#%5B422.3ms%20%2B/-14ms%5D%20hysteria2-1946064383
 hysteria2://6da2c981-8c77-4340-bda3-93399b7aea26@video.blog-forme.ru:443/?hop_interval=10&sni=video.blog-forme.ru#ProxyRift%20054
@@ -14,9 +12,7 @@ hysteria2://CnVfXXvMzh@hys13.wba-pn.ru:443?insecure=1&sni=hys13.wba-pn.ru#NL
 hysteria2://EkF2Yw0Lc7@hys34.wba-pn.ru:443?insecure=1&sni=hys34.wba-pn.ru#NL
 hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443?sni=hy2-latvia2.unlimited-access.ru#LV
 hysteria2://OD6gGbGU9a@hys26.wba-pn.ru:443?sni=hys26.wba-pn.ru#NL
-hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@144.31.93.126:443/?insecure=1&sni=admin.wwwinternetvideo.click#4Nika-2ca3b2ab42
 hysteria2://b4c8ee9caa74b7ba0a61@scrap.halyvanedorogo.ru:35076?sni=127.0.0.1#%F0%9F%87%B5%F0%9F%87%B1PL_21%7C1.0MB%2Fs%7CA004-260618%20%5B0e5b2b9b5f49%5D
-hysteria2://b85b119a-b8c8-43ea-8a35-7f2140366e39@31.76.71.147:443?sni=uk-hy2.vpber.info&alpn=h3#%F0%9F%87%AC%F0%9F%87%A7%20United%20Kingdom%20%7C%20%F0%9F%8C%90%20%5B%2ACIDR%5D
 hysteria2://d5e2093f-7a12-4b93-9ace-bd95dc8de71a@nl4-gkivm5.vpvr4ib84nuv6hdkt.ru:3006?sni=nl4-gkivm5.vpvr4ib84nuv6hdkt.ru#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
 hysteria2://oCYFcbOo8s@hys22.wba-pn.ru:443?sni=hys22.wba-pn.ru#NL
 hysteria2://wrSuBorIlf@hys9.wba-pn.ru:443?insecure=1#NL
