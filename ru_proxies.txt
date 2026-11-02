@@ -1,4 +1,6 @@
 hy2://6da2c981-8c77-4340-bda3-93399b7aea26@store.blog-forme.ru:443?sni=store.blog-forme.ru#ProxyRift%20207
+hy2://7ab3c77e-8fcc-4848-918f-cae3d4eac794@194.87.118.184:2053?insecure=1#hysteria2-1827145511
+hysteria2://033dc6b532@77.232.139.128:11592/?sni=srv-8718e6.frd21.ru#@meliproxyy
 hysteria2://46785352-db89-4839-8079-d4c69ad87996@gl3.cryposikel.ru:443?sni=gl3.cryposikel.ru#%F0%9F%87%A9%F0%9F%87%AA%20Germany%20%5B%2ACIDR%5D%20VK
 hysteria2://46785352-db89-4839-8079-d4c69ad87996@pl4.cryposikel.ru:443?sni=pl4.cryposikel.ru#%F0%9F%87%BA%F0%9F%87%B8%20United%20States%2C%20Orem%20%7C%20%5BBL%5D
 hysteria2://46785352-db89-4839-8079-d4c69ad87996@rugiig.cryposikel.ru:443?sni=rugiig.cryposikel.ru#%F0%9F%87%A9%F0%9F%87%AA%20Germany%20%5B%2ACIDR%5D
@@ -13,4 +15,3 @@ hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443
 hysteria2://b4c8ee9caa74b7ba0a61@scrap.halyvanedorogo.ru:35076?sni=scrap.halyvanedorogo.ru#@V2ray_Collector
 hysteria2://d5e2093f-7a12-4b93-9ace-bd95dc8de71a@nl4-gkivm5.vpvr4ib84nuv6hdkt.ru:3006?sni=nl4-gkivm5.vpvr4ib84nuv6hdkt.ru#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
 hysteria2://d62s7ghfehm742us@derfderf.ru:12824?sni=derfderf.ru#%F0%9F%87%A9%F0%9F%87%AADE_98%7C5.7MB%2Fs%7CM003-260806
-hysteria2://sOiWCQ2AdIV0OWNuqQVyWp4JZnRxdyLROSjX@31.76.71.63:443?insecure=1&sni=cabinet.wwwinternetvideo.click#%F0%9F%87%AA%F0%9F%87%AAEE_15%7C635KB%2Fs%7CA001-260618%2001
