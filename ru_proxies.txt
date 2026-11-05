@@ -1,15 +1,5 @@
-hy2://7ab3c77e-8fcc-4848-918f-cae3d4eac794@194.87.118.184:2053?insecure=1#hysteria2-1827145511
-hy2://d62s7ghfehm742us@derfderf.ru:12824#0180
-hysteria2://1793747701%3A04cbffa7-bd2c-4a51-bf32-2253f4fbc1ab%3A98Va5kVHKW06htuFKRbjrX7rWPTNQI4Jlee5xTFNAW0@84.38.184.87:36116?sni=hu.lumacache.com&alpn=h3#%F0%9F%87%AD%F0%9F%87%BA%20Hungary%20%7C%20%F0%9F%8C%90%20%5B%2ACIDR%5D%20t.me%2Frjsxrd
-hysteria2://1793747701%3A04cbffa7-bd2c-4a51-bf32-2253f4fbc1ab%3AEKksNGKEBp8PXC1msSPh-Nfurs0VeCN0xPSnf1UsVH8@84.38.184.87:36118?sni=us2.lumacache.com&alpn=h3#%F0%9F%87%BA%F0%9F%87%B8%20United%20States%20%7C%20%F0%9F%8C%90%20%5B%2ACIDR%5D%20t.me%2Frjsxrd
-hysteria2://41edb44c8e@srv-17e124.21freedom.net:11592?insecure=1&sni=127.0.0.1#0079
-hysteria2://5bcodmhjtyfyyrqh@91.142.73.159:36758?insecure=1&sni=cdn77.dmtr.ru&obfs=salamander&obfs-password=dzcb7hv6i2kx2zze#%40Begoo_VPN%20%C2%B2%E2%81%B9%E2%81%B0
-hysteria2://6da2c981-8c77-4340-bda3-93399b7aea26@store.blog-forme.ru:443?#%5BOpenRay%5D%20%F0%9F%8C%90XX-2227
-hysteria2://982c68b1-b0eb-4182-9581-2c6072a140ab@188.225.77.106:443?sni=hcccipmj.mtrxnet.click&alpn=h3#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%20%5B%2ACIDR%5D%20t.me%2Frjsxrd
-hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443/?sni=hy2-latvia2.unlimited-access.ru#4Jadi-1713f17dea
-hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@144.31.93.126:443?insecure=1&sni=admin.wwwinternetvideo.click#%F0%9F%87%B5%F0%9F%87%B1PL_24%7C1.3MB%2Fs%7CA001-260618%2001
-hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@go2.wwwinternetvideo.click:443/?insecure=1&sni=admin.wwwinternetvideo.click#4FreeIran-02fd013204
+hy2://41edb44c8e@103.88.243.142:11592?insecure=1&sni=103.88.243.142#0021
+hysteria2://6da2c981-8c77-4340-bda3-93399b7aea26@store.blog-forme.ru:443?#%5BOpenRay%5D%20%F0%9F%8C%90XX-2016
+hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@go1.wwwinternetvideo.click:443?insecure=1&sni=admin.wwwinternetvideo.click#%F0%9F%87%B5%F0%9F%87%B1PL_29%7C1.2MB%2Fs%7CA004-260618%2001
+hysteria2://d62s7ghfehm742us@derfderf.ru:12824/#ProxyRift%20032
 hysteria2://ripa841juk7gwn4t@94.228.173.164:10005?sni=vpn.c0d1xdev.xyz&obfs=salamander&obfs-password=gacgp8rqyvgtlji8#🇫🇮 Финляндия 31 NODE HOST LIMITED%20t.me%2Frjsxrd
-hysteria2://sOiWCQ2AdIV0OWNuqQVyWp4JZnRxdyLROSjX@31.76.71.63:443?insecure=1&sni=cabinet.wwwinternetvideo.click#%F0%9F%87%AA%F0%9F%87%AAEE_15%7C635KB%2Fs%7CA001-260618%2001
-hysteria2://umnDU7jgFYUjpVjVM2sW9HL0rRYLJNgzVwRu2HzWEhyZKkRx@144.31.93.173:443/?insecure=1&sni=germany1.h2corp.local#%F0%9F%8F%B3%EF%B8%8F%20ShatakVPN%20410545
-ss://YWVzLTI1Ni1nY206Y0NNSmdKVEEzQkE0ODlZVVlyRnE3WEhYU2lTcFdsTGE=@46.17.46.27:18443#%E4%BF%84%E7%BD%97%E6%96%AF+%E9%9E%91%E9%9D%BC%E6%96%AF%E5%9D%A6%E5%96%80%E5%B1%B1justhost
