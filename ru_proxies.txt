@@ -1,10 +1,11 @@
 hy2://6da2c981-8c77-4340-bda3-93399b7aea26@store.blog-forme.ru:443?#NL
-hy2://d62s7ghfehm742us@derfderf.ru:12824?sni=derfderf.ru#Rose%20%7C%20%F0%9F%87%A9%F0%9F%87%AA%20DE%20%7C%20HY2%20%7C%2030
-hysteria2://46c16b68-2553-4e5e-8176-f63d6bf6ec0c@fl.solomon-planet.ru:443?#%F0%9F%87%AB%F0%9F%87%AE%20t.me/rghoddoosi%20%D8%B1%D8%B3%D9%88%D9%84%20%D9%82%D8%AF%D9%88%D8%B3%DB%8C%20-%2019
-hysteria2://653m8mmiy7048p0f@social.klipp.su:443?sni=social.klipp.su&obfs=salamander&obfs-password=3sv5vpdl9xr84lyb#[225ms
+hy2://7ab3c77e-8fcc-4848-918f-cae3d4eac794@194.87.118.184:2053?insecure=1#%F0%9F%8C%90%20HY2%20%7C%20194.87.118.184%3A2053%20%7C%20UNSAFE-TLS%20%7C%20AUTH%3A712ms
+hy2://M2NbFywBXjS9Ova8SgqRrQkp@de-tg.fastlanehosting.ru:443#0237
+hy2://d62s7ghfehm742us@derfderf.ru:12824?sni=derfderf.ru#ProxyRift%20124
 hysteria2://BWAFlp8g53@hys28.wba-pn.ru:443?insecure=1#NL
 hysteria2://CnVfXXvMzh@hys13.wba-pn.ru:443?insecure=1&sni=hys13.wba-pn.ru#NL
 hysteria2://EkF2Yw0Lc7@hys34.wba-pn.ru:443?insecure=1&sni=hys34.wba-pn.ru#NL
-hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443/?sni=hy2-latvia2.unlimited-access.ru#4Jadi-1713f17dea
+hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443?sni=hy2-latvia2.unlimited-access.ru#%F0%94%92%B0%E2%80%8E%20%EF%BC%B3%EF%BC%A5%EF%BC%A7%EF%BC%A1%EF%BC%B2%EF%BC%AF
+hysteria2://OD6gGbGU9a@hys26.wba-pn.ru:443?sni=hys26.wba-pn.ru#NL
 hysteria2://oCYFcbOo8s@hys22.wba-pn.ru:443?sni=hys22.wba-pn.ru#NL
-hysteria2://sOiWCQ2AdIV0OWNuqQVyWp4JZnRxdyLROSjX@31.76.71.63:443?insecure=1&sni=cabinet.wwwinternetvideo.click#%F0%9F%87%AA%F0%9F%87%AAEE_15%7C635KB%2Fs%7CA001-260618%2001
+hysteria2://wrSuBorIlf@hys9.wba-pn.ru:443?insecure=1#NL
