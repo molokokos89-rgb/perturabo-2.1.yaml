@@ -1,16 +1,13 @@
 hy2://6da2c981-8c77-4340-bda3-93399b7aea26@store.blog-forme.ru:443?#NL
-hy2://7ab3c77e-8fcc-4848-918f-cae3d4eac794@194.87.118.184:2053?insecure=1#%F0%9F%8C%90%20HY2%20%7C%20194.87.118.184%3A2053%20%7C%20UNSAFE-TLS%20%7C%20AUTH%3A712ms
 hy2://M2NbFywBXjS9Ova8SgqRrQkp@de-tg.fastlanehosting.ru:443#0237
 hy2://d62s7ghfehm742us@derfderf.ru:12824?sni=derfderf.ru#ProxyRift%20124
+hysteria2://7bd7c4aa-52c4-482c-bdcc-e7380fa6b5fe@193.233.89.130:20000?sni=g.play2go.gay&obfs=salamander&obfs-password=-bgbhGhG9yC-MCAQ6pJCHuycKqC7y9V5gXw_mKv8qpE#🇨🇭 Швейцария 3 ROUTE 95 LLC%20t.me%2Frjsxrd
 hysteria2://BWAFlp8g53@hys28.wba-pn.ru:443?insecure=1#NL
 hysteria2://CnVfXXvMzh@hys13.wba-pn.ru:443?insecure=1&sni=hys13.wba-pn.ru#NL
 hysteria2://EkF2Yw0Lc7@hys34.wba-pn.ru:443?insecure=1&sni=hys34.wba-pn.ru#NL
 hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443?sni=hy2-latvia2.unlimited-access.ru#%F0%94%92%B0%E2%80%8E%20%EF%BC%B3%EF%BC%A5%EF%BC%A7%EF%BC%A1%EF%BC%B2%EF%BC%AF
 hysteria2://OD6gGbGU9a@hys26.wba-pn.ru:443?sni=hys26.wba-pn.ru#NL
 hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@144.31.49.47:443?insecure=1&sni=admin.wwwinternetvideo.click#%F0%94%92%B0%E2%80%8E%20%EF%BC%B3%EF%BC%A5%EF%BC%A7%EF%BC%A1%EF%BC%B2%EF%BC%AF
-hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@144.31.93.126:443?insecure=1&sni=admin.wwwinternetvideo.click#%F0%9F%87%B5%F0%9F%87%B1PL_24%7C1.3MB%2Fs%7CA001-260618%2001
-hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@go.wwwinternetvideo.click:443?insecure=1&sni=admin.wwwinternetvideo.click#%F0%94%92%B0%E2%80%8E%20%EF%BC%B3%EF%BC%A5%EF%BC%A7%EF%BC%A1%EF%BC%B2%EF%BC%AF
-hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@go1.wwwinternetvideo.click:443?insecure=1&sni=admin.wwwinternetvideo.click#%F0%9F%87%B5%F0%9F%87%B1PL_29%7C1.2MB%2Fs%7CA004-260618%2001
 hysteria2://oCYFcbOo8s@hys22.wba-pn.ru:443?sni=hys22.wba-pn.ru#NL
 hysteria2://wrSuBorIlf@hys9.wba-pn.ru:443?insecure=1#NL
-vless://90157e25-cee1-4217-921e-91f300bc1a24@prvtch.titun.su:443?&security=reality&flow=xtls-rprx-vision&pbk=1vSZjvhZO01oAEH3b7eebR1qF5dLU1Dq2E7xu8pwGSs&sid=428ef87fd47a3a32&fp=chrome&sni=perevodchiki.su&type=tcp&headerType=none&host=perevodchiki.su&path=%2F#%F0%9F%87%A8%F0%9F%87%AD%20Switzerland%2C%20Bern%20%7C%20%5BBL%5D
+vless://3837e7a5-d40e-4b85-8700-5f9725a5a2cb@45.143.94.91:8443/?encryption=none&flow=xtls-rprx-vision&pbk=3Kgy_0tHtOzEn9_mEylNsBVlAHNngT6S4AuYy5wEOSU&security=reality&sid=0c37b64d1935ebc1&sni=us1.cloudvienta.com&type=tcp&fp=safari#%F0%9F%87%BA%F0%9F%87%B8%20United%20States%2C%20Charlotte%20%28Oakview%20Terrace%29%20%7C%20%F0%9F%8C%90%20%7C%20%5BBL%5D
