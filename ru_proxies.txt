@@ -1,11 +1,12 @@
 hy2://6da2c981-8c77-4340-bda3-93399b7aea26@store.blog-forme.ru:443?insecure=1#hysteria2-1946064383
+hy2://71b0bd15-a03a-481e-a52d-74042c8db157@103.88.241.133:8443/?sni=slopllex.app#%40nekopingbot_7334
 hysteria2://549766c3-fa5f-471e-8031-ffc1f8d5064f@guide.blog-forme.ru:443?alpn=h3&insecure=0&security=tls&sni=guide.blog-forme.ru#ProxyRift%20072
 hysteria2://BWAFlp8g53@hys28.wba-pn.ru:443?insecure=1#[✅]
 hysteria2://CnVfXXvMzh@hys13.wba-pn.ru:443?insecure=1&sni=hys13.wba-pn.ru#[✅]
 hysteria2://EkF2Yw0Lc7@hys34.wba-pn.ru:443?insecure=1&sni=hys34.wba-pn.ru#[✅]
 hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443?sni=hy2-latvia2.unlimited-access.ru#[✅]
 hysteria2://OD6gGbGU9a@hys26.wba-pn.ru:443?sni=hys26.wba-pn.ru#[✅]
-hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@go.wwwinternetvideo.click:443/?insecure=1&sni=admin.wwwinternetvideo.click#4Jadi-1105ce8791
+hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@go2.wwwinternetvideo.click:443?insecure=1&sni=admin.wwwinternetvideo.click#[✅]
 hysteria2://d62s7ghfehm742us@derfderf.ru:12824?security=tls&sni=derfderf.ru#Iran
 hysteria2://oCYFcbOo8s@hys22.wba-pn.ru:443?sni=hys22.wba-pn.ru#[✅]
 hysteria2://wrSuBorIlf@hys9.wba-pn.ru:443?insecure=1#[✅]
