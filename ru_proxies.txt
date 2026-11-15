@@ -1,5 +1,7 @@
+hy2://41edb44c8e@103.88.243.142:11592?sni=srv-17e124.21freedom.net#ProxyRift%20157
+hy2://41edb44c8e@srv-17e124.21freedom.net:11592?#hysteria2-1854003839
 hy2://d62s7ghfehm742us@derfderf.ru:12824?sni=derfderf.ru#%F0%9F%94%92Pr0xySh4rk%F0%9F%A6%88%5BHY2%5D%5B03%5D%5B%F0%9F%87%A9%F0%9F%87%AA%5D%5B96.5Mbps%5D%5B541ms%5D
-hysteria2://1e697474-7836-47ed-aaca-b559efcbb298@eu90.cdn77.icu:8453?sni=eu71.cdn77.icu&security=tls#%F0%9F%87%A6%F0%9F%87%B9%20Austria%20%7C%20%F0%9F%8C%90%20%5B%2ACIDR%5D%20t.me%2Frjsxrd
+hysteria2://1e697474-7836-47ed-aaca-b559efcbb298@94.183.195.138:8453?sni=eu71.cdn77.icu#🇦🇹 Австрия 1 Evolus IT Solutions GmbH%20t.me%2Frjsxrd
 hysteria2://448317ca-1c02-45f9-8786-c99b74743cd9@lew.nordic-wave.ru:443?sni=lew.nordic-wave.ru#%40happ_tmn
 hysteria2://448317ca-1c02-45f9-8786-c99b74743cd9@van.nordic-wave.ru:443?sni=van.nordic-wave.ru#%40happ_tmn
 hysteria2://549766c3-fa5f-471e-8031-ffc1f8d5064f@guide.blog-forme.ru:443?sni=guide.blog-forme.ru#%F0%9F%87%A9%F0%9F%87%AA%20Frankfurt%20am%20Main%2015
@@ -11,6 +13,7 @@ hysteria2://EkF2Yw0Lc7@hys34.wba-pn.ru:443?insecure=1&sni=hys34.wba-pn.ru#[✅]
 hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443?sni=hy2-latvia2.unlimited-access.ru#[✅]
 hysteria2://OD6gGbGU9a@hys26.wba-pn.ru:443?sni=hys26.wba-pn.ru#[✅]
 hysteria2://oCYFcbOo8s@hys22.wba-pn.ru:443?sni=hys22.wba-pn.ru#[✅]
-hysteria2://umnDU7jgFYUjpVjVM2sW9HL0rRYLJNgzVwRu2HzWEhyZKkRx@hold.wwwinternetvideo.click:443/?insecure=1&sni=germany1.h2corp.local#[🛜]
 hysteria2://wrSuBorIlf@hys9.wba-pn.ru:443?insecure=1#[✅]
-vless://97fd7807-7e2b-49da-8a0e-e40197088f97@196.240.125.10:8443?encryption=none&flow=xtls-rprx-vision&fp=firefox&security=tls&sni=api-v1-6af86a96.vmagnum.win&type=tcp#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%2C%20Amsterdam%20%7C%20%5BBL%5D
+vless://4fb48619-c29d-47f3-8c21-12bdc3286935@31.192.106.192:443?flow=xtls-rprx-vision&security=reality&sni=node2.shakalchk.ru&pbk=bqzRxK5Nr7muCBDtExsYRK4yrxMwVPOH0_avLu27LQI&sid=a132a3&fp=chrome#%F0%9F%87%A9%F0%9F%87%AA%20Germany%2C%20Frankfurt%20am%20Main%20%7C%20%5BBL%5D
+vless://88edfb30-a34b-41e1-a08f-985a93e3bc36@83.171.241.220:443?encryption=none&fp=firefox&pbk=H_sPS4IJjHa4Wd7WLAtp_eamROtKBAj-G0UcMBHLHQw&security=reality&serviceName=61c20be08f4f&sid=2437eeeb791b6d80&sni=49930ag.es8.h1clayd.click&type=grpc#%F0%9F%87%AA%F0%9F%87%B8%20Spain%2C%20Madrid%20%28Chamart%C3%ADn%29%20%7C%20%5BBL%5D
+vless://95c2ba1e-a330-4e6b-bd81-bf9c0f647b2f@49930ag.es8.h1clayd.click:443?encryption=none&pbk=H_sPS4IJjHa4Wd7WLAtp_eamROtKBAj-G0UcMBHLHQw&security=reality&serviceName=61c20be08f4f&sid=2437eeeb791b6d80&sni=49930ag.es8.h1clayd.click&spx=%2F&type=grpc&fp=ios#%F0%9F%87%AA%F0%9F%87%B8%20Spain%2C%20Madrid%20%28Chamart%C3%ADn%29%20%7C%20%5BBL%5D
