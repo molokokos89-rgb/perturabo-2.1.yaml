@@ -7,7 +7,6 @@ hysteria2://CnVfXXvMzh@hys13.wba-pn.ru:443?insecure=1&sni=hys13.wba-pn.ru#[✅]
 hysteria2://EkF2Yw0Lc7@hys34.wba-pn.ru:443?insecure=1&sni=hys34.wba-pn.ru#[✅]
 hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443?sni=hy2-latvia2.unlimited-access.ru#[✅]
 hysteria2://OD6gGbGU9a@hys26.wba-pn.ru:443?sni=hys26.wba-pn.ru#[✅]
-hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@144.31.49.47:443/?insecure=1&sni=admin.wwwinternetvideo.click
 hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@go.wwwinternetvideo.click:443/?insecure=1&sni=admin.wwwinternetvideo.click#4Jadi-1105ce8791
 hysteria2://d62s7ghfehm742us@derfderf.ru:12824?sni=derfderf.ru#%23334%20%E2%9D%93%20%3F%3F%20%E2%86%92%20%F0%9F%87%A9%F0%9F%87%AA%20DE
 hysteria2://lak374gtxzrxz241@musicclips.videolinks.ru:8443?alpn=h3&fm=%7B%22quicParams%22%3A%7B%22brutalDown%22%3A%2260mbps%22%2C%22brutalUp%22%3A%2260mbps%22%2C%22congestion%22%3A%22brutal%22%2C%22debug%22%3Afalse%2C%22disablePathMTUDiscovery%22%3Afalse%2C%22initConnectionReceiveWindow%22%3A20971520%2C%22initStreamReceiveWindow%22%3A8388608%2C%22keepAlivePeriod%22%3A10%2C%22maxConnectionReceiveWindow%22%3A20971520%2C%22maxIdleTimeout%22%3A30%2C%22maxIncomingStreams%22%3A1024%2C%22maxStreamReceiveWindow%22%3A8388608%7D%2C%22udp%22%3A%5B%7B%22settings%22%3A%7B%22password%22%3A%228zzng75tz4tf82pj%22%7D%2C%22type%22%3A%22salamander%22%7D%5D%7D&fp=safari&obfs=salamander&obfs-password=8zzng75tz4tf82pj&security=tls&sni=musicclips.videolinks.ru#%F0%9F%87%AB%F0%9F%87%AE%20%D0%A4%D0%B8%D0%BD%D0%BB%D1%8F%D0%BD%D0%B4%D0%B8%D1%8F%20%7C%20%D1%82%D0%B3%D0%BA%3A%20%40rostunnel%20%7C%20%40finland
@@ -16,4 +15,3 @@ hysteria2://lak374gtxzrxz241@nrealistic.nn-foto.ru:1935?alpn=h3&fm=%7B%22quicPar
 hysteria2://oCYFcbOo8s@hys22.wba-pn.ru:443?sni=hys22.wba-pn.ru#NL
 hysteria2://umnDU7jgFYUjpVjVM2sW9HL0rRYLJNgzVwRu2HzWEhyZKkRx@144.31.93.173:443/?insecure=1&sni=germany1.h2corp.local#%F0%9F%8F%B3%EF%B8%8F%20ShatakVPN%20110948
 hysteria2://wrSuBorIlf@hys9.wba-pn.ru:443?insecure=1#NL
-vless://80a06811-f74b-4b82-ac99-7e66c2a98e1c@138.16.249.177:443?alpn=h2&encryption=none&host=folio.basterdym.asia&mode=packet-up&path=%2Fapi%2Fpreview%2F&security=tls&sni=folio.basterdym.asia&type=xhttp&fp=edge#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%2C%20Dedemsvaart%20%7C%20%5BBL%5D
