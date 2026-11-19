@@ -1,7 +1,6 @@
 hy2://6da2c981-8c77-4340-bda3-93399b7aea26@store.blog-forme.ru:443?#NL
 hy2://M2NbFywBXjS9Ova8SgqRrQkp@de-tg.fastlanehosting.ru:443#0062
 hysteria2://549766c3-fa5f-471e-8031-ffc1f8d5064f@guide.blog-forme.ru:443#Rose%20%7C%20%F0%9F%87%A8%F0%9F%87%AD%20CH%20%7C%20HYSTERIA2%20%7C%2011
-hysteria2://6fffde27-86de-49e5-9ece-0669b6680afc@89.125.214.221:19446?sni=mshvpn.online#%F0%9F%87%A8%F0%9F%87%BF%20Czechia%20%5B%2ACIDR%5D
 hysteria2://BWAFlp8g53@hys28.wba-pn.ru:443?insecure=1#[✅]
 hysteria2://CnVfXXvMzh@hys13.wba-pn.ru:443?insecure=1&sni=hys13.wba-pn.ru#[✅]
 hysteria2://EkF2Yw0Lc7@hys34.wba-pn.ru:443?insecure=1&sni=hys34.wba-pn.ru#[✅]
