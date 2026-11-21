@@ -8,7 +8,7 @@ hysteria2://CnVfXXvMzh@hys13.wba-pn.ru:443?insecure=1&sni=hys13.wba-pn.ru#[✅]
 hysteria2://EkF2Yw0Lc7@hys34.wba-pn.ru:443?insecure=1&sni=hys34.wba-pn.ru#[✅]
 hysteria2://GSPOBvG-ZwYcBFMr0ekFGO_Zga3wK6v_@hy2-latvia2.unlimited-access.ru:443?sni=hy2-latvia2.unlimited-access.ru#[✅]
 hysteria2://OD6gGbGU9a@hys26.wba-pn.ru:443?sni=hys26.wba-pn.ru#[✅]
+hysteria2://b7941807-1f4d-4bda-a878-92d708b84494@46.8.210.33:8446?obfs=salamander&obfs-password=nTm4oBa6QCpWoAFDVtF6mpMpfMfN8CM6&sni=litelitvalitter.rooferz.surf#LTE/5G Все операторы 🇪🇺%20t.me%2Frjsxrd
 hysteria2://oCYFcbOo8s@hys22.wba-pn.ru:443?sni=hys22.wba-pn.ru#[✅]
-hysteria2://umnDU7jgFYUjpVjVM2sW9HL0rRYLJNgzVwRu2HzWEhyZKkRx@hold.wwwinternetvideo.click:443?insecure=1&sni=germany1.h2corp.local#[✅]
 hysteria2://wrSuBorIlf@hys9.wba-pn.ru:443?insecure=1#[✅]
-vless://71bd5b95-4079-417e-a34f-386a07588105@188.225.83.204:7443?security=tls&sni=polska.champmoney.ru&fp=random#%F0%9F%87%AE%F0%9F%87%A9%20Indonesia%2C%20Cikarang%20%7C%20%5BBL%5D
+vless://3f48cee8-2e5d-4ea4-9297-0777a79a9f06@31.129.56.229:443?encryption=none&flow=xtls-rprx-vision&pbk=HxgKgQBR0Xs-lqb0snVMzcSH2xhb90Zia8KeT1tdaVs&security=reality&sid=b3c03b6dac5f1e7f&sni=it-1.idkvpn.ru&type=tcp&fp=ios#%F0%9F%87%AE%F0%9F%87%B9%20Italy%2C%20Milan%20%7C%20%5BBL%5D
