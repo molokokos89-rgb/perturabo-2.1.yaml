@@ -10,4 +10,6 @@ hysteria2://M2NbFywBXjS9Ova8SgqRrQkp@de-tg.fastlanehosting.ru:443?security=tls&i
 hysteria2://OD6gGbGU9a@hys26.wba-pn.ru:443?sni=hys26.wba-pn.ru#[✅]
 hysteria2://YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc@144.31.49.47:443?insecure=1&sni=admin.wwwinternetvideo.click#[✅]
 hysteria2://oCYFcbOo8s@hys22.wba-pn.ru:443?sni=hys22.wba-pn.ru#NL
+hysteria2://sOiWCQ2AdIV0OWNuqQVyWp4JZnRxdyLROSjX@31.76.71.63:443/?insecure=1&sni=cabinet.wwwinternetvideo.click#%F0%9F%8F%B3%EF%B8%8F%20ShatakVPN%20291191
 hysteria2://wrSuBorIlf@hys9.wba-pn.ru:443?insecure=1#NL
+vless://9a9f167d-b461-466f-be50-f0ffd598a6f8@de.ggssstreaming.ru:443?mode=auto&path=%2Fee445bf63ce1%2F9a8d6ac6&security=reality&encryption=none&pbk=n5lmV54wCCknNYie638Ug2NDO-WCqtqVo3Yb7IJ_YkI&host=de.ggssstreaming.ru&fp=firefox&type=xhttp&sni=de.ggssstreaming.ru&sid=f49f0d53a52920da#%F0%9F%87%BA%F0%9F%87%B8%20United%20States%2C%20Orem%20%7C%20%5BBL%5D
